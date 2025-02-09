@@ -2,6 +2,7 @@ import { generateId } from "better-auth";
 
 import { db } from "@acme/db/client";
 import { storeHours, stores } from "@acme/db/schema";
+import { daysOfWeek, slugify } from "@acme/utils";
 
 export async function createDefaultOrganization(user: {
   id: string;
@@ -21,16 +22,6 @@ export async function createDefaultOrganization(user: {
     throw new Error("Failed to create store");
   }
 
-  const daysOfWeek = [
-    "monday",
-    "tuesday",
-    "wednesday",
-    "thursday",
-    "friday",
-    "saturday",
-    "sunday",
-  ];
-
   await db.insert(storeHours).values(
     daysOfWeek.map((item) => ({
       storeId: org.id,
@@ -39,16 +30,4 @@ export async function createDefaultOrganization(user: {
   );
 
   return org;
-}
-
-export function slugify(str: string) {
-  return str
-    .toLowerCase()
-    .replace(/ /g, "-")
-    .replace(/[^\w-]+/g, "")
-    .replace(/--+/g, "-");
-}
-
-export function unslugify(str: string) {
-  return str.replace(/-/g, " ");
 }

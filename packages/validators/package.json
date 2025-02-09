@@ -19,6 +19,7 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
+    "@acme/utils": "workspace:*",
     "zod": "catalog:"
   },
   "devDependencies": {

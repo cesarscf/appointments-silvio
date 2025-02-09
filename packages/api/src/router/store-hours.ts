@@ -1,21 +1,9 @@
-import { z } from "zod";
-
 import { eq } from "@acme/db";
 import { db } from "@acme/db/client";
 import { storeHours } from "@acme/db/schema";
 import { storeHoursSchema } from "@acme/validators";
 
 import { protectedProcedure } from "../trpc";
-
-const daysOfWeek = [
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-  "sunday",
-];
 
 export const storeHoursRoute = {
   all: protectedProcedure.query(async ({ ctx }) => {

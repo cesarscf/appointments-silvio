@@ -4,6 +4,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { StoreHour } from "@acme/db/schema";
+import { translateWeekday } from "@acme/utils";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,7 +18,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { translateWeekday } from "@/lib/utils";
 import { api } from "@/trpc/react";
 
 export default function UpdateStoreHours({
