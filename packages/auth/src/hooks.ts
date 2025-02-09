@@ -1,14 +1,14 @@
 import { generateId } from "better-auth";
 
 import { db } from "@acme/db/client";
-import { stores } from "@acme/db/schema";
+import { storeHours, stores } from "@acme/db/schema";
 
 export async function createDefaultOrganization(user: {
   id: string;
   name: string;
 }) {
   // Create default organization for new user
-  const org = await db
+  const [org] = await db
     .insert(stores)
     .values({
       name: user.name,
@@ -16,6 +16,27 @@ export async function createDefaultOrganization(user: {
       userId: user.id,
     })
     .returning();
+
+  if (!org) {
+    throw new Error("Failed to create store");
+  }
+
+  const daysOfWeek = [
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
+  ];
+
+  await db.insert(storeHours).values(
+    daysOfWeek.map((item) => ({
+      storeId: org.id,
+      dayOfWeek: item,
+    })),
+  );
 
   return org;
 }

@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/trpc/react";
 import { UpdateStoreAppaerance } from "./update-store-appareance";
 import { UpdateStoreForm } from "./update-store-form";
+import UpdateStoreHours from "./update-store-hours";
 
 export function Store() {
   const [tab, setTab] = useQueryState("tab", {
@@ -26,12 +27,17 @@ export function Store() {
       title: "Geral",
     },
     {
+      id: "operation",
+      title: "Funcionamento",
+    },
+    {
       id: "appareance",
       title: "Aparência",
     },
   ];
 
   const [store] = api.store.getByUserId.useSuspenseQuery();
+  const [storeHours] = api.storeHours.all.useSuspenseQuery();
 
   return (
     <>
@@ -68,8 +74,16 @@ export function Store() {
           </div>
         </TabsContent>
 
+        <TabsContent value="operation">
+          <div className="mt-8 max-w-4xl">
+            <UpdateStoreHours storeHoursInitial={storeHours} />
+          </div>
+        </TabsContent>
+
         <TabsContent value="appareance">
-          <UpdateStoreAppaerance currentTheme={store.theme} />
+          <div className="mt-8 max-w-2xl">
+            <UpdateStoreAppaerance currentTheme={store.theme} />
+          </div>
         </TabsContent>
       </Tabs>
     </>

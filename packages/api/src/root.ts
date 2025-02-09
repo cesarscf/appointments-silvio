@@ -4,6 +4,7 @@ import { clientRoute } from "./router/client";
 import { employeeRoute } from "./router/employee";
 import { serviceRoute } from "./router/service";
 import { storeRoute } from "./router/store";
+import { storeHoursRoute } from "./router/store-hours";
 import { createTRPCRouter } from "./trpc";
 
 export const appRouter = createTRPCRouter({
@@ -13,6 +14,7 @@ export const appRouter = createTRPCRouter({
   category: categoryRoute,
   employee: employeeRoute,
   clientR: clientRoute,
+  storeHours: storeHoursRoute,
 });
 
 // export type definition of API
