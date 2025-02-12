@@ -35,7 +35,7 @@ export default function UpdateStoreHours({
     const updatedHours = [...storeHours];
 
     // @ts-ignore
-    updatedHours[index] = { ...updatedHours[index], [field]: value };
+    updatedHours[index] = { ...updatedHours[index], [field]: value + ":00" };
     setStoreHours(updatedHours);
   };
 

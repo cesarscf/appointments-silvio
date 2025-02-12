@@ -1,41 +1,28 @@
 import { useState } from "react";
 import { format } from "date-fns";
 
+import { api } from "@/trpc/react";
 import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
 import { ScrollArea } from "./ui/scroll-area";
+import { Skeleton } from "./ui/skeleton";
 
 interface DataPickerWithHourProps {
   onDateTimeChange: (timestamp: number) => void;
+  day: number;
 }
 
 export default function DataPickerWithHour({
   onDateTimeChange,
+  day,
 }: DataPickerWithHourProps) {
   const today = new Date();
   const [date, setDate] = useState<Date>(today);
   const [time, setTime] = useState<string | null>(null);
 
-  const timeSlots = [
-    { time: "09:00", available: false },
-    { time: "09:30", available: false },
-    { time: "10:00", available: true },
-    { time: "10:30", available: true },
-    { time: "11:00", available: true },
-    { time: "11:30", available: true },
-    { time: "12:00", available: false },
-    { time: "12:30", available: true },
-    { time: "13:00", available: true },
-    { time: "13:30", available: true },
-    { time: "14:00", available: true },
-    { time: "14:30", available: false },
-    { time: "15:00", available: false },
-    { time: "15:30", available: true },
-    { time: "16:00", available: true },
-    { time: "16:30", available: true },
-    { time: "17:00", available: true },
-    { time: "17:30", available: true },
-  ];
+  const { data, isPending } = api.storeHours.getDayHours.useQuery(day);
+
+  const timeSlots = isPending ? [] : generateTimeSlots(data!);
 
   const handleDateChange = (newDate: Date) => {
     setDate(newDate);
@@ -59,39 +46,107 @@ export default function DataPickerWithHour({
         <Calendar
           mode="single"
           selected={date}
-          onSelect={(date) => handleDateChange(date!)}
+          onSelect={(date) => handleDateChange(date || today)}
           className="p-2 sm:pe-5"
           disabled={[{ before: today }]}
         />
         <div className="relative w-full max-sm:h-48 sm:w-40">
           <div className="absolute inset-0 border-border py-4 max-sm:border-t">
             <ScrollArea className="h-full border-border sm:border-s">
-              <div className="space-y-3">
-                <div className="flex h-5 shrink-0 items-center px-5">
-                  <p className="text-sm font-medium">
-                    {format(date, "EEEE, d")}
-                  </p>
+              {isPending ? (
+                <div className="space-y-3">
+                  <div className="flex h-5 shrink-0 items-center px-5">
+                    <Skeleton className="h-full min-h-6 w-full" />
+                  </div>
+                  <div className="grid gap-1.5 px-5 max-sm:grid-cols-2">
+                    {Array.from({ length: 10 }).map((_, idx) => (
+                      <Skeleton key={idx} className="h-full min-h-6 w-full" />
+                    ))}
+                  </div>
                 </div>
-                <div className="grid gap-1.5 px-5 max-sm:grid-cols-2">
-                  {timeSlots.map(({ time: timeSlot, available }) => (
-                    <Button
-                      key={timeSlot}
-                      type="button"
-                      variant={time === timeSlot ? "default" : "outline"}
-                      size="sm"
-                      className="w-full"
-                      onClick={() => handleTimeChange(timeSlot)}
-                      disabled={!available}
-                    >
-                      {timeSlot}
-                    </Button>
-                  ))}
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex h-5 shrink-0 items-center px-5">
+                    <p className="text-sm font-medium">
+                      {format(date, "EEEE, d")}
+                    </p>
+                  </div>
+                  <div className="grid gap-1.5 px-5 max-sm:grid-cols-2">
+                    {timeSlots.map(({ time: timeSlot, available }, idx) => (
+                      <Button
+                        key={idx}
+                        type="button"
+                        variant={time === timeSlot ? "default" : "outline"}
+                        size="sm"
+                        className="w-full"
+                        onClick={() => handleTimeChange(timeSlot)}
+                        disabled={!available}
+                      >
+                        {timeSlot}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </ScrollArea>
           </div>
         </div>
       </div>
     </div>
   );
+}
+
+export type TimeSlot = {
+  time: string;
+  available: boolean;
+};
+
+export function generateTimeSlots({
+  openTime,
+  closeTime,
+  breakStart,
+  breakEnd,
+}: {
+  id: string;
+  storeId: string;
+  openTime: string;
+  closeTime: string;
+  breakStart: string | null;
+  breakEnd: string | null;
+  dayOfWeek: string;
+  active: boolean;
+}): TimeSlot[] {
+  const timeSlots: TimeSlot[] = [];
+  const interval = 30;
+
+  const formatTime = (time: number): string => {
+    return time < 10 ? `0${time}` : `${time}`;
+  };
+
+  const addMinutes = (time: string, minutes: number): string => {
+    const [hours, mins] = time.split(":").map(Number);
+    const totalMinutes = hours! * 60 + mins! + minutes;
+    const newHours = Math.floor(totalMinutes / 60);
+    const newMinutes = totalMinutes % 60;
+    return `${formatTime(newHours)}:${formatTime(newMinutes)}`;
+  };
+
+  const isDuringBreak = (
+    time: string,
+    breakStart: string | null,
+    breakEnd: string | null,
+  ): boolean => {
+    if (!breakStart || !breakEnd) return false;
+    return time >= breakStart && time < breakEnd;
+  };
+
+  // Normalize openTime to ensure it's in "HH:MM" format.
+  let currentTime = addMinutes(openTime, 0);
+  while (currentTime < closeTime) {
+    const available = !isDuringBreak(currentTime, breakStart, breakEnd);
+    timeSlots.push({ time: currentTime, available });
+    currentTime = addMinutes(currentTime, interval);
+  }
+
+  return timeSlots;
 }

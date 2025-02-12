@@ -11,6 +11,7 @@ import { Client, Employee, Service } from "@acme/db/schema";
 import { createAppointmentSchema } from "@acme/validators";
 
 import DataPickerWithHour from "@/components/data-picker-with-hour";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -82,6 +83,8 @@ export function NewAppoitmentForm({
     form.setValue("date", new Date(timestamp));
   };
 
+  const day = form.watch("date").getDay();
+
   return (
     <Card className="w-full max-w-xl">
       <CardHeader>
@@ -91,7 +94,10 @@ export function NewAppoitmentForm({
       <CardContent>
         <Form {...form}>
           <form className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
-            <DataPickerWithHour onDateTimeChange={handleDateTimeChange} />
+            <DataPickerWithHour
+              onDateTimeChange={handleDateTimeChange}
+              day={day}
+            />
 
             <FormField
               control={form.control}
@@ -109,9 +115,15 @@ export function NewAppoitmentForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="agendado">Agendado</SelectItem>
-                      <SelectItem value="confirmado">Confirmado</SelectItem>
-                      <SelectItem value="cancelado">Cancelado</SelectItem>
+                      <SelectItem value="agendado">
+                        <Badge>Agendado</Badge>
+                      </SelectItem>
+                      <SelectItem value="confirmado">
+                        <Badge variant="secondary">Confirmado</Badge>
+                      </SelectItem>
+                      <SelectItem value="cancelado">
+                        <Badge variant="destructive">Cancelado</Badge>
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

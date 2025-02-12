@@ -1,11 +1,11 @@
 export const daysOfWeek = [
+  "sunday",
   "monday",
   "tuesday",
   "wednesday",
   "thursday",
   "friday",
   "saturday",
-  "sunday",
 ];
 
 export function slugify(str: string) {

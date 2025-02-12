@@ -9,6 +9,11 @@ export const appointmentRouter = {
   all: protectedProcedure.query(async ({ ctx }) => {
     const results = await db.query.appointments.findMany({
       where: eq(appointments.storeId, ctx.storeId),
+      with: {
+        client: true,
+        employee: true,
+        service: true,
+      },
     });
 
     return results;

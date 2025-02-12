@@ -1,6 +1,10 @@
-import { eq } from "@acme/db";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+
+import { and, eq } from "@acme/db";
 import { db } from "@acme/db/client";
-import { storeHours } from "@acme/db/schema";
+import { appointments, storeHours } from "@acme/db/schema";
+import { daysOfWeek } from "@acme/utils";
 import { storeHoursSchema } from "@acme/validators";
 
 import { protectedProcedure } from "../trpc";
@@ -13,6 +17,37 @@ export const storeHoursRoute = {
 
     return hours;
   }),
+
+  getDayHours: protectedProcedure
+    .input(z.number())
+    .query(async ({ ctx, input }) => {
+      const dayOfWeek = daysOfWeek[input];
+
+      if (!dayOfWeek) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Day of week not found",
+        });
+      }
+
+      console.log(dayOfWeek);
+
+      const result = await ctx.db.query.storeHours.findFirst({
+        where: and(
+          eq(storeHours.storeId, ctx.storeId),
+          eq(storeHours.dayOfWeek, dayOfWeek),
+        ),
+      });
+
+      if (!result) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Day hours not found",
+        });
+      }
+
+      return result;
+    }),
 
   update: protectedProcedure
     .input(storeHoursSchema)
