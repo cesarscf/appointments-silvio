@@ -13,7 +13,7 @@ export default function AppLayout() {
     return <Text>Loading...</Text>;
   }
 
-  if (!session) {
+  if (session) {
     return <Redirect href="/sign-in" />;
   }
 
@@ -31,7 +31,19 @@ export function DrawerContent() {
       <DrawerItem
         label={"Home"}
         onPress={() => {
-          router.push("/(app)/(tabs)");
+          router.push("/(drawer)/(tabs)");
+        }}
+      />
+      <DrawerItem
+        label={"Clientes"}
+        onPress={() => {
+          router.push("/(drawer)/(tabs)/clients");
+        }}
+      />
+      <DrawerItem
+        label={"Serviços"}
+        onPress={() => {
+          router.push("/(drawer)/(tabs)/services");
         }}
       />
     </GestureHandlerRootView>

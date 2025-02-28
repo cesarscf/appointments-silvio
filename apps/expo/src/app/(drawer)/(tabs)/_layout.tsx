@@ -30,6 +30,30 @@ export default function AppLayout() {
           tabBarLabel: "Home",
         }}
       />
+      <Tabs.Screen
+        name="clients"
+        options={{
+          tabBarLabel: "Clientes",
+        }}
+      />
+      <Tabs.Screen
+        name="services"
+        options={{
+          tabBarLabel: "Serviços",
+        }}
+      />
+      <Tabs.Screen
+        name="calendar"
+        options={{
+          tabBarLabel: "Agenda",
+        }}
+      />
+      <Tabs.Screen
+        name="employees"
+        options={{
+          tabBarLabel: "Funcionários",
+        }}
+      />
     </Tabs>
   );
 }
