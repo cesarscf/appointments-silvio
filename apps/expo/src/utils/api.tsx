@@ -6,6 +6,7 @@ import superjson from "superjson";
 
 import type { AppRouter } from "@acme/api";
 
+import { authClient } from "./auth";
 import { getBaseUrl } from "./base-url";
 import { getToken } from "./session-store";
 
@@ -38,6 +39,7 @@ export function TRPCProvider({ children }: React.PropsWithChildren) {
             headers.set("x-trpc-source", "expo-react");
 
             const token = getToken();
+
             if (token) headers.set("Authorization", `Bearer ${token}`);
 
             return Object.fromEntries(headers);

@@ -13,16 +13,18 @@ export default function AppLayout() {
     return <Text>Loading...</Text>;
   }
 
+  console.log({ session });
+
   if (session) {
-    return <Redirect href="/sign-in" />;
+    return (
+      <Drawer
+        screenOptions={{ headerShown: false }}
+        drawerContent={() => <DrawerContent />}
+      />
+    );
   }
 
-  return (
-    <Drawer
-      screenOptions={{ headerShown: false }}
-      drawerContent={() => <DrawerContent />}
-    />
-  );
+  return <Redirect href="/sign-in" />;
 }
 
 export function DrawerContent() {

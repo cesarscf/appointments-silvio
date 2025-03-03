@@ -44,6 +44,7 @@ export const config = {
   },
   secret: env.AUTH_SECRET,
   plugins: [expo(), oAuthProxy(), nextCookies()],
+  trustedOrigins: ["expo://"],
 } satisfies BetterAuthOptions;
 
 export const auth = betterAuth(config);

@@ -1,10 +1,21 @@
-import { Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Text, TouchableOpacity, View } from "react-native";
+
+import { authClient } from "@/utils/auth";
+import { getToken } from "@/utils/session-store";
 
 export default function Index() {
+  const { data: session } = authClient.useSession();
+
   return (
     <View>
-      <Text>Home</Text>
+      <TouchableOpacity
+        className={`mt-4 w-full rounded bg-blue-500 p-3`}
+        onPress={async () => {
+          await authClient.signOut();
+        }}
+      >
+        <Text className="text-center font-bold text-white">Sair</Text>
+      </TouchableOpacity>
     </View>
   );
 }
