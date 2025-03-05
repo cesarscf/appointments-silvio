@@ -15,10 +15,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@acme/validators": "workspace:*",
     "@acme/utils": "workspace:*",
-    "@better-auth/expo": "^1.1.15-beta.7",
+    "@acme/validators": "workspace:*",
     "@bacons/text-decoder": "^0.0.0",
+    "@better-auth/expo": "^1.1.15-beta.7",
     "@better-fetch/fetch": "^1.1.12",
     "@expo/metro-config": "^0.19.9",
     "@hookform/resolvers": "^3.10.0",
