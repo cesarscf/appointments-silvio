@@ -1,25 +1,31 @@
-import { useState } from "react";
+import React from "react";
 import { format } from "date-fns";
 
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "@/trpc/react";
-import { Button } from "./ui/button";
-import { Calendar } from "./ui/calendar";
-import { ScrollArea } from "./ui/scroll-area";
-import { Skeleton } from "./ui/skeleton";
 
 interface DataPickerWithHourProps {
   onDateTimeChange: (timestamp: number) => void;
   day: number;
+  setDate: React.Dispatch<React.SetStateAction<Date>>;
+  date: Date;
+  setTime: React.Dispatch<React.SetStateAction<string | null>>;
+  time: string | null;
+  today: Date;
 }
 
-export default function DataPickerWithHour({
+export default function DataPickerWithHour2({
   onDateTimeChange,
   day,
+  date,
+  time,
+  today,
+  setDate,
+  setTime,
 }: DataPickerWithHourProps) {
-  const today = new Date();
-  const [date, setDate] = useState<Date>(today);
-  const [time, setTime] = useState<string | null>(null);
-
   const { data, isPending } = api.storeHours.getDayHours.useQuery(day);
 
   const timeSlots = isPending ? [] : generateTimeSlots(data!);

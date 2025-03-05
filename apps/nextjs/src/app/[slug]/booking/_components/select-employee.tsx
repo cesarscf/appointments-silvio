@@ -14,6 +14,7 @@ interface SelectEmployeeProps {
   onEmployeeSelect: (employee: Employee) => void;
   selectedEmployeeId: string | undefined;
   onNextStep: () => void;
+  onBackStep: () => void;
 }
 
 export function SelectEmployee({
@@ -21,9 +22,8 @@ export function SelectEmployee({
   onEmployeeSelect,
   selectedEmployeeId,
   onNextStep,
+  onBackStep,
 }: SelectEmployeeProps) {
-  const router = useRouter();
-
   return (
     <div className="mx-auto max-w-3xl rounded border p-6">
       <h2 className="mb-4 text-xl font-bold">Escolha um profissional</h2>
@@ -34,7 +34,7 @@ export function SelectEmployee({
           return (
             <Card
               key={employee.id}
-              className={`cursor-pointer transition-all ${
+              className={`cursor-pointer ${
                 selectedEmployeeId === employee.id
                   ? "border-2 border-primary"
                   : "border border-border hover:border-primary/50"
@@ -72,12 +72,18 @@ export function SelectEmployee({
           );
         })}
       </div>
-      <Button
-        onClick={onNextStep}
-        disabled={selectedEmployeeId == null ? true : false}
-      >
-        Continuar
-      </Button>
+      <div className="flex w-full justify-between pt-5">
+        <Button variant={"secondary"} onClick={onBackStep}>
+          Voltar
+        </Button>
+        <Button
+          onClick={onNextStep}
+          disabled={selectedEmployeeId == null ? true : false}
+          className="ml-auto"
+        >
+          Continuar
+        </Button>
+      </div>
     </div>
   );
 }
