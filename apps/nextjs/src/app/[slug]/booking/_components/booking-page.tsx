@@ -8,7 +8,7 @@ import {
   useRouter,
   useSearchParams,
 } from "next/navigation";
-import { CalendarCheck, Clock, CreditCard, User } from "lucide-react";
+import { CalendarCheck, Clock, CreditCard, Loader2, User } from "lucide-react";
 import { useQueryState } from "nuqs";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -51,6 +51,7 @@ export function BookingPage() {
 
   if (!serviceId) return;
 
+  const [loading, setLoading] = React.useState<boolean>(false);
   const [selectedEmployee, setSelectedEmployee] =
     React.useState<Employee | null>(null);
   const [selectedDate, setSelectedDate] = React.useState<Date>(new Date());
@@ -68,13 +69,39 @@ export function BookingPage() {
     return notFound();
   }
 
-  const apiUtils = api.useUtils();
-
-  const createMutation = api.appointment.create.useMutation({
+  const createMutation = api.appointment.createPublic.useMutation({
     onSuccess: () => {
       toast.success("Agendamento realizado.");
+      router.back();
     },
   });
+
+  async function confirmBooking() {
+    setLoading(true);
+
+    if (!client || !selectedEmployee || !serviceId) return;
+
+    await createMutation.mutateAsync({
+      client: {
+        name: client.name,
+        birthday: client.birthday,
+        phone: client.phone,
+        address: client.address ?? "",
+        cpf: client.cpf ?? "",
+        email: client.email ?? "",
+      },
+      oppointment: {
+        checkIn: false,
+        date: selectedDate,
+        employeeId: selectedEmployee?.id,
+        serviceId: serviceId,
+        status: "",
+      },
+      storeId: data!.id,
+    });
+
+    setLoading(false);
+  }
 
   return (
     <div
@@ -219,7 +246,15 @@ export function BookingPage() {
                 <Button
                   size="lg"
                   className="w-full text-base font-medium shadow-md transition-all hover:scale-[1.02]"
+                  disabled={loading}
+                  onClick={confirmBooking}
                 >
+                  {loading && (
+                    <Loader2
+                      className="mr-2 size-4 animate-spin"
+                      aria-hidden="true"
+                    />
+                  )}
                   Confirmar Agendamento
                 </Button>
                 <Button
