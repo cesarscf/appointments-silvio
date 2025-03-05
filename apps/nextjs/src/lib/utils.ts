@@ -6,7 +6,7 @@ const cn = (...inputs: Parameters<typeof cx>) => twMerge(cx(inputs));
 export { cn };
 
 export function formatTime(time: string): string {
-  return time.slice(0, 5);
+  return time.slice(0, 2);
 }
 
 export function formatDate(
@@ -19,4 +19,16 @@ export function formatDate(
     year: opts.year ?? "numeric",
     ...opts,
   }).format(new Date(date));
+}
+
+export function formatPrice(
+  price: number | string,
+  opts: Intl.NumberFormatOptions = {},
+) {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: opts.currency ?? "BRL",
+    notation: opts.notation ?? "compact",
+    ...opts,
+  }).format(Number(price));
 }

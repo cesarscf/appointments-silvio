@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { notFound, useParams } from "next/navigation";
 
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { AboutSection } from "./about-section";
@@ -85,7 +84,7 @@ export function StorePage() {
           <p className="mb-8 text-center">
             Selecione um serviço para agendar seu horário
           </p>
-          <ServicesList services={data.services} />
+          <ServicesList services={data.services} slug={data.slug} />
         </section>
       </div>
 

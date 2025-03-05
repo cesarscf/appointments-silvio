@@ -1,12 +1,20 @@
 "use client";
 
+import Link from "next/link";
 import { BeakerIcon, Scissors } from "lucide-react";
 
 import { Service } from "@acme/db/schema";
 
 import { Button } from "@/components/ui/button";
+import { formatPrice, formatTime } from "@/lib/utils";
 
-export function ServicesList({ services }: { services: Service[] }) {
+export function ServicesList({
+  services,
+  slug,
+}: {
+  services: Service[];
+  slug: string;
+}) {
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
       {services.map((service) => (
@@ -18,10 +26,10 @@ export function ServicesList({ services }: { services: Service[] }) {
             <img
               src={service.image || "/placeholder.svg"}
               alt={service.name}
-              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              className="h-full w-full object-cover"
             />
             <div className="absolute right-3 top-3 rounded-md bg-green-500 px-2 py-1 text-sm font-bold text-white">
-              {service.price}
+              {formatPrice(service.price)}
             </div>
           </div>
           <div className="p-4">
@@ -33,9 +41,17 @@ export function ServicesList({ services }: { services: Service[] }) {
             </div>
             <p className="mb-3 text-sm">{service.description}</p>
             <div className="flex items-center justify-between">
-              <span className="text-sm">Duração: {service.estimatedTime}</span>
+              <span className="text-sm">
+                Duração: {formatTime(String(service.estimatedTime))} minutos
+              </span>
 
-              <Button className="text-white">Agendar</Button>
+              <Button asChild>
+                <Link
+                  href={`/${slug}/booking?step=employee&serviceId=${service.id}`}
+                >
+                  Agendar
+                </Link>
+              </Button>
             </div>
           </div>
         </div>

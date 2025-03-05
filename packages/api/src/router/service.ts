@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { eq } from "@acme/db";
+import { and, eq } from "@acme/db";
 import { db } from "@acme/db/client";
 import { services } from "@acme/db/schema";
 import { createServiceSchema, updateServiceSchema } from "@acme/validators";
@@ -15,6 +15,22 @@ export const serviceRoute = {
     });
 
     return services;
+  }),
+
+  byId: protectedProcedure.input(z.string()).query(async ({ ctx, input }) => {
+    const service = await db.query.services.findFirst({
+      where: (table, { eq }) =>
+        and(eq(table.storeId, ctx.storeId), eq(table.id, table.id)),
+    });
+
+    if (!service) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to create service",
+      });
+    }
+
+    return service;
   }),
 
   create: protectedProcedure
