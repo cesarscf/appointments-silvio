@@ -1,7 +1,6 @@
 import { Text, TouchableOpacity, View } from "react-native";
 
 import { authClient } from "@/utils/auth";
-import { getToken } from "@/utils/session-store";
 
 export default function Index() {
   const { data: session } = authClient.useSession();

@@ -1,4 +1,5 @@
-import { Alert, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Pressable, Text, TouchableOpacity, View } from "react-native";
+import { Link, Stack, useNavigation } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { format } from "date-fns";
@@ -6,6 +7,8 @@ import { format } from "date-fns";
 import { api } from "@/utils/api";
 
 export default function Clients() {
+  const navigation = useNavigation();
+
   const { data, isLoading, refetch } = api.clientR.all.useQuery();
   const deleteClient = api.clientR.delete.useMutation({
     onSuccess: () => refetch(),
