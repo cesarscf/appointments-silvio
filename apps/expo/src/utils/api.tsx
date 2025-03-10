@@ -37,10 +37,10 @@ export function TRPCProvider({ children }: React.PropsWithChildren) {
           headers() {
             const headers = new Map<string, string>();
             headers.set("x-trpc-source", "expo-react");
-
-            const token = getToken();
-
-            if (token) headers.set("Authorization", `Bearer ${token}`);
+            const cookies = authClient.getCookie();
+            if (cookies) {
+              headers.set("Cookie", cookies);
+            }
 
             return Object.fromEntries(headers);
           },
