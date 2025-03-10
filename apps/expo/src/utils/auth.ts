@@ -5,7 +5,8 @@ import { createAuthClient } from "better-auth/react";
 export const authClient = createAuthClient({
   plugins: [
     expoClient({
-      scheme: "expo",
+      scheme: "expo-appointments-silvio",
+      storagePrefix: "expo-appointments-silvio",
       storage: SecureStore,
     }),
   ],
