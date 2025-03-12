@@ -1,5 +1,12 @@
-import { Alert, Pressable, Text, TouchableOpacity, View } from "react-native";
-import { Link, Stack, useNavigation } from "expo-router";
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { useNavigation } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { format } from "date-fns";
@@ -7,8 +14,6 @@ import { format } from "date-fns";
 import { api } from "@/utils/api";
 
 export default function Clients() {
-  const navigation = useNavigation();
-
   const { data, isLoading, refetch } = api.clientR.all.useQuery();
   const deleteClient = api.clientR.delete.useMutation({
     onSuccess: () => refetch(),
@@ -32,7 +37,7 @@ export default function Clients() {
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center">
-        <Text className="text-lg font-semibold">Carregando...</Text>
+        <ActivityIndicator className="size-4" />
       </View>
     );
   }

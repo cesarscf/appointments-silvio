@@ -32,7 +32,7 @@ export default function Login() {
       password: data.password,
     });
 
-    console.log(success);
+    console.log(success, error);
 
     if (error) {
       setError(error.message ?? "Credentiasl ivalidade");

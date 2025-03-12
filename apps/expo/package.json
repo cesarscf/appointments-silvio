@@ -22,6 +22,8 @@
     "@better-fetch/fetch": "^1.1.12",
     "@expo/metro-config": "^0.19.9",
     "@hookform/resolvers": "^3.10.0",
+    "@react-native-community/datetimepicker": "8.2.0",
+    "@react-native-picker/picker": "2.9.0",
     "@react-navigation/drawer": "^7.1.1",
     "@shopify/flash-list": "1.7.1",
     "@tanstack/react-query": "catalog:",
