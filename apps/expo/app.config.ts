@@ -1,10 +1,14 @@
 import type { ConfigContext, ExpoConfig } from "expo/config";
 
+export const appName = "Agendar";
+export const appScheme = "br-tec-agendar";
+export const appBundleIdentifier = "br.tec.agendar";
+
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: "expo-appointments-silvio",
-  slug: "expo-appointments-silvio",
-  scheme: "expo-appointments-silvio",
+  name: appName,
+  slug: appScheme,
+  scheme: appScheme,
   version: "0.1.0",
   orientation: "portrait",
   icon: "./assets/icon.png",
@@ -19,11 +23,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   assetBundlePatterns: ["**/*"],
   ios: {
-    bundleIdentifier: "expo.appointments.silvio",
+    bundleIdentifier: appBundleIdentifier,
     supportsTablet: true,
   },
   android: {
-    package: "expo.appointments.silvio",
+    package: appBundleIdentifier,
     adaptiveIcon: {
       foregroundImage: "./assets/icon.png",
       backgroundColor: "#1F104A",
