@@ -1,12 +1,10 @@
 import {
   ActivityIndicator,
   Alert,
-  Pressable,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { useNavigation } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { format } from "date-fns";

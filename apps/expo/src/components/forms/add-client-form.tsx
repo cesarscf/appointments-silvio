@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   ActivityIndicator,
   Text,
@@ -18,7 +17,7 @@ import { api } from "@/utils/api";
 
 type Inputs = z.infer<typeof createClientSchema>;
 
-export default function ClientForm() {
+export function AddClientForm() {
   const router = useRouter();
   const utils = api.useUtils();
 
