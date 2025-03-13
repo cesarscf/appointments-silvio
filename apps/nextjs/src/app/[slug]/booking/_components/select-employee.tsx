@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
-import { Employee } from "@acme/db/schema";
+import type { Employee } from "@acme/db/schema";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

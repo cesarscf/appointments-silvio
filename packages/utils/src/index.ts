@@ -21,7 +21,7 @@ export function unslugify(str: string) {
 }
 
 export function translateWeekday(day: string): string {
-  const translations: { [key: string]: string } = {
+  const translations: Record<string, string> = {
     monday: "Segunda-feira",
     tuesday: "Terça-feira",
     wednesday: "Quarta-feira",

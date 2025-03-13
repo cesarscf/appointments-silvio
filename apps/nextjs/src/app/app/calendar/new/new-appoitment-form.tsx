@@ -7,7 +7,7 @@ import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { Client, Employee, Service } from "@acme/db/schema";
+import type { Client, Employee, Service } from "@acme/db/schema";
 import { createAppointmentSchema } from "@acme/validators";
 
 import DataPickerWithHour from "@/components/data-picker-with-hour";

@@ -11,10 +11,10 @@ import {
 import { CalendarCheck, Clock, CreditCard, Loader2, User } from "lucide-react";
 import { useQueryState } from "nuqs";
 import { toast } from "sonner";
-import { z } from "zod";
+import type { z } from "zod";
 
 import type { Employee } from "@acme/db/schema";
-import { createClientSchema } from "@acme/validators";
+import type { createClientSchema } from "@acme/validators";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -93,7 +93,7 @@ export function BookingPage() {
       oppointment: {
         checkIn: false,
         date: selectedDate,
-        employeeId: selectedEmployee?.id,
+        employeeId: selectedEmployee.id,
         serviceId: serviceId,
         status: "",
       },

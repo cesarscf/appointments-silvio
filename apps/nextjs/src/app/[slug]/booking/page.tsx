@@ -1,9 +1,7 @@
 import { api, HydrateClient } from "@/trpc/server";
 import { BookingPage } from "./_components/booking-page";
 
-export interface SearchParams {
-  [key: string]: string | string[] | undefined;
-}
+export type SearchParams = Record<string, string | string[] | undefined>;
 
 export default async function Page({
   params,

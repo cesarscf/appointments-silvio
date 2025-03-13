@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { BeakerIcon, Scissors } from "lucide-react";
 
-import { Service } from "@acme/db/schema";
+import type { Service } from "@acme/db/schema";
 
 import { Button } from "@/components/ui/button";
 import { formatPrice, formatTime } from "@/lib/utils";

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { StoreHour } from "@acme/db/schema";
+import type { StoreHour } from "@acme/db/schema";
 import { translateWeekday } from "@acme/utils";
 
 import { Button } from "@/components/ui/button";

@@ -102,10 +102,10 @@ export default function DataPickerWithHour2({
   );
 }
 
-export type TimeSlot = {
+export interface TimeSlot {
   time: string;
   available: boolean;
-};
+}
 
 export function generateTimeSlots({
   openTime,

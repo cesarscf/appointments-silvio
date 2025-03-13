@@ -8,7 +8,7 @@ import {
 import { useRouter } from "expo-router";
 import { zodResolver } from "@hookform/resolvers/zod";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { z } from "better-auth";
+import type { z } from "better-auth";
 import { Controller, useForm } from "react-hook-form";
 
 import { createClientSchema } from "@acme/validators";
