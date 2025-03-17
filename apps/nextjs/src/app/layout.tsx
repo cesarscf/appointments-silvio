@@ -15,11 +15,11 @@ import { env } from "@/env";
 export const metadata: Metadata = {
   metadataBase: new URL(
     env.VERCEL_ENV === "production"
-      ? "https://turbo.t3.gg"
+      ? "https://agendar.tec.br"
       : "http://localhost:3000",
   ),
-  title: "Create T3 Turbo",
-  description: "Simple monorepo with shared backend for web & mobile apps",
+  title: "Agendar",
+  description: "Agendamento online e gestão",
 };
 
 export const viewport: Viewport = {

@@ -102,20 +102,6 @@ export function CreateEmployeeServiceButton({
           <form className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
             <FormField
               control={form.control}
-              name="commission"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Comissão para esse serviço (%)</FormLabel>
-                  <FormControl>
-                    <Input type="text" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
               name="employeeId"
               render={({ field }) => (
                 <FormItem className="hidden">
@@ -150,6 +136,20 @@ export function CreateEmployeeServiceButton({
                       ))}
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="commission"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Comissão para esse serviço (%)</FormLabel>
+                  <FormControl>
+                    <Input type="number" {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

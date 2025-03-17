@@ -17,7 +17,7 @@ export default async function Layout({ children }: React.PropsWithChildren) {
           <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <GalleryVerticalEnd className="size-4" />
           </div>
-          Acme Inc.
+          Agendar
         </a>
         {children}
       </div>
