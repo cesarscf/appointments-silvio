@@ -1,22 +1,22 @@
 import { appointmentRouter } from "./router/appointment";
 import { authRouter } from "./router/auth";
-import { categoryRoute } from "./router/category";
-import { clientRoute } from "./router/client";
-import { employeeRoute } from "./router/employee";
-import { serviceRoute } from "./router/service";
-import { storeRoute } from "./router/store";
-import { storeHoursRoute } from "./router/store-hours";
+import { categoryRouter } from "./router/category";
+import { employeeRouter } from "./router/employee";
+import { establishmentRouter } from "./router/establishment";
+import { openingHoursRouter } from "./router/opening-hours";
+import { serviceRouter } from "./router/service";
+import { serviceCategoryRouter } from "./router/service-category";
 import { createTRPCRouter } from "./trpc";
 
 export const appRouter = createTRPCRouter({
   auth: authRouter,
-  store: storeRoute,
-  service: serviceRoute,
-  category: categoryRoute,
-  employee: employeeRoute,
-  clientR: clientRoute,
-  storeHours: storeHoursRoute,
+  service: serviceRouter,
+  category: categoryRouter,
+  employee: employeeRouter,
+  openingHoursList: openingHoursRouter,
+  establishment: establishmentRouter,
   appointment: appointmentRouter,
+  serviceCategory: serviceCategoryRouter,
 });
 
 // export type definition of API

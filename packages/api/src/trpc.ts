@@ -123,7 +123,7 @@ export const protectedProcedure = t.procedure
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
 
-    const store = await db.query.stores.findFirst({
+    const establishment = await db.query.establishments.findFirst({
       where: (table, { eq }) => eq(table.userId, ctx.session!.user.id),
     });
 
@@ -131,7 +131,7 @@ export const protectedProcedure = t.procedure
       ctx: {
         // infers the `session` as non-nullable
         session: { ...ctx.session, user: ctx.session.user },
-        storeId: store!.id,
+        establishmentId: establishment!.id,
       },
     });
   });

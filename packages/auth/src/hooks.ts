@@ -1,16 +1,16 @@
 import { generateId } from "better-auth";
 
 import { db } from "@acme/db/client";
-import { storeHours, stores } from "@acme/db/schema";
-import { daysOfWeek, slugify } from "@acme/utils";
+import { establishments, openingHours } from "@acme/db/schema";
+import { slugify } from "@acme/utils";
 
 export async function createDefaultOrganization(user: {
   id: string;
   name: string;
 }) {
   // Create default organization for new user
-  const [org] = await db
-    .insert(stores)
+  const [establishment] = await db
+    .insert(establishments)
     .values({
       name: user.name,
       slug: `${slugify(user.name)}-${generateId().slice(0, 8)}`,
@@ -18,16 +18,18 @@ export async function createDefaultOrganization(user: {
     })
     .returning();
 
-  if (!org) {
+  if (!establishment) {
     throw new Error("Failed to create store");
   }
 
-  await db.insert(storeHours).values(
-    daysOfWeek.map((item) => ({
-      storeId: org.id,
-      dayOfWeek: item,
-    })),
-  );
+  const defaultOpeningHours = [0, 1, 2, 3, 4, 5, 6].map((day) => ({
+    establishmentId: establishment.id,
+    dayOfWeek: day,
+    openingTime: "08:00:00",
+    closingTime: "18:00:00",
+  }));
 
-  return org;
+  await db.insert(openingHours).values(defaultOpeningHours);
+
+  return establishment;
 }

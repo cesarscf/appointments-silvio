@@ -25,7 +25,7 @@ import { formatDate } from "@/lib/utils";
 import { api } from "@/trpc/react";
 
 export default function Calendar() {
-  const [appointments] = api.appointment.all.useSuspenseQuery();
+  const [appointments] = api.appointment.listAppointments.useSuspenseQuery();
 
   return (
     <>
@@ -63,16 +63,14 @@ export default function Calendar() {
             <TableBody>
               {appointments.map((appointment) => (
                 <TableRow key={appointment.id}>
-                  <TableCell>{appointment.client.name}</TableCell>
+                  <TableCell>appointment.client.name</TableCell>
+                  <TableCell>{formatDate(appointment.startTime)}</TableCell>
                   <TableCell>
-                    {formatDate(new Date(appointment.date))}
+                    <Badge className="uppercase">appointment.status</Badge>
                   </TableCell>
-                  <TableCell>
-                    <Badge className="uppercase">{appointment.status}</Badge>
-                  </TableCell>
-                  <TableCell>{appointment.checkIn ? "Sim" : "Não"}</TableCell>
-                  <TableCell>{appointment.service.name}</TableCell>
-                  <TableCell>{appointment.employee.name}</TableCell>
+                  <TableCell>{"Não"}</TableCell>
+                  <TableCell>{appointment.service?.name}</TableCell>
+                  <TableCell>{appointment.employee?.name}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

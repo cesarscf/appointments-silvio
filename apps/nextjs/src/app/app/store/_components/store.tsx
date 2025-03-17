@@ -36,8 +36,9 @@ export function Store() {
     },
   ];
 
-  const [store] = api.store.getByUserId.useSuspenseQuery();
-  const [storeHours] = api.storeHours.all.useSuspenseQuery();
+  const [store] = api.establishment.getEstablishmentById.useSuspenseQuery();
+  const [storeHours] =
+    api.openingHoursList.listOpeningHoursByEstablishment.useSuspenseQuery();
 
   return (
     <>
@@ -82,7 +83,7 @@ export function Store() {
 
         <TabsContent value="appareance">
           <div className="mt-8 max-w-2xl">
-            <UpdateStoreAppaerance currentTheme={store.theme} />
+            {/* <UpdateStoreAppaerance currentTheme={store.theme} /> */}
           </div>
         </TabsContent>
       </Tabs>

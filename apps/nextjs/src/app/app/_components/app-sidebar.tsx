@@ -29,7 +29,7 @@ import { api } from "@/trpc/react";
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const segments = useSelectedLayoutSegments();
 
-  const [store] = api.store.getByUserId.useSuspenseQuery();
+  const [store] = api.establishment.getEstablishmentById.useSuspenseQuery();
 
   return (
     <Sidebar collapsible="icon" {...props}>

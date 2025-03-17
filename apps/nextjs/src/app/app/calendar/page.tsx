@@ -10,7 +10,7 @@ export default function Page({
     q?: string;
   }>;
 }) {
-  void api.appointment.all.prefetch();
+  void api.appointment.listAppointments.prefetch();
 
   return (
     <HydrateClient>

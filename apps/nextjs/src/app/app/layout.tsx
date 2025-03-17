@@ -13,7 +13,7 @@ export default async function Layout({ children }: React.PropsWithChildren) {
     return redirect("/login");
   }
 
-  void api.store.getByUserId.prefetch();
+  void api.establishment.getEstablishmentById.prefetch();
 
   return (
     <SidebarProvider>

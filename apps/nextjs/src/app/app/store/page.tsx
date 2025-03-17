@@ -1,9 +1,9 @@
 import { api, HydrateClient } from "@/trpc/server";
 import { Store } from "./_components/store";
 
-export default function Page() {
-  void api.store.getByUserId.prefetch();
-  void api.storeHours.all.prefetch();
+export default async function Page() {
+  void api.establishment.getEstablishmentById.prefetch();
+  void api.openingHoursList.listOpeningHoursByEstablishment.prefetch();
 
   return (
     <HydrateClient>
