@@ -1,7 +1,9 @@
 import { relations } from "drizzle-orm";
 import {
+  boolean,
   decimal,
   integer,
+  pgEnum,
   pgTable,
   text,
   time,
@@ -96,6 +98,11 @@ export const employeeServices = pgTable("employee_services", {
   commission: decimal("commission", { precision: 5, scale: 2 }).notNull(),
 });
 
+export const appointmentStatusEnum = pgEnum("appointment_status", [
+  "scheduled",
+  "completed",
+]);
+
 export const appointments = pgTable("appointments", {
   id: uuid("id").notNull().primaryKey().defaultRandom(),
   employeeId: uuid("employee_id")
@@ -112,6 +119,8 @@ export const appointments = pgTable("appointments", {
     .references(() => customers.id, { onDelete: "cascade" }),
   startTime: timestamp("start_time").notNull(),
   endTime: timestamp("end_time").notNull(),
+  status: appointmentStatusEnum("status").notNull().default("scheduled"),
+  checkin: boolean("checkin").notNull().default(false),
 });
 
 export const customers = pgTable("customers", {
@@ -137,7 +146,7 @@ export const customersRelations = relations(customers, ({ one }) => ({
 
 export const employeesRelations = relations(employees, ({ many }) => ({
   employeeServices: many(employeeServices, {
-    relationName: "employeeEmployeeServices", // Nome da relação
+    relationName: "employeeEmployeeServices",
   }),
   unavailabilities: many(unavailabilities, {
     relationName: "employeeUnavailabilities",
@@ -147,14 +156,13 @@ export const employeesRelations = relations(employees, ({ many }) => ({
   }),
 }));
 
-// Relação employeeServices -> employees
 export const employeeServicesRelations = relations(
   employeeServices,
   ({ one }) => ({
     employee: one(employees, {
       fields: [employeeServices.employeeId],
       references: [employees.id],
-      relationName: "employeeEmployeeServices", // Nome da relação
+      relationName: "employeeEmployeeServices",
     }),
     service: one(services, {
       fields: [employeeServices.serviceId],

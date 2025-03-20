@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
-import { CheckCircle, PlusCircle } from "lucide-react";
+import { CheckCircle, Loader2, PlusCircle } from "lucide-react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -29,39 +30,27 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { formatDate, formatDateWithHour } from "@/lib/utils";
+import { formatDateWithHour } from "@/lib/utils";
 import { api } from "@/trpc/react";
 
 export default function Calendar() {
+  const [clickedId, setClickedId] = React.useState("");
   const [appointments, { refetch }] =
     api.appointment.listAppointments.useSuspenseQuery();
-  // const checkInMutation = api.appointment.checkIn.useMutation({
-  //   onSuccess: () => {
-  //     refetch()
-  //   },
-  // })
 
-  // const [loadingCheckIn, setLoadingCheckIn] = useState<string | null>(null)
-
-  // const handleCheckIn = async (appointmentId: string) => {
-  //   try {
-  //     setLoadingCheckIn(appointmentId)
-  //     await checkInMutation.mutateAsync({ appointmentId })
-  //   } finally {
-  //     setLoadingCheckIn(null)
-  //   }
-  // }
+  const checkInMutation = api.appointment.checkInAppointment.useMutation({
+    onSuccess: () => {
+      toast.success("Checkin realizado.");
+      refetch();
+    },
+  });
 
   const getStatusBadgeColor = (status: string) => {
     switch (status.toLowerCase()) {
-      case "confirmed":
-        return "bg-green-100 text-green-800 hover:bg-green-200";
-      case "pending":
-        return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
-      case "cancelled":
-        return "bg-red-100 text-red-800 hover:bg-red-200";
       case "completed":
-        return "bg-blue-100 text-blue-800 hover:bg-blue-200";
+        return "bg-green-100 text-green-800 hover:bg-green-200";
+      case "scheduled":
+        return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
       default:
         return "bg-gray-100 text-gray-800 hover:bg-gray-200";
     }
@@ -140,33 +129,44 @@ export default function Calendar() {
                         </TableCell>
                         <TableCell>
                           <Badge
-                            className={`${getStatusBadgeColor("pending")} px-2 py-1`}
+                            className={`${getStatusBadgeColor(appointment.status)} px-2 py-1`}
                           >
-                            Agendado
-                            {/* {appointment.status} */}
+                            {appointment.status === "scheduled"
+                              ? "Agendado"
+                              : "Concluído"}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {false ? (
+                          {appointment.checkin ? (
                             <Badge
-                              variant="outline"
+                              variant="secondary"
                               className="border-green-200 bg-green-50 text-green-700"
                             >
                               <CheckCircle className="mr-1 h-3 w-3" /> Realizado
                             </Badge>
                           ) : (
                             <Button
-                              variant="outline"
+                              variant="secondary"
                               size="sm"
+                              disabled={checkInMutation.isPending}
                               className="h-8 w-20"
+                              onClick={() => {
+                                setClickedId(appointment.id);
+                                checkInMutation.mutate({
+                                  appointmentId: appointment.id,
+                                });
+                              }}
                             >
-                              Não
+                              {checkInMutation.isPending &&
+                              clickedId === appointment.id ? (
+                                <Loader2 className="ml-2 size-4 animate-spin" />
+                              ) : (
+                                "Checkin"
+                              )}
                             </Button>
                           )}
                         </TableCell>
-                        <TableCell>
-                          {appointment.service.name || "-"}
-                        </TableCell>
+                        <TableCell>{appointment.service.name || "-"}</TableCell>
                         <TableCell>
                           {appointment.employee.name || "-"}
                         </TableCell>
