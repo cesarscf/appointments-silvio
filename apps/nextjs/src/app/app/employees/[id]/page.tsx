@@ -8,10 +8,10 @@ export default async function Page({
 }) {
   const { id } = await params;
 
-  void api.employee.getById.prefetch({
-    employeeId: id,
+  void api.employee.getEmployeeById.prefetch({
+    id,
   });
-  void api.service.all.prefetch();
+  void api.service.listServices.prefetch();
 
   return (
     <HydrateClient>

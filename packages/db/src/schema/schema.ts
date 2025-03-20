@@ -22,10 +22,9 @@ export const establishments = pgTable("establishments", {
 
 export const openingHours = pgTable("opening_hours", {
   id: uuid("id").notNull().primaryKey().defaultRandom(),
-  establishmentId: uuid("establishment_id").references(
-    () => establishments.id,
-    { onDelete: "cascade" },
-  ),
+  establishmentId: uuid("establishment_id")
+    .notNull()
+    .references(() => establishments.id, { onDelete: "cascade" }),
   dayOfWeek: integer("day_of_week").notNull(),
   openingTime: time("opening_time").notNull(),
   closingTime: time("closing_time").notNull(),
@@ -33,29 +32,29 @@ export const openingHours = pgTable("opening_hours", {
 
 export const intervals = pgTable("intervals", {
   id: uuid("id").notNull().primaryKey().defaultRandom(),
-  openingHourId: uuid("opening_hour_id").references(() => openingHours.id, {
-    onDelete: "cascade",
-  }),
+  openingHourId: uuid("opening_hour_id")
+    .notNull()
+    .references(() => openingHours.id, { onDelete: "cascade" }),
   startTime: time("start_time").notNull(),
   endTime: time("end_time").notNull(),
 });
 
 export const employees = pgTable("employees", {
   id: uuid("id").notNull().primaryKey().defaultRandom(),
-  establishmentId: uuid("establishment_id").references(
-    () => establishments.id,
-    { onDelete: "cascade" },
-  ),
+  establishmentId: uuid("establishment_id")
+    .notNull()
+    .references(() => establishments.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
 });
 
 export const unavailabilities = pgTable("unavailabilities", {
   id: uuid("id").notNull().primaryKey().defaultRandom(),
-  employeeId: uuid("employee_id").references(() => employees.id, {
-    onDelete: "cascade",
-  }),
-  startTime: timestamp("start_time").notNull(),
-  endTime: timestamp("end_time").notNull(),
+  employeeId: uuid("employee_id")
+    .notNull()
+    .references(() => employees.id, { onDelete: "cascade" }),
+  dayOfWeek: integer("day_of_week"),
+  startTime: time("start_time"),
+  endTime: time("end_time"),
 });
 
 export const categories = pgTable("categories", {
@@ -63,9 +62,7 @@ export const categories = pgTable("categories", {
   name: text("name").notNull(),
   establishmentId: uuid("establishment_id")
     .notNull()
-    .references(() => establishments.id, {
-      onDelete: "cascade",
-    }),
+    .references(() => establishments.id, { onDelete: "cascade" }),
 });
 
 export const services = pgTable("services", {
@@ -75,64 +72,74 @@ export const services = pgTable("services", {
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   establishmentId: uuid("establishment_id")
     .notNull()
-    .references(() => establishments.id, {
-      onDelete: "cascade",
-    }),
+    .references(() => establishments.id, { onDelete: "cascade" }),
 });
 
 export const serviceCategories = pgTable("service_categories", {
   id: uuid("id").notNull().primaryKey().defaultRandom(),
-  serviceId: uuid("service_id").references(() => services.id, {
-    onDelete: "cascade",
-  }),
-  categoryId: uuid("category_id").references(() => categories.id, {
-    onDelete: "cascade",
-  }),
+  serviceId: uuid("service_id")
+    .notNull()
+    .references(() => services.id, { onDelete: "cascade" }),
+  categoryId: uuid("category_id")
+    .notNull()
+    .references(() => categories.id, { onDelete: "cascade" }),
 });
 
 export const employeeServices = pgTable("employee_services", {
   id: uuid("id").notNull().primaryKey().defaultRandom(),
-  employeeId: uuid("employee_id").references(() => employees.id, {
-    onDelete: "cascade",
-  }),
-  serviceId: uuid("service_id").references(() => services.id, {
-    onDelete: "cascade",
-  }),
+  employeeId: uuid("employee_id")
+    .notNull()
+    .references(() => employees.id, { onDelete: "cascade" }),
+  serviceId: uuid("service_id")
+    .notNull()
+    .references(() => services.id, { onDelete: "cascade" }),
   commission: decimal("commission", { precision: 5, scale: 2 }).notNull(),
 });
 
 export const appointments = pgTable("appointments", {
   id: uuid("id").notNull().primaryKey().defaultRandom(),
-  employeeId: uuid("employee_id").references(() => employees.id, {
-    onDelete: "cascade",
-  }),
-  serviceId: uuid("service_id").references(() => services.id, {
-    onDelete: "cascade",
-  }),
-  establishmentId: uuid("establishment_id").references(
-    () => establishments.id,
-    {
-      onDelete: "cascade",
-    },
-  ),
+  employeeId: uuid("employee_id")
+    .notNull()
+    .references(() => employees.id, { onDelete: "cascade" }),
+  serviceId: uuid("service_id")
+    .notNull()
+    .references(() => services.id, { onDelete: "cascade" }),
+  establishmentId: uuid("establishment_id")
+    .notNull()
+    .references(() => establishments.id, { onDelete: "cascade" }),
   startTime: timestamp("start_time").notNull(),
   endTime: timestamp("end_time").notNull(),
 });
 
-export const employeesRelations = relations(employees, ({ one, many }) => ({
-  establishment: one(establishments, {
-    fields: [employees.establishmentId],
-    references: [establishments.id],
-    relationName: "establishmentEmployees",
-  }),
-  appointments: many(appointments, { relationName: "employeeAppointments" }),
+// Relação employees -> employeeServices
+export const employeesRelations = relations(employees, ({ many }) => ({
   employeeServices: many(employeeServices, {
-    relationName: "employeeServices",
+    relationName: "employeeEmployeeServices", // Nome da relação
   }),
   unavailabilities: many(unavailabilities, {
     relationName: "employeeUnavailabilities",
   }),
+  appointments: many(appointments, {
+    relationName: "employeeAppointments",
+  }),
 }));
+
+// Relação employeeServices -> employees
+export const employeeServicesRelations = relations(
+  employeeServices,
+  ({ one }) => ({
+    employee: one(employees, {
+      fields: [employeeServices.employeeId],
+      references: [employees.id],
+      relationName: "employeeEmployeeServices", // Nome da relação
+    }),
+    service: one(services, {
+      fields: [employeeServices.serviceId],
+      references: [services.id],
+      relationName: "serviceEmployeeServices",
+    }),
+  }),
+);
 
 export const establishmentsRelations = relations(
   establishments,
@@ -182,6 +189,7 @@ export const serviceCategoriesRelations = relations(
     }),
   }),
 );
+
 export const appointmentsRelations = relations(appointments, ({ one }) => ({
   employee: one(employees, {
     fields: [appointments.employeeId],
@@ -194,22 +202,6 @@ export const appointmentsRelations = relations(appointments, ({ one }) => ({
     relationName: "serviceAppointments",
   }),
 }));
-
-export const employeeServicesRelations = relations(
-  employeeServices,
-  ({ one }) => ({
-    employee: one(employees, {
-      fields: [employeeServices.employeeId],
-      references: [employees.id],
-      relationName: "employeeEmployeeServices",
-    }),
-    service: one(services, {
-      fields: [employeeServices.serviceId],
-      references: [services.id],
-      relationName: "serviceEmployeeServices",
-    }),
-  }),
-);
 
 export const openingHoursRelations = relations(
   openingHours,
@@ -242,6 +234,7 @@ export const unavailabilitiesRelations = relations(
   }),
 );
 
+// Tipos
 export type Establishment = typeof establishments.$inferSelect;
 export type NewEstablishment = typeof establishments.$inferInsert;
 

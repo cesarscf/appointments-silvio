@@ -2,10 +2,9 @@
 
 import { useParams } from "next/navigation";
 import { Avatar } from "@radix-ui/react-avatar";
-import { CalendarDays, Trash2 } from "lucide-react";
-import { toast } from "sonner";
+import { useQueryState } from "nuqs";
 
-import { AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
@@ -15,28 +14,40 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/trpc/react";
-import { CreateEmployeeServiceButton } from "./create-employee-service-button";
+import { EmployeeServiceManager } from "./employee-service-manager";
+import { EmployeeUnavailabilityForm } from "./update-unavailabilities-form";
 
 export function EmployeeDetails() {
   const { id } = useParams();
 
-  const [employee] = api.employee.getById.useSuspenseQuery({
-    employeeId: id as string,
+  const [employee] = api.employee.getEmployeeById.useSuspenseQuery({
+    id: id as string,
   });
-  const [services] = api.service.all.useSuspenseQuery();
+  const [services] = api.service.listServices.useSuspenseQuery();
 
-  const apiUtils = api.useUtils();
-  const deleteMutation = api.employee.deleteEmployeeService.useMutation({
-    onSuccess: () => {
-      toast.success("Serviço desvinculado do funcionário");
-      void apiUtils.employee.getById.invalidate();
-    },
+  const [tab, setTab] = useQueryState("tab", {
+    defaultValue: "geral",
   });
+
+  const tabs = [
+    {
+      id: "geral",
+      title: "Geral",
+    },
+    {
+      id: "services",
+      title: "Serviços",
+    },
+    {
+      id: "unavailabilities",
+      title: "Indisponibilidades",
+    },
+  ];
 
   return (
     <>
@@ -60,102 +71,68 @@ export function EmployeeDetails() {
         </div>
       </header>
 
-      <div className="mt-6 w-full px-8 pb-8">
-        <Card className="max-w-3xl">
-          <CardHeader className="flex flex-col items-center gap-4 md:flex-row">
-            <Avatar className="h-20 w-20">
-              <AvatarImage
-                src={employee.photo ?? undefined}
-                alt={employee.name}
-              />
-              <AvatarFallback>
-                {employee.name.slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <CardTitle className="text-2xl">{employee.name}</CardTitle>
-              <p className="text-sm text-muted-foreground">ID: {id}</p>
-              <p className="text-sm text-muted-foreground">
-                Store ID: {employee.storeId}
-              </p>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4">
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary">{employee.role}</Badge>
-              </div>
-              {employee.workingDays && (
-                <div className="flex items-center gap-2">
-                  <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">{employee.workingDays}</span>
-                </div>
-              )}
-
-              <div>
-                <div className="flex items-center justify-center gap-2">
-                  <h3 className="mb-2 font-semibold">Serviços:</h3>
-                  <CreateEmployeeServiceButton
-                    services={services}
-                    employeeId={employee.id}
-                  />
-                </div>
-
-                <EmployeeServices
-                  onDelete={(id) => {
-                    deleteMutation.mutate({
-                      employeeServiceId: id,
-                    });
-                  }}
-                  items={employee.employeeServices}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </>
-  );
-}
-
-function EmployeeServices({
-  items,
-  onDelete,
-}: {
-  items: {
-    id: string;
-    commission: string;
-    service: {
-      name: string;
-    };
-  }[];
-  onDelete: (id: string) => void;
-}) {
-  return (
-    <ul className="mt-4 grid gap-2">
-      {items.map((item) => (
-        <li
-          key={item.id}
-          className="flex flex-col items-center justify-between gap-4 rounded-md bg-secondary p-3 md:flex-row"
-        >
-          <div className="flex gap-2">
-            <h1 className="font-semibold">Nome do serviço:</h1>
-            <span> {item.service.name}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <Badge>{item.commission}% de comissão</Badge>
-            <Button
-              onClick={() => {
-                onDelete(item.id);
-              }}
-              size={"icon"}
-              variant={"destructive"}
+      <Tabs
+        value={tab}
+        onValueChange={setTab}
+        className="h-full w-full px-8 pb-8"
+      >
+        <TabsList className="h-auto rounded-none bg-transparent p-0">
+          {tabs.map((tab) => (
+            <TabsTrigger
+              key={tab.id}
+              value={tab.id}
+              className="relative rounded-none py-2 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
             >
-              <Trash2 />
-            </Button>
+              {tab.title}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        <TabsContent value="geral">
+          <Card className="mt-5 max-w-3xl">
+            <CardHeader className="flex flex-col items-center gap-4 md:flex-row">
+              <Avatar className="h-20 w-20">
+                {/* 
+                <AvatarImage
+                  src={employee.photo ?? undefined}
+                  alt={employee.name}
+                /> 
+              */}
+                <AvatarFallback>
+                  {employee.name.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <CardTitle className="text-2xl">{employee.name}</CardTitle>
+                <div className="mt-2 flex flex-wrap gap-3">
+                  {employee.services.map((s) => (
+                    <Badge key={s.id}>{s.name}</Badge>
+                  ))}
+                </div>
+              </div>
+            </CardHeader>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="services">
+          <div className="mt-5">
+            <EmployeeServiceManager
+              employeeId={employee.id}
+              services={services}
+              employeeServices={employee.services}
+            />
           </div>
-        </li>
-      ))}
-    </ul>
+        </TabsContent>
+
+        <TabsContent value="unavailabilities">
+          <div className="mt-5">
+            <EmployeeUnavailabilityForm
+              employeeId={employee.id}
+              unavailabilitiesItens={employee.unavailabilities}
+            />
+          </div>
+        </TabsContent>
+      </Tabs>
+    </>
   );
 }

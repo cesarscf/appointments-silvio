@@ -16,7 +16,6 @@ export const appRouter = createTRPCRouter({
   openingHoursList: openingHoursRouter,
   establishment: establishmentRouter,
   appointment: appointmentRouter,
-  serviceCategory: serviceCategoryRouter,
 });
 
 // export type definition of API

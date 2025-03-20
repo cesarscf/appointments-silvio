@@ -14,7 +14,7 @@ import {
 
 // Importe os schemas
 
-const userId = "cvanj1LjmyevfwouARMgmvYcu4VsioKH";
+const userId = "X8cbgP7rl9XKPPt8Du0myCCWwSTk05Wr";
 
 export async function seed() {
   // Deleta todos os dados existentes nas tabelas (em ordem reversa para evitar conflitos de chaves estrangeiras)
@@ -41,10 +41,16 @@ export async function seed() {
     })
     .returning();
 
+  if (!establishment) {
+    throw new Error("Falha ao criar o estabelecimento.");
+  }
+
+  console.log("Estabelecimento criado com sucesso:", establishment);
+
   // Cria dias de funcionamento (openingHours)
   const daysOfWeek = [0, 1, 2, 3, 4, 5, 6]; // 0 = Domingo, 1 = Segunda, ..., 6 = Sábado
   const openingHoursData = daysOfWeek.map((day) => ({
-    establishmentId: establishment!.id,
+    establishmentId: establishment.id, // Usando o ID do estabelecimento criado
     dayOfWeek: day,
     openingTime: "09:00", // Horário de abertura
     closingTime: "18:00", // Horário de fechamento
@@ -54,6 +60,11 @@ export async function seed() {
     .insert(openingHours)
     .values(openingHoursData)
     .returning();
+
+  console.log(
+    "Horários de funcionamento criados com sucesso:",
+    createdOpeningHours,
+  );
 
   // Cria intervalos de horários (intervals) para cada dia de funcionamento
   const intervalsData = createdOpeningHours.flatMap((openingHour) => [
@@ -71,66 +82,62 @@ export async function seed() {
 
   await db.insert(intervals).values(intervalsData);
 
+  console.log("Intervalos de horários criados com sucesso.");
+
   // Cria alguns funcionários
   const [employee1, employee2] = await db
     .insert(employees)
     .values([
       {
-        establishmentId: establishment!.id,
+        establishmentId: establishment.id,
         name: "Funcionário 1",
       },
       {
-        establishmentId: establishment!.id,
+        establishmentId: establishment.id,
         name: "Funcionário 2",
       },
     ])
     .returning();
 
-  // Cria indisponibilidades para os funcionários (baseado na data atual)
+  if (!employee1 || !employee2) {
+    throw new Error("Falha ao criar os funcionários.");
+  }
+
+  console.log("Funcionários criados com sucesso:", employee1, employee2);
+
   const today = new Date();
-  // Cria indisponibilidades para os funcionários (baseado na data atual)
+
+  // Cria indisponibilidades para os funcionários
   const unavailabilitiesData = [
     {
-      employeeId: employee1!.id,
-      startTime: new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate(),
-        14,
-        0,
-        0,
-      ), // Indisponível das 14h às 15h hoje
-      endTime: new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate(),
-        15,
-        0,
-        0,
-      ),
+      employeeId: employee1.id,
+      dayOfWeek: 5, // Sexta-feira
+      startTime: "14:00", // Indisponível das 14h às 15h na sexta-feira
+      endTime: "15:00",
     },
     {
-      employeeId: employee2!.id,
-      startTime: new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate() + 1,
-        10,
-        0,
-        0,
-      ), // Indisponível das 10h às 11h amanhã
-      endTime: new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate() + 1,
-        11,
-        0,
-        0,
-      ),
+      employeeId: employee1.id,
+      dayOfWeek: 6, // Sábado
+      startTime: "00:00", // Indisponível o dia todo no sábado
+      endTime: "23:59",
+    },
+    {
+      employeeId: employee2.id,
+      dayOfWeek: 1, // Segunda-feira
+      startTime: "10:00", // Indisponível das 10h às 11h na segunda-feira
+      endTime: "11:00",
+    },
+    {
+      employeeId: employee2.id,
+      dayOfWeek: 0, // Domingo
+      startTime: "00:00", // Indisponível o dia todo no domingo
+      endTime: "23:59",
     },
   ];
 
   await db.insert(unavailabilities).values(unavailabilitiesData);
+
+  console.log("Indisponibilidades criadas com sucesso.");
 
   // Cria algumas categorias
   const [category1, category2] = await db
@@ -138,27 +145,33 @@ export async function seed() {
     .values([
       {
         name: "Corte de Cabelo",
-        establishmentId: establishment!.id,
+        establishmentId: establishment.id,
       },
       {
         name: "Manicure",
-        establishmentId: establishment!.id,
+        establishmentId: establishment.id,
       },
     ])
     .returning();
+
+  if (!category1 || !category2) {
+    throw new Error("Falha ao criar as categorias.");
+  }
+
+  console.log("Categorias criadas com sucesso:", category1, category2);
 
   // Cria alguns serviços
   const [service1, service2] = await db
     .insert(services)
     .values([
       {
-        establishmentId: establishment!.id,
+        establishmentId: establishment.id,
         name: "Corte Masculino",
         duration: 30,
         price: "30.00",
       },
       {
-        establishmentId: establishment!.id,
+        establishmentId: establishment.id,
         name: "Manicure Completa",
         duration: 60,
         price: "50.00",
@@ -166,31 +179,41 @@ export async function seed() {
     ])
     .returning();
 
+  if (!service1 || !service2) {
+    throw new Error("Falha ao criar os serviços.");
+  }
+
+  console.log("Serviços criados com sucesso:", service1, service2);
+
   // Associa serviços às categorias
   await db.insert(serviceCategories).values([
     {
-      serviceId: service1!.id,
-      categoryId: category1!.id,
+      serviceId: service1.id,
+      categoryId: category1.id,
     },
     {
-      serviceId: service2!.id,
-      categoryId: category2!.id,
+      serviceId: service2.id,
+      categoryId: category2.id,
     },
   ]);
+
+  console.log("Serviços associados às categorias com sucesso.");
 
   // Associa serviços aos funcionários
   await db.insert(employeeServices).values([
     {
-      employeeId: employee1!.id,
-      serviceId: service1!.id,
+      employeeId: employee1.id,
+      serviceId: service1.id,
       commission: "10.00",
     },
     {
-      employeeId: employee2!.id,
-      serviceId: service2!.id,
+      employeeId: employee2.id,
+      serviceId: service2.id,
       commission: "15.00",
     },
   ]);
+
+  console.log("Serviços associados aos funcionários com sucesso.");
 
   // Cria 10 agendamentos (baseado na data atual)
   const appointmentsData = Array.from({ length: 10 }, (_, i) => {
@@ -199,9 +222,9 @@ export async function seed() {
     appointmentDate.setHours(10 + i, 0, 0, 0); // Horário de início (10h, 11h, 12h, etc.)
 
     return {
-      employeeId: i % 2 === 0 ? employee1!.id : employee2!.id, // Alterna entre os funcionários
-      serviceId: i % 2 === 0 ? service1!.id : service2!.id, // Alterna entre os serviços
-      establishmentId: establishment!.id,
+      employeeId: i % 2 === 0 ? employee1.id : employee2.id, // Alterna entre os funcionários
+      serviceId: i % 2 === 0 ? service1.id : service2.id, // Alterna entre os serviços
+      establishmentId: establishment.id,
       startTime: appointmentDate,
       endTime: new Date(appointmentDate.getTime() + 30 * 60000), // Duração de 30 minutos
     };
@@ -209,9 +232,7 @@ export async function seed() {
 
   await db.insert(appointments).values(appointmentsData);
 
+  console.log("Agendamentos criados com sucesso.");
+
   console.log("Seed concluído com sucesso!");
 }
-
-seed().catch((err) => {
-  console.error("Erro ao executar o seed:", err);
-});

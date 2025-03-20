@@ -1,13 +1,13 @@
 "use client";
 
-import type { z } from "zod";
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
 
-import { createEmployeeSchema } from "@acme/validators";
+import { Service } from "@acme/db/schema";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -27,41 +27,43 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { api } from "@/trpc/react";
 
-type Inputs = z.infer<typeof createEmployeeSchema>;
+const schema = z.object({ name: z.string(), serviceIds: z.array(z.string()) });
 
-export function CreateEmployeeButton() {
+type Inputs = z.infer<typeof schema>;
+
+export function CreateEmployeeButton({ services }: { services: Service[] }) {
   const [open, setOpen] = React.useState(false);
 
   // react-hook-form
   const form = useForm<Inputs>({
-    resolver: zodResolver(createEmployeeSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       name: "",
-      photo: "",
-      role: "",
-      workingDays: "",
+      serviceIds: [],
     },
   });
 
   const apiUtils = api.useUtils();
 
-  const createMutation = api.employee.create.useMutation({
+  const createMutation = api.employee.createEmployee.useMutation({
     onSuccess: () => {
-      toast.success("Funcionário atualizado.");
-      void apiUtils.employee.all.invalidate();
+      toast.success("Funcionário criado.");
+      void apiUtils.employee.listEmployees.invalidate();
       setOpen(false);
       form.reset();
+    },
+    onError: (error) => {
+      toast.error(error.message);
     },
   });
 
   async function onSubmit(inputs: Inputs) {
     await createMutation.mutateAsync({
       name: inputs.name,
-      role: inputs.role,
-      photo: inputs.photo,
-      workingDays: inputs.workingDays,
+      serviceIds: inputs.serviceIds,
     });
   }
 
@@ -98,33 +100,32 @@ export function CreateEmployeeButton() {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="role"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Função</FormLabel>
-                  <FormControl>
-                    <Input type="text" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="workingDays"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Dias de trabalho</FormLabel>
-                  <FormControl>
-                    <Input type="text" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {services.length === 0 ? null : (
+              <FormField
+                control={form.control}
+                name="serviceIds"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Adicione os serviços realizado por esse funcionário
+                    </FormLabel>
+                    <FormControl>
+                      <MultiSelect
+                        options={services.map((service) => ({
+                          label: service.name,
+                          value: service.id,
+                        }))}
+                        // @ts-ignore
+                        selected={field.value}
+                        onChange={field.onChange}
+                        placeholder="Selecione as categorias"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <Button
               type="submit"

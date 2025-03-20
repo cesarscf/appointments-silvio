@@ -13,7 +13,8 @@ import { CreateEmployeeButton } from "./create-employee-button";
 import { EmployeeCard } from "./employee-card";
 
 export function Employees() {
-  const [employees] = api.employee.all.useSuspenseQuery();
+  const [employees] = api.employee.listEmployees.useSuspenseQuery();
+  const [services] = api.service.listServices.useSuspenseQuery();
 
   const employeesEmpty = employees.length < 1;
 
@@ -32,7 +33,7 @@ export function Employees() {
           </Breadcrumb>
         </div>
 
-        <CreateEmployeeButton />
+        <CreateEmployeeButton services={services} />
       </header>
 
       <div className="mt-6 grid grid-cols-1 gap-6 px-8 pb-8 sm:grid-cols-2 md:grid-cols-3">
