@@ -8,6 +8,32 @@ import { slugify } from "@acme/utils";
 import { protectedProcedure, publicProcedure } from "../trpc";
 
 export const establishmentRouter = {
+  getEstablishmentBySlug: publicProcedure
+    .input(
+      z.object({
+        slug: z.string(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      const establishment = await ctx.db.query.establishments.findFirst({
+        where: (table, { eq }) => eq(table.slug, input.slug),
+        with: {
+          categories: true,
+          employees: true,
+          services: true,
+        },
+      });
+
+      if (!establishment) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Error ao encontrar a loja.",
+        });
+      }
+
+      return establishment;
+    }),
+
   getEstablishmentById: protectedProcedure.query(async ({ ctx }) => {
     const [establishment] = await ctx.db
       .select()

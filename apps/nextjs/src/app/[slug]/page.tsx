@@ -10,7 +10,7 @@ export default async function Page({
 }) {
   const { slug } = await params;
 
-  void api.store.getBySlug.prefetch({
+  void api.establishment.getEstablishmentBySlug.prefetch({
     slug,
   });
 

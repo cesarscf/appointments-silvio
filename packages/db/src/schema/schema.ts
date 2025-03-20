@@ -13,6 +13,7 @@ import {
 
 import { users } from "./auth-schema";
 
+// Tabelas
 export const establishments = pgTable("establishments", {
   id: uuid("id").notNull().primaryKey().defaultRandom(),
   userId: text("user_id")
@@ -136,6 +137,7 @@ export const customers = pgTable("customers", {
   address: text("address"),
 });
 
+// Relações
 export const customersRelations = relations(customers, ({ one }) => ({
   establishment: one(establishments, {
     fields: [customers.establishmentId],
@@ -144,7 +146,12 @@ export const customersRelations = relations(customers, ({ one }) => ({
   }),
 }));
 
-export const employeesRelations = relations(employees, ({ many }) => ({
+export const employeesRelations = relations(employees, ({ one, many }) => ({
+  establishment: one(establishments, {
+    fields: [employees.establishmentId],
+    references: [establishments.id],
+    relationName: "establishmentEmployees",
+  }),
   employeeServices: many(employeeServices, {
     relationName: "employeeEmployeeServices",
   }),

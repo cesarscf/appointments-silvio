@@ -13,7 +13,7 @@ import { ServicesList } from "./services-list";
 export function StorePage() {
   const { slug } = useParams();
 
-  const [data] = api.store.getBySlug.useSuspenseQuery({
+  const [data] = api.establishment.getEstablishmentBySlug.useSuspenseQuery({
     slug: slug as string,
   });
 
@@ -22,7 +22,7 @@ export function StorePage() {
   }
 
   return (
-    <main className={cn(`theme-${data.theme} min-h-screen`)}>
+    <main className={cn(`theme-blue min-h-screen`)}>
       <header className="border-b">
         <div className="container mx-auto flex flex-col items-center justify-between px-4 py-4 md:flex-row">
           <div className="flex items-center gap-4">
@@ -37,7 +37,7 @@ export function StorePage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold">{data.name}</h1>
-              <p className="text-xs">{data.addresses[0]?.state ?? ""}</p>
+              {/* <p className="text-xs">{data.addresses[0]?.state ?? ""}</p> */}
             </div>
           </div>
           <div className="mt-4 flex items-center md:mt-0">
