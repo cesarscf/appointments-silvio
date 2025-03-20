@@ -22,7 +22,7 @@ export default function DataPickerWithHour({
 
   const { data, isPending } = api.storeHours.getDayHours.useQuery(day);
 
-  const timeSlots = isPending ? [] : generateTimeSlots(data!);
+  const timeSlots = isPending ? [] : generateTimeSlots(data);
 
   const handleDateChange = (newDate: Date) => {
     setDate(newDate);

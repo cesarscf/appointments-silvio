@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { Service } from "@acme/db/schema";
+import type { Service } from "@acme/db/schema";
 
 import { Button } from "@/components/ui/button";
 import {

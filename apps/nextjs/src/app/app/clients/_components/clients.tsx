@@ -11,17 +11,17 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { api } from "@/trpc/react";
-import { ClientCard } from "./client-card";
+import { CustomerCard } from "./client-card";
 import { CreateClientButton } from "./create-client-button";
 
 export default function Clients() {
-  const [clients] = api.clientR.all.useSuspenseQuery();
+  const [clients] = api.customer.listCustomers.useSuspenseQuery();
 
   const apiUtils = api.useUtils();
-  const deleteMutation = api.clientR.delete.useMutation({
+  const deleteMutation = api.customer.deleteCustomer.useMutation({
     onSuccess: () => {
       toast.success("Cliente excluído");
-      void apiUtils.clientR.all.invalidate();
+      void apiUtils.customer.listCustomers.invalidate();
     },
   });
 
@@ -45,12 +45,12 @@ export default function Clients() {
 
       <div className="mt-6 grid grid-cols-1 gap-6 px-8 pb-8 sm:grid-cols-2 md:grid-cols-3">
         {clients.map((client) => (
-          <ClientCard
+          <CustomerCard
             key={client.id}
-            client={client}
+            customer={client}
             onDelete={() => {
               deleteMutation.mutate({
-                clientId: client.id,
+                id: client.id,
               });
             }}
           />

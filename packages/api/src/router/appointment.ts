@@ -138,6 +138,7 @@ export const appointmentRouter = {
       with: {
         employee: true,
         service: true,
+        customer: true,
       },
     });
 

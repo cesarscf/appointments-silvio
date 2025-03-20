@@ -31,8 +31,8 @@ export const serviceRouter = {
       price: service.price,
       categories: service.categories.map((sc) => {
         return {
-          id: sc.category?.id,
-          name: sc.category?.name,
+          id: sc.category.id,
+          name: sc.category.name,
         };
       }),
     }));

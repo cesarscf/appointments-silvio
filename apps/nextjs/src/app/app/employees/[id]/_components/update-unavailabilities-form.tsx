@@ -8,7 +8,7 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
-import { Unavailability } from "@acme/db/schema";
+import type { Unavailability } from "@acme/db/schema";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -60,10 +60,10 @@ const weekDays = [
   { value: 6, label: "Sábado" },
 ];
 
-type EmployeeUnavailabilityFormProps = {
+interface EmployeeUnavailabilityFormProps {
   employeeId: string;
   unavailabilitiesItens: Unavailability[];
-};
+}
 
 export function EmployeeUnavailabilityForm({
   unavailabilitiesItens,

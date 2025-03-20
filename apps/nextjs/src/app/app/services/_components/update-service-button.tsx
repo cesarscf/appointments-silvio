@@ -63,7 +63,7 @@ export function UpdateServiceButton({
       name: service.name,
       price: service.price,
       duration: service.duration,
-      categoryIds: service.categories?.map((c) => c.id) ?? [],
+      categoryIds: service.categories.map((c) => c.id) ?? [],
     },
   });
 

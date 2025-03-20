@@ -107,11 +107,34 @@ export const appointments = pgTable("appointments", {
   establishmentId: uuid("establishment_id")
     .notNull()
     .references(() => establishments.id, { onDelete: "cascade" }),
+  customerId: uuid("customer_id")
+    .notNull()
+    .references(() => customers.id, { onDelete: "cascade" }),
   startTime: timestamp("start_time").notNull(),
   endTime: timestamp("end_time").notNull(),
 });
 
-// Relação employees -> employeeServices
+export const customers = pgTable("customers", {
+  id: uuid("id").notNull().primaryKey().defaultRandom(),
+  establishmentId: uuid("establishment_id")
+    .notNull()
+    .references(() => establishments.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  cpf: text("cpf").notNull().unique(),
+  birthDate: timestamp("birth_date", { mode: "date" }).notNull(),
+  phoneNumber: text("phone_number"),
+  email: text("email"),
+  address: text("address"),
+});
+
+export const customersRelations = relations(customers, ({ one }) => ({
+  establishment: one(establishments, {
+    fields: [customers.establishmentId],
+    references: [establishments.id],
+    relationName: "establishmentCustomers",
+  }),
+}));
+
 export const employeesRelations = relations(employees, ({ many }) => ({
   employeeServices: many(employeeServices, {
     relationName: "employeeEmployeeServices", // Nome da relação
@@ -201,6 +224,11 @@ export const appointmentsRelations = relations(appointments, ({ one }) => ({
     references: [services.id],
     relationName: "serviceAppointments",
   }),
+  customer: one(customers, {
+    fields: [appointments.customerId],
+    references: [customers.id],
+    relationName: "customerAppointments",
+  }),
 }));
 
 export const openingHoursRelations = relations(
@@ -264,3 +292,6 @@ export type NewEmployeeService = typeof employeeServices.$inferInsert;
 
 export type Appointment = typeof appointments.$inferSelect;
 export type NewAppointment = typeof appointments.$inferInsert;
+
+export type Customer = typeof customers.$inferSelect;
+export type NewCustomer = typeof customers.$inferInsert;

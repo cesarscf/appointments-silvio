@@ -2,6 +2,7 @@ import { db } from "@acme/db/client"; // Importe a instância do seu banco de da
 import {
   appointments,
   categories,
+  customers, // Importe a tabela de customers
   employees,
   employeeServices,
   establishments,
@@ -27,6 +28,7 @@ export async function seed() {
   await db.delete(employees);
   await db.delete(intervals);
   await db.delete(openingHours);
+  await db.delete(customers); // Deleta os clientes
   await db.delete(establishments);
 
   console.log("Dados antigos deletados com sucesso!");
@@ -215,18 +217,49 @@ export async function seed() {
 
   console.log("Serviços associados aos funcionários com sucesso.");
 
-  // Cria 10 agendamentos (baseado na data atual)
+  // Cria alguns clientes
+  const [customer1, customer2] = await db
+    .insert(customers)
+    .values([
+      {
+        establishmentId: establishment.id,
+        name: "Cliente 1",
+        cpf: "123.456.789-00",
+        birthDate: new Date("1990-01-01"),
+        phoneNumber: "(11) 99999-9999",
+        email: "cliente1@example.com",
+        address: "Rua A, 123",
+      },
+      {
+        establishmentId: establishment.id,
+        name: "Cliente 2",
+        cpf: "987.654.321-00",
+        birthDate: new Date("1985-05-15"),
+        phoneNumber: "(11) 88888-8888",
+        email: "cliente2@example.com",
+        address: "Rua B, 456",
+      },
+    ])
+    .returning();
+
+  if (!customer1 || !customer2) {
+    throw new Error("Falha ao criar os clientes.");
+  }
+
+  console.log("Clientes criados com sucesso:", customer1, customer2);
+
   const appointmentsData = Array.from({ length: 10 }, (_, i) => {
     const appointmentDate = new Date();
-    appointmentDate.setDate(today.getDate() + i); // Agenda para os próximos dias
-    appointmentDate.setHours(10 + i, 0, 0, 0); // Horário de início (10h, 11h, 12h, etc.)
+    appointmentDate.setDate(today.getDate() + i);
+    appointmentDate.setHours(10 + i, 0, 0, 0);
 
     return {
-      employeeId: i % 2 === 0 ? employee1.id : employee2.id, // Alterna entre os funcionários
-      serviceId: i % 2 === 0 ? service1.id : service2.id, // Alterna entre os serviços
+      employeeId: i % 2 === 0 ? employee1.id : employee2.id,
+      serviceId: i % 2 === 0 ? service1.id : service2.id,
       establishmentId: establishment.id,
+      customerId: i % 2 === 0 ? customer1.id : customer2.id,
       startTime: appointmentDate,
-      endTime: new Date(appointmentDate.getTime() + 30 * 60000), // Duração de 30 minutos
+      endTime: new Date(appointmentDate.getTime() + 30 * 60000),
     };
   });
 

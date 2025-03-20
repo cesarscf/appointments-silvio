@@ -35,7 +35,7 @@ export function formatDateWithHour(
   const formattedTime = new Intl.DateTimeFormat("pt-BR", {
     hour: "2-digit",
     minute: "2-digit",
-    second: "2-digit",
+
     hour12: false,
     ...opts,
   }).format(new Date(date));
@@ -54,3 +54,20 @@ export function formatPrice(
     ...opts,
   }).format(Number(price));
 }
+
+export const applyCpfMask = (value: string) => {
+  return value
+    .replace(/\D/g, "")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d{1,2})/, "$1-$2")
+    .slice(0, 14);
+};
+
+export const applyPhoneMask = (value: string) => {
+  return value
+    .replace(/\D/g, "")
+    .replace(/(\d{2})(\d)/, "($1) $2")
+    .replace(/(\d{5})(\d)/, "$1-$2")
+    .slice(0, 15);
+};

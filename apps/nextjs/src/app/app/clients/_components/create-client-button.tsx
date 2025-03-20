@@ -1,6 +1,5 @@
 "use client";
 
-import type { z } from "zod";
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
@@ -8,8 +7,7 @@ import { ptBR } from "date-fns/locale";
 import { CalendarIcon, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-
-import { createClientSchema } from "@acme/validators";
+import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -39,52 +37,83 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
 
-type Inputs = z.infer<typeof createClientSchema>;
+const schema = z.object({
+  name: z.string(),
+  cpf: z.string(),
+  birthDate: z.coerce.date(),
+  phoneNumber: z.string().optional(),
+  email: z.string().optional(),
+  address: z.string().optional(),
+});
+
+type Inputs = z.infer<typeof schema>;
 
 export function CreateClientButton() {
   const [open, setOpen] = React.useState(false);
 
   // react-hook-form
   const form = useForm<Inputs>({
-    resolver: zodResolver(createClientSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       name: "",
       address: "",
-      birthday: new Date(),
+      birthDate: new Date(),
       cpf: "",
       email: "",
-      phone: "",
+      phoneNumber: "",
     },
   });
 
   const apiUtils = api.useUtils();
 
-  const createMutation = api.clientR.create.useMutation({
+  const createMutation = api.customer.createCustomer.useMutation({
     onSuccess: () => {
-      toast.success("Cliente adicionado.");
-      void apiUtils.clientR.all.invalidate();
+      toast.success("Cliente adicionado com sucesso.");
+      void apiUtils.customer.listCustomers.invalidate();
       setOpen(false);
       form.reset();
+    },
+    onError: (error) => {
+      toast.error("Erro ao adicionar cliente.", {
+        description: error.message,
+      });
     },
   });
 
   async function onSubmit(inputs: Inputs) {
     await createMutation.mutateAsync({
       name: inputs.name,
-      birthday: inputs.birthday,
-      phone: inputs.phone,
+      birthDate: inputs.birthDate,
+      phoneNumber: inputs.phoneNumber?.replace(/\D/g, "") ?? "",
       address: inputs.address ?? "",
-      cpf: inputs.cpf ?? "",
+      cpf: inputs.cpf.replace(/\D/g, "") ?? "",
       email: inputs.email ?? "",
     });
   }
+
+  const applyCpfMask = (value: string) => {
+    return value
+      .replace(/\D/g, "")
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d{1,2})/, "$1-$2")
+      .slice(0, 14);
+  };
+
+  const applyPhoneMask = (value: string) => {
+    return value
+      .replace(/\D/g, "")
+      .replace(/(\d{2})(\d)/, "($1) $2")
+      .replace(/(\d{5})(\d)/, "$1-$2")
+      .slice(0, 15);
+  };
 
   return (
     <Dialog
       open={open}
       onOpenChange={() => {
         form.reset();
-        return setOpen((prev) => !prev);
+        setOpen((prev) => !prev);
       }}
     >
       <DialogTrigger asChild className="ml-auto mr-4">
@@ -98,7 +127,7 @@ export function CreateClientButton() {
 
         <Form {...form}>
           <form className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
-            <div className={"flex flex-row items-center gap-4"}>
+            <div className="flex flex-row items-center gap-4">
               <FormField
                 control={form.control}
                 name="name"
@@ -119,7 +148,7 @@ export function CreateClientButton() {
 
               <FormField
                 control={form.control}
-                name="phone"
+                name="phoneNumber"
                 render={({ field }) => (
                   <FormItem className="w-full">
                     <FormLabel>Telefone *</FormLabel>
@@ -128,6 +157,9 @@ export function CreateClientButton() {
                         type="text"
                         placeholder="(00) 00000-0000"
                         {...field}
+                        onChange={(e) => {
+                          field.onChange(applyPhoneMask(e.target.value));
+                        }}
                       />
                     </FormControl>
                     <FormMessage />
@@ -138,7 +170,7 @@ export function CreateClientButton() {
 
             <FormField
               control={form.control}
-              name="birthday"
+              name="birthDate"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Data de nascimento *</FormLabel>
@@ -149,11 +181,9 @@ export function CreateClientButton() {
                           variant={"outline"}
                           className={cn(
                             "w-full pl-3 text-left font-normal",
-                            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                             !field.value && "text-muted-foreground",
                           )}
                         >
-                          {/* eslint-disable-next-line @typescript-eslint/no-unnecessary-condition */}
                           {field.value ? (
                             format(field.value, "PPP", { locale: ptBR })
                           ) : (
@@ -169,7 +199,7 @@ export function CreateClientButton() {
                         locale={ptBR}
                         selected={field.value}
                         onSelect={field.onChange}
-                        disabled={(date) => date < new Date()}
+                        disabled={(date) => date > new Date()}
                         initialFocus
                       />
                     </PopoverContent>
@@ -204,7 +234,14 @@ export function CreateClientButton() {
                 <FormItem>
                   <FormLabel>CPF</FormLabel>
                   <FormControl>
-                    <Input type="text" {...field} />
+                    <Input
+                      type="text"
+                      placeholder="000.000.000-00"
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(applyCpfMask(e.target.value));
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
