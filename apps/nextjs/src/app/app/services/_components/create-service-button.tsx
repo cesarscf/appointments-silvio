@@ -1,14 +1,13 @@
 "use client";
 
-import type { z } from "zod";
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
 
 import type { Category } from "@acme/db/schema";
-import { createStoreSchema } from "@acme/validators";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -28,17 +27,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { api } from "@/trpc/react";
 
-type Inputs = z.infer<typeof createStoreSchema>;
+const schema = z.object({
+  name: z.string(),
+  duration: z.number(),
+  price: z.string(),
+  categoryIds: z.array(z.string().uuid()).optional(),
+});
+
+type Inputs = z.infer<typeof schema>;
 
 export function CreateServiceButton({
   categories,
@@ -49,34 +48,37 @@ export function CreateServiceButton({
 
   // react-hook-form
   const form = useForm<Inputs>({
-    resolver: zodResolver(createStoreSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       name: "",
-      categoryId: "",
-      description: "",
+      duration: 900,
       price: "",
-      estimatedTime: 900,
+      categoryIds: [],
     },
   });
 
   const apiUtils = api.useUtils();
 
-  const createMutation = api.service.create.useMutation({
+  const createMutation = api.service.createService.useMutation({
     onSuccess: () => {
-      toast.success("Mudanças salvas.");
-      void apiUtils.service.all.invalidate();
+      toast.success("Serviço criado com sucesso.");
+      void apiUtils.service.listServices.invalidate();
       setOpen(false);
       form.reset();
+    },
+    onError: (error) => {
+      toast.error("Erro ao criar o serviço.", {
+        description: error.message,
+      });
     },
   });
 
   async function onSubmit(inputs: Inputs) {
     await createMutation.mutateAsync({
       name: inputs.name,
-      estimatedTime: inputs.estimatedTime,
+      duration: inputs.duration,
       price: inputs.price,
-      description: inputs.description ?? "",
-      categoryId: inputs.categoryId,
+      categoryIds: inputs.categoryIds,
     });
   }
 
@@ -113,64 +115,47 @@ export function CreateServiceButton({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="categoryId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Categoria</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
+            {categories.length === 0 ? null : (
+              <FormField
+                control={form.control}
+                name="categoryIds"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Categorias</FormLabel>
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione a categoria do serviço" />
-                      </SelectTrigger>
+                      <MultiSelect
+                        options={categories.map((category) => ({
+                          label: category.name,
+                          value: category.id,
+                        }))}
+                        // @ts-ignore
+                        selected={field.value}
+                        onChange={field.onChange}
+                        placeholder="Selecione as categorias"
+                      />
                     </FormControl>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <FormField
               control={form.control}
-              name="estimatedTime"
+              name="duration"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tem estimado do serviço</FormLabel>
-                  <Select
-                    onValueChange={(e) => {
-                      field.onChange(Number(e));
-                    }}
-                    defaultValue={field.value.toString()}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="900">15 minutos</SelectItem>
-                      <SelectItem value="1200">20 minutos</SelectItem>
-                      <SelectItem value="1500">25 minutos</SelectItem>
-                      <SelectItem value="1800">30 minutos</SelectItem>
-                      <SelectItem value="2100">35 minutos</SelectItem>
-                      <SelectItem value="2400">40 minutos</SelectItem>
-                      <SelectItem value="2700">45 minutos</SelectItem>
-                      <SelectItem value="3000">50 minutos</SelectItem>
-                      <SelectItem value="3300">55 minutos</SelectItem>
-                      <SelectItem value="3600">1 hora</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>Duração (minutos)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(Number(e.target.value));
+                      }}
+                      value={field.value}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -194,20 +179,6 @@ export function CreateServiceButton({
                         R$
                       </span>
                     </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Descrição</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

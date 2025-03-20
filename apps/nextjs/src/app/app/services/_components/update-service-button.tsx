@@ -1,11 +1,11 @@
 "use client";
 
-import type { z } from "zod";
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
 
 import type { Category, Service } from "@acme/db/schema";
 import { updateServiceSchema } from "@acme/validators";
@@ -28,17 +28,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { api } from "@/trpc/react";
 
-type Inputs = z.infer<typeof updateServiceSchema>;
+const schema = z.object({
+  name: z.string(),
+  duration: z.number(),
+  price: z.string(),
+  categoryIds: z.array(z.string().uuid()).optional(),
+});
+
+type Inputs = z.infer<typeof schema>;
 
 export function UpdateServiceButton({
   service,
@@ -46,42 +46,51 @@ export function UpdateServiceButton({
   children,
 }: {
   categories: Category[];
-  service: Service;
+  service: Service & {
+    categories: {
+      id: string | undefined;
+      name: string | undefined;
+    }[];
+  };
   children: React.ReactNode;
 }) {
   const [open, setOpen] = React.useState(false);
 
   // react-hook-form
   const form = useForm<Inputs>({
-    resolver: zodResolver(updateServiceSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       name: service.name,
-      categoryId: service.categoryId,
-      description: service.description ?? "",
       price: service.price,
-      estimatedTime: service.estimatedTime,
+      duration: service.duration,
+      categoryIds: service.categories?.map((c) => c.id) ?? [],
     },
   });
 
   const apiUtils = api.useUtils();
 
-  const updateMutation = api.service.update.useMutation({
+  const updateMutation = api.service.updateService.useMutation({
     onSuccess: () => {
       toast.success("Serviço atualizado.");
-      void apiUtils.service.all.invalidate();
+      void apiUtils.service.listServices.invalidate();
       setOpen(false);
       form.reset();
+    },
+    onError: (error) => {
+      toast.error("Erro ao atualizar o serviço.", {
+        description: error.message,
+      });
     },
   });
 
   async function onSubmit(inputs: Inputs) {
+    console.log(inputs);
     await updateMutation.mutateAsync({
-      serviceId: service.id,
-      name: inputs.name ?? "",
-      estimatedTime: inputs.estimatedTime ?? NaN,
-      price: inputs.price ?? "",
-      description: inputs.description ?? "",
-      categoryId: inputs.categoryId,
+      id: service.id,
+      name: inputs.name,
+      duration: inputs.duration,
+      price: inputs.price,
+      categoryIds: inputs.categoryIds,
     });
   }
 
@@ -96,8 +105,10 @@ export function UpdateServiceButton({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Novo serviço</DialogTitle>
-          <DialogDescription>Adicione um novo serviço</DialogDescription>
+          <DialogTitle>Editar serviço</DialogTitle>
+          <DialogDescription>
+            Atualize as informações do serviço
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -118,27 +129,22 @@ export function UpdateServiceButton({
 
             <FormField
               control={form.control}
-              name="categoryId"
+              name="categoryIds"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Categoria</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecione a categoria do serviço" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>Categorias</FormLabel>
+                  <FormControl>
+                    <MultiSelect
+                      options={categories.map((category) => ({
+                        label: category.name,
+                        value: category.id,
+                      }))}
+                      // @ts-ignore
+                      selected={field.value}
+                      onChange={field.onChange}
+                      placeholder="Selecione as categorias"
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -146,34 +152,20 @@ export function UpdateServiceButton({
 
             <FormField
               control={form.control}
-              name="estimatedTime"
+              name="duration"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tem estimado do serviço</FormLabel>
-                  <Select
-                    onValueChange={(e) => {
-                      field.onChange(Number(e));
-                    }}
-                    defaultValue={field.value?.toString() ?? "900"}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="900">15 minutos</SelectItem>
-                      <SelectItem value="1200">20 minutos</SelectItem>
-                      <SelectItem value="1500">25 minutos</SelectItem>
-                      <SelectItem value="1800">30 minutos</SelectItem>
-                      <SelectItem value="2100">35 minutos</SelectItem>
-                      <SelectItem value="2400">40 minutos</SelectItem>
-                      <SelectItem value="2700">45 minutos</SelectItem>
-                      <SelectItem value="3000">50 minutos</SelectItem>
-                      <SelectItem value="3300">55 minutos</SelectItem>
-                      <SelectItem value="3600">1 hora</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>Duração (minutos)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(Number(e.target.value));
+                      }}
+                      value={field.value}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -197,20 +189,6 @@ export function UpdateServiceButton({
                         R$
                       </span>
                     </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Descrição</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -60,7 +60,12 @@ export const unavailabilities = pgTable("unavailabilities", {
 
 export const categories = pgTable("categories", {
   id: uuid("id").notNull().primaryKey().defaultRandom(),
-  name: text("name").notNull().unique(),
+  name: text("name").notNull(),
+  establishmentId: uuid("establishment_id")
+    .notNull()
+    .references(() => establishments.id, {
+      onDelete: "cascade",
+    }),
 });
 
 export const services = pgTable("services", {
@@ -68,6 +73,11 @@ export const services = pgTable("services", {
   name: text("name").notNull(),
   duration: integer("duration").notNull(),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  establishmentId: uuid("establishment_id")
+    .notNull()
+    .references(() => establishments.id, {
+      onDelete: "cascade",
+    }),
 });
 
 export const serviceCategories = pgTable("service_categories", {
@@ -131,18 +141,30 @@ export const establishmentsRelations = relations(
     openingHours: many(openingHours, {
       relationName: "establishmentOpeningHours",
     }),
+    categories: many(categories, { relationName: "establishmentCategories" }),
+    services: many(services, { relationName: "establishmentServices" }),
   }),
 );
 
-export const servicesRelations = relations(services, ({ many }) => ({
+export const categoriesRelations = relations(categories, ({ one, many }) => ({
+  establishment: one(establishments, {
+    fields: [categories.establishmentId],
+    references: [establishments.id],
+    relationName: "establishmentCategories",
+  }),
+  services: many(serviceCategories, { relationName: "categoryServices" }),
+}));
+
+export const servicesRelations = relations(services, ({ one, many }) => ({
+  establishment: one(establishments, {
+    fields: [services.establishmentId],
+    references: [establishments.id],
+    relationName: "establishmentServices",
+  }),
   employeeServices: many(employeeServices, {
     relationName: "serviceEmployeeServices",
   }),
   categories: many(serviceCategories, { relationName: "serviceCategories" }),
-}));
-
-export const categoriesRelations = relations(categories, ({ many }) => ({
-  services: many(serviceCategories, { relationName: "categoryServices" }),
 }));
 
 export const serviceCategoriesRelations = relations(
@@ -160,7 +182,6 @@ export const serviceCategoriesRelations = relations(
     }),
   }),
 );
-
 export const appointmentsRelations = relations(appointments, ({ one }) => ({
   employee: one(employees, {
     fields: [appointments.employeeId],

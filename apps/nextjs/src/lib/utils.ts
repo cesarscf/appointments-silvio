@@ -50,7 +50,7 @@ export function formatPrice(
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: opts.currency ?? "BRL",
-    notation: opts.notation ?? "compact",
+    notation: opts.notation ?? "standard",
     ...opts,
   }).format(Number(price));
 }

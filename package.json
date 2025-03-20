@@ -9,6 +9,7 @@
     "db:push": "turbo -F @acme/db push",
     "auth:generate": "pnpm -F @acme/auth generate",
     "db:studio": "turbo -F @acme/db studio",
+    "db:seed": "turbo -F @acme/db seed",
     "dev": "turbo watch dev --continue",
     "dev:next": "turbo watch dev -F @acme/nextjs...",
     "format": "turbo run format --continue -- --cache --cache-location .cache/.prettiercache",

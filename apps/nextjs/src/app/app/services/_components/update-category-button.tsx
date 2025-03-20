@@ -51,10 +51,10 @@ export function UpdateCategoryButton({
 
   const apiUtils = api.useUtils();
 
-  const updateMutation = api.category.update.useMutation({
+  const updateMutation = api.category.updateCategory.useMutation({
     onSuccess: () => {
       toast.success("Categoria atualizada.");
-      void apiUtils.category.all.invalidate();
+      void apiUtils.category.listCategories.invalidate();
       setOpen(false);
       form.reset();
     },
@@ -62,7 +62,7 @@ export function UpdateCategoryButton({
 
   async function onSubmit(inputs: Inputs) {
     await updateMutation.mutateAsync({
-      categoryId: category.id,
+      id: category.id,
       name: inputs.name,
     });
   }

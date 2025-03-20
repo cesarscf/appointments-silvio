@@ -22,8 +22,8 @@ import { ServiceCard } from "./service-card";
 import { UpdateCategoryButton } from "./update-category-button";
 
 export function Services() {
-  const [services] = api.service.all.useSuspenseQuery();
-  const [categories] = api.category.all.useSuspenseQuery();
+  const [services] = api.service.listServices.useSuspenseQuery();
+  const [categories] = api.category.listCategories.useSuspenseQuery();
 
   const [tab, setTab] = useQueryState("tab", {
     defaultValue: "service",
@@ -42,17 +42,17 @@ export function Services() {
 
   const apiUtils = api.useUtils();
 
-  const deleteServiceMutation = api.service.delete.useMutation({
+  const deleteServiceMutation = api.service.deleteService.useMutation({
     onSuccess: () => {
       toast.success("Serviço excluído");
-      void apiUtils.service.all.invalidate();
+      void apiUtils.service.listServices.invalidate();
     },
   });
 
-  const deleteCategoryMutation = api.category.delete.useMutation({
+  const deleteCategoryMutation = api.category.deleteCategory.useMutation({
     onSuccess: () => {
-      toast.success("Serviço excluído");
-      void apiUtils.category.all.invalidate();
+      toast.success("Categoria excluída");
+      void apiUtils.category.listCategories.invalidate();
     },
   });
 
@@ -103,7 +103,7 @@ export function Services() {
                 deleteIsPending={deleteServiceMutation.isPending}
                 onDelete={(id) => {
                   deleteServiceMutation.mutate({
-                    serviceId: id,
+                    id: id,
                   });
                 }}
               />
@@ -132,7 +132,7 @@ export function Services() {
                       className="w-full"
                       onClick={() => {
                         deleteCategoryMutation.mutate({
-                          categoryId: category.id,
+                          id: category.id,
                         });
                       }}
                       disabled={deleteCategoryMutation.isPending}
