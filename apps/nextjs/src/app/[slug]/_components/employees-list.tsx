@@ -2,11 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Calendar, Star, User } from "lucide-react";
 
 import type { Employee } from "@acme/db/schema";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -47,7 +45,7 @@ export function EmployeesList({
           <CardFooter className="border-t bg-muted/10 p-4">
             <Button asChild className="w-full">
               <Link
-                href={`/${slug}/booking-employee?step=employee&employeeId=${employee.id}`}
+                href={`/${slug}/booking-employee?step=service&employeeId=${employee.id}`}
               >
                 Agendar com {employee.name.split(" ")[0]}
               </Link>

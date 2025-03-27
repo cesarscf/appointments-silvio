@@ -3,7 +3,7 @@ import { z } from "zod";
 import { and, eq } from "@acme/db";
 import { employees, employeeServices, unavailabilities } from "@acme/db/schema";
 
-import { protectedProcedure } from "../trpc";
+import { protectedProcedure, publicProcedure } from "../trpc";
 
 export const employeeRouter = {
   listEmployees: protectedProcedure.query(async ({ ctx }) => {
@@ -14,6 +14,16 @@ export const employeeRouter = {
 
     return employeesList;
   }),
+
+  publicGetEmployeeById: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { id } = input;
+
+      return await ctx.db.query.employees.findFirst({
+        where: (table, { eq }) => eq(table.id, id),
+      });
+    }),
 
   getEmployeeById: protectedProcedure
     .input(z.object({ id: z.string() }))

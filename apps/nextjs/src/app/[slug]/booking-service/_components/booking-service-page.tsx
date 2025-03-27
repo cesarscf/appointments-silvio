@@ -16,7 +16,7 @@ import { z } from "zod";
 
 import { Employee } from "@acme/db/schema";
 
-import TimeSlotPicker from "@/components/time-slot-picker";
+import { TimeSlotPicker } from "@/components/time-slot-picker";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {

@@ -22,7 +22,7 @@ interface TimeSlotPickerProps {
   >;
 }
 
-export default function TimeSlotPicker({
+export function TimeSlotPicker({
   serviceId,
   establishmentId,
   employeeId,
