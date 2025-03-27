@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { serviceCategories, services } from "@acme/db/schema";
 
-import { protectedProcedure } from "../trpc";
+import { protectedProcedure, publicProcedure } from "../trpc";
 
 export const serviceRouter = {
   listServices: protectedProcedure.query(async ({ ctx }) => {
@@ -142,5 +142,48 @@ export const serviceRouter = {
       }
 
       return newService;
+    }),
+
+  getServiceById: publicProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { id } = input;
+
+      const service = await ctx.db.query.services.findFirst({
+        where: (table, { eq }) => eq(table.id, id),
+      });
+
+      if (!service) {
+        throw new Error("Serviço não encontrado.");
+      }
+
+      return service;
+    }),
+
+  getEmployeesByService: publicProcedure
+    .input(
+      z.object({
+        serviceId: z.string().uuid(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      const { serviceId } = input;
+
+      const employees = await ctx.db.query.employeeServices.findMany({
+        where: (employeeServices, { eq }) =>
+          eq(employeeServices.serviceId, serviceId),
+        with: {
+          employee: true,
+          service: true,
+        },
+      });
+
+      return employees.map((es) => ({
+        ...es.employee,
+      }));
     }),
 };

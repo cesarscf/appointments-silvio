@@ -1,5 +1,5 @@
 import { api, HydrateClient } from "@/trpc/server";
-import { BookingPage } from "./_components/booking-page";
+import { BookingServicePage } from "./_components/booking-service-page";
 
 export type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -11,17 +11,18 @@ export default async function Page({
   searchParams: SearchParams;
 }) {
   const { slug } = await params;
-  const { serviceId: id } = searchParams;
+  const { serviceId: id } = searchParams as { serviceId: string };
 
   void api.establishment.getEstablishmentBySlug.prefetch({
     slug,
   });
 
-  void api.service.getServiceById.prefetch({ id } as { id: string });
+  void api.service.getServiceById.prefetch({ id });
+  void api.service.getEmployeesByService.prefetch({ serviceId: id });
 
   return (
     <HydrateClient>
-      <BookingPage />
+      <BookingServicePage />
     </HydrateClient>
   );
 }

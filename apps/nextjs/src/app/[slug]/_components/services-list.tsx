@@ -24,7 +24,7 @@ export function ServicesList({
         >
           <div className="relative h-48 w-full">
             <img
-              src={service.image || "/placeholder.svg"}
+              src={"/placeholder.svg"}
               alt={service.name}
               className="h-full w-full object-cover"
             />
@@ -39,15 +39,15 @@ export function ServicesList({
               </div>
               <h3 className="font-bold">{service.name}</h3>
             </div>
-            <p className="mb-3 text-sm">{service.description}</p>
+
             <div className="flex items-center justify-between">
               <span className="text-sm">
-                Duração: {formatTime(String(service.estimatedTime))} minutos
+                Duração: {formatTime(String(service.duration))} minutos
               </span>
 
               <Button asChild>
                 <Link
-                  href={`/${slug}/booking?step=employee&serviceId=${service.id}`}
+                  href={`/${slug}/booking-service?step=employee&serviceId=${service.id}`}
                 >
                   Agendar
                 </Link>
