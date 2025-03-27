@@ -1,26 +1,22 @@
-import {
-  addDays,
-  addMinutes,
-  differenceInMinutes,
-  endOfDay,
-  format,
-  isWithinInterval,
-  parse,
-  setHours,
-  setMinutes,
-  startOfDay,
-} from "date-fns";
+import { addMinutes, endOfDay, parse, startOfDay } from "date-fns";
 import { z } from "zod";
 
-import { and, eq, gte, isNull, lt, lte, or } from "@acme/db";
+import { and, eq, gt, gte, isNull, lt, lte, or } from "@acme/db";
 import { db } from "@acme/db/client";
-import { appointments } from "@acme/db/schema";
+import {
+  appointments,
+  customers,
+  openingHours,
+  services,
+  unavailabilities,
+} from "@acme/db/schema";
+import { publicCreateAppointmentSchema } from "@acme/validators";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
 
 export const appointmentRouter = {
   listAppointments: protectedProcedure.query(async ({ ctx }) => {
-    const data = await ctx.db.query.appointments.findMany({
+    return await ctx.db.query.appointments.findMany({
       where: eq(appointments.establishmentId, ctx.establishmentId),
       with: {
         employee: true,
@@ -28,29 +24,82 @@ export const appointmentRouter = {
         customer: true,
       },
     });
-
-    return data;
   }),
 
-  createAppointment: protectedProcedure
-    .input(
-      z.object({
-        employeeId: z.string().uuid(),
-        serviceId: z.string().uuid(),
-        customerId: z.string().uuid(),
-        startTime: z.date(),
-        endTime: z.date(),
-      }),
-    )
+  publicCreateAppointment: publicProcedure
+    .input(publicCreateAppointmentSchema)
     .mutation(async ({ ctx, input }) => {
-      const newAppointment = await ctx.db.insert(appointments).values({
-        ...input,
-        establishmentId: ctx.establishmentId,
-        status: "scheduled",
-        checkin: false,
+      const service = await db.query.services.findFirst({
+        where: eq(services.id, input.serviceId),
       });
 
-      return newAppointment;
+      if (!service) {
+        throw new Error("Serviço não encontrado");
+      }
+
+      const conflictingAppointments = await db.query.appointments.findMany({
+        where: and(
+          input.employeeId
+            ? eq(appointments.employeeId, input.employeeId)
+            : undefined,
+          or(
+            and(
+              gte(appointments.startTime, input.startTime),
+              lt(appointments.startTime, input.endTime),
+            ),
+            and(
+              gt(appointments.endTime, input.startTime),
+              lte(appointments.endTime, input.endTime),
+            ),
+            and(
+              lte(appointments.startTime, input.startTime),
+              gte(appointments.endTime, input.endTime),
+            ),
+          ),
+        ),
+      });
+
+      if (conflictingAppointments.length > 0) {
+        throw new Error("Horário já agendado");
+      }
+
+      let customer = await db.query.customers.findFirst({
+        where: or(
+          eq(customers.phoneNumber, input.customer.phoneNumber),
+          eq(customers.cpf, input.customer.cpf),
+        ),
+      });
+
+      if (!customer) {
+        [customer] = await db
+          .insert(customers)
+          .values({
+            ...input.customer,
+            establishmentId: input.establishmentId,
+          })
+          .returning();
+      } else {
+        await db
+          .update(customers)
+          .set(input.customer)
+          .where(eq(customers.id, customer.id!));
+      }
+
+      const [appointment] = await db
+        .insert(appointments)
+        .values({
+          establishmentId: input.establishmentId,
+          status: "scheduled",
+          checkin: false,
+          customerId: customer!.id,
+          employeeId: input.employeeId!,
+          startTime: input.startTime,
+          endTime: input.endTime,
+          serviceId: input.serviceId,
+        })
+        .returning();
+
+      return appointment;
     }),
 
   updateAppointmentStatus: protectedProcedure
@@ -61,7 +110,7 @@ export const appointmentRouter = {
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const updatedAppointment = await ctx.db
+      const [appointment] = await db
         .update(appointments)
         .set({ status: input.status })
         .where(
@@ -69,9 +118,10 @@ export const appointmentRouter = {
             eq(appointments.id, input.appointmentId),
             eq(appointments.establishmentId, ctx.establishmentId),
           ),
-        );
+        )
+        .returning();
 
-      return updatedAppointment;
+      return appointment;
     }),
 
   checkInAppointment: protectedProcedure
@@ -81,7 +131,7 @@ export const appointmentRouter = {
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const updatedAppointment = await ctx.db
+      const [appointment] = await db
         .update(appointments)
         .set({ checkin: true })
         .where(
@@ -89,19 +139,10 @@ export const appointmentRouter = {
             eq(appointments.id, input.appointmentId),
             eq(appointments.establishmentId, ctx.establishmentId),
           ),
-        );
+        )
+        .returning();
 
-      await ctx.db
-        .update(appointments)
-        .set({ status: "completed" })
-        .where(
-          and(
-            eq(appointments.id, input.appointmentId),
-            eq(appointments.establishmentId, ctx.establishmentId),
-          ),
-        );
-
-      return updatedAppointment;
+      return appointment;
     }),
 
   listAppointmentsByPeriod: protectedProcedure
@@ -112,7 +153,7 @@ export const appointmentRouter = {
       }),
     )
     .query(async ({ ctx, input }) => {
-      const data = await ctx.db.query.appointments.findMany({
+      return await ctx.db.query.appointments.findMany({
         where: and(
           eq(appointments.establishmentId, ctx.establishmentId),
           gte(appointments.startTime, input.startDate),
@@ -124,8 +165,6 @@ export const appointmentRouter = {
           customer: true,
         },
       });
-
-      return data;
     }),
 
   cancelAppointment: protectedProcedure
@@ -135,16 +174,18 @@ export const appointmentRouter = {
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const deletedAppointment = await ctx.db
-        .delete(appointments)
+      const [appointment] = await db
+        .update(appointments)
+        .set({ status: "completed" })
         .where(
           and(
             eq(appointments.id, input.appointmentId),
             eq(appointments.establishmentId, ctx.establishmentId),
           ),
-        );
+        )
+        .returning();
 
-      return deletedAppointment;
+      return appointment;
     }),
 
   getAvailableSlots: publicProcedure
@@ -160,28 +201,27 @@ export const appointmentRouter = {
       const { serviceId, employeeId, establishmentId, date } = input;
       const dayOfWeek = date.getDay(); // 0 (Domingo) a 6 (Sábado)
 
-      // 1. Buscar informações do serviço (duração)
+      // 1. Buscar informações do serviço
       const service = await db.query.services.findFirst({
-        where: (services, { eq }) => eq(services.id, serviceId),
+        where: eq(services.id, serviceId),
       });
 
       if (!service) {
         throw new Error("Serviço não encontrado");
       }
 
-      // 2. Buscar horário de funcionamento para esse dia
-      const openingHours = await db.query.openingHours.findFirst({
-        where: (openingHours, { eq }) =>
-          and(
-            eq(openingHours.establishmentId, establishmentId),
-            eq(openingHours.dayOfWeek, dayOfWeek),
-          ),
+      // 2. Buscar horário de funcionamento
+      const openingHoursResult = await db.query.openingHours.findFirst({
+        where: and(
+          eq(openingHours.establishmentId, establishmentId),
+          eq(openingHours.dayOfWeek, dayOfWeek),
+        ),
         with: {
           intervals: true,
         },
       });
 
-      if (!openingHours) {
+      if (!openingHoursResult) {
         return {
           available: false,
           message: "Estabelecimento não funciona neste dia",
@@ -192,22 +232,15 @@ export const appointmentRouter = {
       // 3. Buscar indisponibilidades do funcionário
       const employeeUnavailabilities = employeeId
         ? await db.query.unavailabilities.findMany({
-            where: (unavailabilities, { eq }) =>
-              and(
-                eq(unavailabilities.employeeId, employeeId),
-                or(
-                  eq(unavailabilities.dayOfWeek, dayOfWeek),
-                  isNull(unavailabilities.dayOfWeek),
-                ),
+            where: and(
+              eq(unavailabilities.employeeId, employeeId),
+              or(
+                eq(unavailabilities.dayOfWeek, dayOfWeek),
+                isNull(unavailabilities.dayOfWeek),
               ),
+            ),
           })
         : [];
-
-      const test = await db.query.unavailabilities.findMany({
-        where: (table, { eq }) => eq(table.employeeId, employeeId!),
-      });
-
-      console.log("xxx ======>", test, employeeId);
 
       // 4. Buscar agendamentos existentes
       const existingAppointments = await db.query.appointments.findMany({
@@ -215,7 +248,7 @@ export const appointmentRouter = {
           gte(appointments.startTime, startOfDay(date)),
           lte(appointments.endTime, endOfDay(date)),
           employeeId ? eq(appointments.employeeId, employeeId) : undefined,
-          eq(appointments.serviceId, serviceId),
+          eq(appointments.establishmentId, establishmentId),
         ),
       });
 
@@ -227,23 +260,15 @@ export const appointmentRouter = {
         reason?: string;
       }[] = [];
 
-      // Converter horário de abertura/fechamento para Date
-      const openingTime = parse(openingHours.openingTime, "HH:mm:ss", date);
-      const closingTime = parse(openingHours.closingTime, "HH:mm:ss", date);
-
-      // Intervalos de descanso/configuração
-      const intervals =
-        openingHours.intervals.length > 0
-          ? openingHours.intervals
-          : [
-              {
-                startTime: openingHours.openingTime,
-                endTime: openingHours.closingTime,
-              },
-            ];
-
       // Processar cada intervalo do dia
-      for (const interval of intervals) {
+      for (const interval of openingHoursResult.intervals.length > 0
+        ? openingHoursResult.intervals
+        : [
+            {
+              startTime: openingHoursResult.openingTime,
+              endTime: openingHoursResult.closingTime,
+            },
+          ]) {
         const intervalStart = parse(interval.startTime, "HH:mm:ss", date);
         const intervalEnd = parse(interval.endTime, "HH:mm:ss", date);
 
@@ -252,13 +277,13 @@ export const appointmentRouter = {
         while (currentSlotStart < intervalEnd) {
           const slotEnd = addMinutes(currentSlotStart, service.duration);
 
-          // Verificar se o slot ultrapassa o horário de fechamento
+          // Verificar se o slot ultrapassa o intervalo
           if (slotEnd > intervalEnd) {
-            currentSlotStart = addMinutes(currentSlotStart, 15); // Incremento padrão
+            currentSlotStart = addMinutes(currentSlotStart, 15);
             continue;
           }
 
-          // Verificar conflitos com agendamentos existentes
+          // Verificar conflitos com agendamentos
           const hasConflict = existingAppointments.some((appointment) => {
             return (
               appointment.startTime < slotEnd &&
@@ -266,29 +291,15 @@ export const appointmentRouter = {
             );
           });
 
-          // Verificar indisponibilidades do funcionário
-          const isUnavailable = employeeUnavailabilities.some(
-            (unavailability) => {
-              if (!unavailability.startTime || !unavailability.endTime)
-                return false;
+          // Verificar indisponibilidades
+          const isUnavailable = employeeUnavailabilities.some((ua) => {
+            if (!ua.startTime || !ua.endTime) return false;
 
-              const unavailabilityStart = parse(
-                unavailability.startTime,
-                "HH:mm:ss",
-                date,
-              );
-              const unavailabilityEnd = parse(
-                unavailability.endTime,
-                "HH:mm:ss",
-                date,
-              );
+            const uaStart = parse(ua.startTime, "HH:mm:ss", date);
+            const uaEnd = parse(ua.endTime, "HH:mm:ss", date);
 
-              return (
-                currentSlotStart < unavailabilityEnd &&
-                slotEnd > unavailabilityStart
-              );
-            },
-          );
+            return currentSlotStart < uaEnd && slotEnd > uaStart;
+          });
 
           slots.push({
             start: currentSlotStart,
@@ -301,7 +312,6 @@ export const appointmentRouter = {
                 : undefined,
           });
 
-          // Avançar para o próximo slot (15 minutos ou duração do serviço)
           currentSlotStart = addMinutes(
             currentSlotStart,
             Math.max(15, service.duration),
@@ -313,11 +323,10 @@ export const appointmentRouter = {
         service,
         date,
         openingHours: {
-          openingTime: openingHours.openingTime,
-          closingTime: openingHours.closingTime,
+          openingTime: openingHoursResult.openingTime,
+          closingTime: openingHoursResult.closingTime,
         },
         availableSlots: slots.filter((slot) => slot.available),
-        allSlots: slots, // Para debug ou exibição completa
       };
     }),
 };

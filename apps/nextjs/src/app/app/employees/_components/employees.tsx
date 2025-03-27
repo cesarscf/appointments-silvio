@@ -17,7 +17,7 @@ export function Employees() {
   const [services] = api.service.listServices.useSuspenseQuery();
 
   const employeesEmpty = employees.length < 1;
-  console.log(employees);
+
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">

@@ -3,7 +3,7 @@ import { z } from "zod";
 import { eq } from "@acme/db";
 import { customers } from "@acme/db/schema";
 
-import { protectedProcedure } from "../trpc";
+import { protectedProcedure, publicProcedure } from "../trpc";
 
 export const customerRouter = {
   listCustomers: protectedProcedure.query(async ({ ctx }) => {
@@ -104,5 +104,15 @@ export const customerRouter = {
       }
 
       return newCustomer;
+    }),
+
+  getCustomerByPhone: publicProcedure
+    .input(z.object({ phone: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { phone } = input;
+
+      return await ctx.db.query.customers.findFirst({
+        where: (table, { eq }) => eq(table.phoneNumber, phone),
+      });
     }),
 };
