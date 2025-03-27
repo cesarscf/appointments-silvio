@@ -186,4 +186,27 @@ export const serviceRouter = {
         ...es.employee,
       }));
     }),
+
+  getServicesByEmployee: publicProcedure
+    .input(
+      z.object({
+        employeeId: z.string().uuid(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      const { employeeId } = input;
+
+      const services = await ctx.db.query.employeeServices.findMany({
+        where: (employeeServices, { eq }) =>
+          eq(employeeServices.employeeId, employeeId),
+        with: {
+          employee: true,
+          service: true,
+        },
+      });
+
+      return services.map((es) => ({
+        ...es.service,
+      }));
+    }),
 };
