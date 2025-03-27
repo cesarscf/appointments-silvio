@@ -7,16 +7,18 @@ import {
   useRouter,
   useSearchParams,
 } from "next/navigation";
-import { AvatarImage } from "@radix-ui/react-avatar";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Check, Clock, DollarSign, Loader2, MessageCircle } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useQueryState } from "nuqs";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { BookingSuccess } from "@/app/[slug]/booking-employee/_components/booking-success";
+import { BookingSummary } from "@/app/[slug]/booking-employee/_components/booking-summary";
+import { SelectedServiceInfo } from "@/app/[slug]/booking-employee/_components/selected-service-info";
+import { ServiceSelection } from "@/app/[slug]/booking-employee/_components/service-selection";
 import { TimeSlotPicker } from "@/components/time-slot-picker";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -26,8 +28,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { cn, formatPrice } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { CustomerForm } from "../../booking-service/_components/customer-form";
 
@@ -69,21 +70,15 @@ export function BookingEmployeePage() {
     price: string;
   } | null>(null);
 
-  // Dados do estabelecimento
+  // Data fetching
   const [establishment] =
     api.establishment.getEstablishmentBySlug.useSuspenseQuery({ slug });
-
-  // Dados dos serviços do profissional
   const [services] = api.service.getServicesByEmployee.useSuspenseQuery({
     employeeId,
   });
-
-  // Dados do profissional
   const { data: employee } = api.employee.publicGetEmployeeById.useQuery({
     id: employeeId,
   });
-
-  // Dados do serviço selecionado
   const { data: selectedService } = api.service.getServiceById.useQuery(
     { id: selectedServiceId ?? "" },
     { enabled: !!selectedServiceId },
@@ -158,6 +153,13 @@ export function BookingEmployeePage() {
   const notCustomer = step === "customer" && !customer;
   const disabledNext = notCustomer || notSelectSlot || notSelectEmployee;
 
+  const stepTitles = {
+    service: "Escolha um serviço",
+    date: "Escolha uma data e horário",
+    customer: "Seus dados",
+    summary: "Resumo do agendamento",
+  };
+
   return (
     <div className="container mx-auto flex min-h-screen items-center justify-center py-10">
       <Card className="w-full max-w-md">
@@ -169,125 +171,34 @@ export function BookingEmployeePage() {
               : "Agendamento de serviço"}
           </CardDescription>
         </CardHeader>
+
         <CardContent className="space-y-6">
-          {step === "success" ? (
-            <div className="space-y-6">
-              <div className="rounded-lg bg-green-50 p-6 text-center">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-                  <Check className="h-6 w-6 text-green-600" />
-                </div>
-                <h3 className="mb-2 text-lg font-medium text-green-800">
-                  Agendamento confirmado!
-                </h3>
-                <p className="text-green-600">
-                  Você receberá as informações por WhatsApp em breve.
-                </p>
-              </div>
-
-              {appointmentDetails && (
-                <>
-                  <div className="rounded-lg border p-4">
-                    <div className="mb-4 flex items-center gap-3">
-                      <MessageCircle className="h-5 w-5 text-primary" />
-                      <h3 className="font-medium">Detalhes do agendamento</h3>
-                    </div>
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Serviço:</span>
-                        <span>{appointmentDetails.serviceName}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">
-                          Profissional:
-                        </span>
-                        <span>{appointmentDetails.professionalName}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Data:</span>
-                        <span>{appointmentDetails.date}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Horário:</span>
-                        <span>{appointmentDetails.time}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Duração:</span>
-                        <span>{appointmentDetails.duration} minutos</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Valor:</span>
-                        <span>{formatPrice(appointmentDetails.price)}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
-                    <h3 className="mb-2 font-medium text-blue-800">
-                      Importante
-                    </h3>
-                    <p className="text-sm text-blue-600">
-                      Chegue com 15 minutos de antecedência. Em caso de
-                      cancelamento, avise com pelo menos 24 horas de
-                      antecedência.
-                    </p>
-                  </div>
-                </>
-              )}
-            </div>
+          {step === "success" && appointmentDetails ? (
+            <BookingSuccess
+              appointmentDetails={appointmentDetails}
+              onBackToHome={handleBackToHome}
+            />
           ) : (
             <>
               {selectedService && (
-                <div className="rounded-lg bg-muted/50 p-4">
-                  <h3 className="mb-2 font-medium">{selectedService.name}</h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      <span>{selectedService.duration} minutos</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4 text-muted-foreground" />
-                      <span>{formatPrice(selectedService.price)}</span>
-                    </div>
-                  </div>
-                </div>
+                <SelectedServiceInfo
+                  name={selectedService.name}
+                  duration={selectedService.duration}
+                  price={formatPrice(selectedService.price)}
+                />
               )}
 
               <h3 className="mb-3 font-medium">
-                {step === "service" && "Escolha um serviço"}
-                {step === "date" && "Escolha uma data e horário"}
-                {step === "customer" && "Seus dados"}
-                {step === "summary" && "Resumo do agendamento"}
+                {stepTitles[step as keyof typeof stepTitles]}
               </h3>
 
               {step === "service" && (
-                <div className="space-y-2">
-                  {services.map((service) => (
-                    <div
-                      key={service.id}
-                      className={cn(
-                        "flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors hover:bg-accent",
-                        selectedServiceId === service.id && "bg-accent",
-                      )}
-                      onClick={() => handleSelectService(service.id)}
-                    >
-                      <Avatar>
-                        <AvatarFallback>
-                          {service.name.charAt(0)}
-                        </AvatarFallback>
-                        <AvatarImage src="/placeholder.svg" />
-                      </Avatar>
-                      <div className="flex-1">
-                        <p className="font-medium">{service.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {employee?.name || "Profissional"}
-                        </p>
-                      </div>
-                      {selectedServiceId === service.id && (
-                        <Check className="h-5 w-5 text-primary" />
-                      )}
-                    </div>
-                  ))}
-                </div>
+                <ServiceSelection
+                  services={services}
+                  selectedServiceId={selectedServiceId}
+                  professionalName={employee?.name}
+                  onSelectService={handleSelectService}
+                />
               )}
 
               {step === "date" && selectedService && (
@@ -324,95 +235,23 @@ export function BookingEmployeePage() {
                 selectedSlot &&
                 customer &&
                 selectedService && (
-                  <div className="space-y-4">
-                    <div className="rounded-lg border p-4">
-                      <h4 className="mb-3 font-medium">
-                        Resumo do Agendamento
-                      </h4>
-                      <div className="space-y-3">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">
-                            Serviço:
-                          </span>
-                          <span>{selectedService.name}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">
-                            Profissional:
-                          </span>
-                          <span>{employee?.name}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Data:</span>
-                          <span>
-                            {format(selectedSlot.start, "PPPP", {
-                              locale: ptBR,
-                            })}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">
-                            Horário:
-                          </span>
-                          <span>{format(selectedSlot.start, "HH:mm")}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">
-                            Duração:
-                          </span>
-                          <span>{selectedService.duration} minutos</span>
-                        </div>
-                        <Separator className="my-2" />
-                        <div className="flex justify-between font-medium">
-                          <span>Total:</span>
-                          <span>{formatPrice(selectedService.price)}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="rounded-lg border p-4">
-                      <h4 className="mb-3 font-medium">Dados do Cliente</h4>
-                      <div className="space-y-3">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Nome:</span>
-                          <span>{customer.name}</span>
-                        </div>
-                        {customer.phoneNumber && (
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">
-                              Telefone:
-                            </span>
-                            <span>{customer.phoneNumber}</span>
-                          </div>
-                        )}
-                        {customer.email && (
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">
-                              E-mail:
-                            </span>
-                            <span>{customer.email}</span>
-                          </div>
-                        )}
-                        {customer.cpf && (
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">CPF:</span>
-                            <span>{customer.cpf}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                  <BookingSummary
+                    service={{
+                      name: selectedService.name,
+                      duration: selectedService.duration,
+                      price: selectedService.price,
+                    }}
+                    professionalName={employee?.name}
+                    slot={selectedSlot}
+                    customer={customer}
+                  />
                 )}
             </>
           )}
         </CardContent>
 
         <CardFooter className="flex flex-col gap-3">
-          {step === "success" ? (
-            <Button className="w-full" onClick={handleBackToHome}>
-              Voltar para a página inicial
-            </Button>
-          ) : step === "summary" ? (
+          {step === "summary" ? (
             <>
               <Button
                 className="w-full"
@@ -437,7 +276,7 @@ export function BookingEmployeePage() {
                 Voltar
               </Button>
             </>
-          ) : step !== "customer" ? (
+          ) : step !== "success" && step !== "customer" ? (
             <>
               <Button
                 className="w-full"
