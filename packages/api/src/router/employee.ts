@@ -1,12 +1,7 @@
 import { z } from "zod";
 
 import { and, eq } from "@acme/db";
-import {
-  employees,
-  employeeServices,
-  services,
-  unavailabilities,
-} from "@acme/db/schema";
+import { employees, employeeServices, unavailabilities } from "@acme/db/schema";
 
 import { protectedProcedure } from "../trpc";
 
@@ -25,8 +20,11 @@ export const employeeRouter = {
     .query(async ({ input, ctx }) => {
       const result = await ctx.db.query.employees.findFirst({
         where: (table) =>
-          eq(table.id, input.id) &&
-          eq(table.establishmentId, ctx.establishmentId),
+          and(
+            eq(table.id, input.id),
+            eq(table.establishmentId, ctx.establishmentId),
+          ),
+
         with: {
           unavailabilities: true,
           employeeServices: {
@@ -36,6 +34,8 @@ export const employeeRouter = {
           },
         },
       });
+
+      console.log(result);
 
       if (!result) {
         throw new Error("Employee não encontrado.");

@@ -24,7 +24,7 @@ import { EmployeeUnavailabilityForm } from "./update-unavailabilities-form";
 
 export function EmployeeDetails() {
   const { id } = useParams();
-
+  console.log(id);
   const [employee] = api.employee.getEmployeeById.useSuspenseQuery({
     id: id as string,
   });

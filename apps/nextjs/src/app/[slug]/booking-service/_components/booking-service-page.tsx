@@ -2,8 +2,11 @@
 
 import React from "react";
 import { notFound, useParams, useSearchParams } from "next/navigation";
+import { format } from "date-fns";
 import { Check, Clock, DollarSign, User } from "lucide-react";
+import { useQueryState } from "nuqs";
 
+import TimeSlotPicker from "@/components/time-slot-picker";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,9 +27,17 @@ export function BookingServicePage() {
 
   const serviceId = search.get("serviceId") ?? notFound();
 
+  const [step, setStep] = useQueryState("step", {
+    defaultValue: "employee",
+  });
+
   const [selectedEmployeeId, setSelectedEmployeeId] = React.useState<
     string | null
   >(null);
+  const [selectedSlot, setSelectedSlot] = React.useState<{
+    start: Date;
+    end: Date;
+  } | null>(null);
 
   const [data] = api.establishment.getEstablishmentBySlug.useSuspenseQuery({
     slug,
@@ -35,9 +46,14 @@ export function BookingServicePage() {
   const [service] = api.service.getServiceById.useSuspenseQuery({
     id: serviceId,
   });
+
   const [employees] = api.service.getEmployeesByService.useSuspenseQuery({
     serviceId,
   });
+
+  function nextStep() {
+    step === "employee" ? setStep("date") : setStep("employee");
+  }
 
   return (
     <div className="container mx-auto flex min-h-screen items-center justify-center py-10">
@@ -64,57 +80,86 @@ export function BookingServicePage() {
 
           <div>
             <h3 className="mb-3 font-medium">Escolha um profissional</h3>
-            <div className="space-y-2">
-              <div
-                className={cn(
-                  "flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors hover:bg-accent",
-                  selectedEmployeeId === null && "bg-accent",
-                )}
-                onClick={() => setSelectedEmployeeId(null)}
-              >
-                <Avatar>
-                  <AvatarFallback>
-                    <User className="h-4 w-4" />
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <p className="font-medium">Qualquer profissional</p>
-                  <p className="text-xs text-muted-foreground">
-                    Sem preferência específica
-                  </p>
-                </div>
-                {selectedEmployeeId === null && (
-                  <Check className="h-5 w-5 text-primary" />
-                )}
-              </div>
-
-              <Separator className="my-2" />
-
-              {employees.map((employee) => (
+            {step === "employee" && (
+              <div className="space-y-2">
                 <div
-                  key={employee.id}
                   className={cn(
                     "flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors hover:bg-accent",
-                    selectedEmployeeId === employee.id && "bg-accent",
+                    selectedEmployeeId === null && "bg-accent",
                   )}
-                  onClick={() => setSelectedEmployeeId(employee.id)}
+                  onClick={() => setSelectedEmployeeId(null)}
                 >
                   <Avatar>
-                    <AvatarFallback>{employee.name.charAt(0)}</AvatarFallback>
-                    <AvatarImage src={`/placeholder.svg?height=40&width=40`} />
+                    <AvatarFallback>
+                      <User className="h-4 w-4" />
+                    </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    <p className="font-medium">{employee.name}</p>
+                    <p className="font-medium">Qualquer profissional</p>
                     <p className="text-xs text-muted-foreground">
-                      Profissional
+                      Sem preferência específica
                     </p>
                   </div>
-                  {selectedEmployeeId === employee.id && (
+                  {selectedEmployeeId === null && (
                     <Check className="h-5 w-5 text-primary" />
                   )}
                 </div>
-              ))}
-            </div>
+
+                <Separator className="my-2" />
+
+                {employees.map((employee) => (
+                  <div
+                    key={employee.id}
+                    className={cn(
+                      "flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors hover:bg-accent",
+                      selectedEmployeeId === employee.id && "bg-accent",
+                    )}
+                    onClick={() => setSelectedEmployeeId(employee.id)}
+                  >
+                    <Avatar>
+                      <AvatarFallback>{employee.name.charAt(0)}</AvatarFallback>
+                      <AvatarImage
+                        src={`/placeholder.svg?height=40&width=40`}
+                      />
+                    </Avatar>
+                    <div className="flex-1">
+                      <p className="font-medium">{employee.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Profissional
+                      </p>
+                    </div>
+                    {selectedEmployeeId === employee.id && (
+                      <Check className="h-5 w-5 text-primary" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {step === "date" && (
+              <div className="flex flex-col gap-4">
+                <TimeSlotPicker
+                  setSelectedSlot={setSelectedSlot}
+                  establishmentId={data.id}
+                  serviceId={serviceId}
+                  employeeId={selectedEmployeeId ?? undefined}
+                />
+                {selectedSlot && (
+                  <div className="mt-4 rounded-md border bg-muted p-4">
+                    <h3 className="font-medium">
+                      Seleção atual (apenas no estado):
+                    </h3>
+
+                    <p className="text-sm text-muted-foreground">
+                      Início: {selectedSlot.start.toString()}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Fim: {selectedSlot.end.toString()}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </CardContent>
 
@@ -123,6 +168,7 @@ export function BookingServicePage() {
             className="w-full"
             size="lg"
             disabled={selectedEmployeeId === undefined}
+            onClick={nextStep}
           >
             Continuar
           </Button>
