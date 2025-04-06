@@ -20,6 +20,8 @@ export const establishments = pgTable("establishments", {
     .notNull()
     .references(() => users.id),
   name: text("name").notNull(),
+  theme: text("theme").notNull().default("blue"),
+  about: text("about"),
   slug: text("slug").notNull(),
 });
 

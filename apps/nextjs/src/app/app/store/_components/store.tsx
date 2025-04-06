@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/trpc/react";
+import { UpdateStoreAppaerance } from "./update-store-appareance";
 import { UpdateStoreForm } from "./update-store-form";
 import UpdateStoreHours from "./update-store-hours";
 
@@ -82,7 +83,7 @@ export function Store() {
 
         <TabsContent value="appareance">
           <div className="mt-8 max-w-2xl">
-            {/* <UpdateStoreAppaerance currentTheme={store.theme} /> */}
+            <UpdateStoreAppaerance currentTheme={store.theme} />
           </div>
         </TabsContent>
       </Tabs>

@@ -33,16 +33,15 @@ export function UpdateStoreAppaerance({
       value: "green",
     },
   ];
+
   const themeIdx = themes.findIndex((it) => it.value === currentTheme);
-
   const [selectedTheme, setTheme] = React.useState(themes[themeIdx]!);
-
   const apiUtils = api.useUtils();
 
-  const updateMutation = api.store.update.useMutation({
+  const updateMutation = api.establishment.updateEstablishment.useMutation({
     onSuccess: () => {
       toast.success("Tema atualizado.");
-      void apiUtils.store.getByUserId.invalidate();
+      void apiUtils.establishment.getEstablishmentById.invalidate();
     },
   });
 

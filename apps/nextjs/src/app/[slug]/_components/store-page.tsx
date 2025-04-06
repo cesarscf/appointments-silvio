@@ -41,7 +41,7 @@ export function StorePage() {
   };
 
   return (
-    <main className={cn(`theme-blue min-h-screen`)}>
+    <main className={cn(`theme-${data.theme} min-h-screen`)}>
       <style jsx global>{`
         .no-scrollbar {
           -ms-overflow-style: none;

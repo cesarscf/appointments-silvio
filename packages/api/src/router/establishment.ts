@@ -72,4 +72,23 @@ export const establishmentRouter = {
 
     return establishmentsList;
   }),
+
+  updateEstablishment: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().optional(),
+        logo: z.string().optional(),
+        theme: z.string().optional(),
+        slug: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      console.log(input);
+      await ctx.db
+        .update(establishments)
+        .set({
+          ...input,
+        })
+        .where(eq(establishments.id, ctx.establishmentId));
+    }),
 };

@@ -1,13 +1,14 @@
 "use client";
 
-import type { z } from "zod";
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
 
-import type { Store } from "@acme/db/schema";
+import { Establishment } from "@acme/db/schema";
+import { slugify } from "@acme/utils";
 import { updateStoreSchema } from "@acme/validators";
 
 import { Button } from "@/components/ui/button";
@@ -28,14 +29,33 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/trpc/react";
 
-type Inputs = z.infer<typeof updateStoreSchema>;
+const schema = z.object({
+  name: z
+    .string()
+    .min(3, "O nome deve ter pelo menos 3 caracteres.")
+    .max(50, "O nome pode ter no máximo 50 caracteres.")
+    .optional(),
+  logo: z.string().url("O logo deve ser uma URL válida.").optional(),
+  theme: z.string().optional(),
+  about: z.string().optional(),
+  slug: z
+    .string()
+    .regex(
+      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+      "O slug deve conter apenas letras minúsculas, números e hifens.",
+    )
+    .optional(),
+});
 
-export function UpdateStoreForm({ store }: { store: Store }) {
+type Inputs = z.infer<typeof schema>;
+
+export function UpdateStoreForm({ store }: { store: Establishment }) {
   // react-hook-form
   const form = useForm<Inputs>({
-    resolver: zodResolver(updateStoreSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       name: store.name,
       slug: store.slug,
@@ -44,19 +64,24 @@ export function UpdateStoreForm({ store }: { store: Store }) {
 
   const apiUtils = api.useUtils();
 
-  const updateMutation = api.store.update.useMutation({
+  const updateMutation = api.establishment.updateEstablishment.useMutation({
     onSuccess: () => {
       toast.success("Mudanças salvas.");
-      void apiUtils.store.getByUserId.invalidate();
+      void apiUtils.establishment.getEstablishmentById.invalidate();
     },
   });
 
   async function onSubmit(inputs: Inputs) {
     await updateMutation.mutateAsync({
-      slug: inputs.slug,
-      name: inputs.name,
+      ...inputs,
     });
   }
+
+  const slugState = form.watch("slug");
+
+  React.useEffect(() => {
+    form.setValue("slug", slugify(slugState ?? ""));
+  }, [slugState]);
 
   return (
     <Form {...form}>
@@ -83,21 +108,43 @@ export function UpdateStoreForm({ store }: { store: Store }) {
               )}
             />
 
-            <div className="grid gap-2">
-              <FormField
-                control={form.control}
-                name="slug"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Slug</FormLabel>
-                    <FormControl>
-                      <Input type="text" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name="slug"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Link</FormLabel>
+                  <FormControl>
+                    <div className="flex rounded-md">
+                      <span className="inline-flex items-center rounded-s-md border border-input bg-background px-3 text-sm text-muted-foreground">
+                        agendar.tec.br/
+                      </span>
+                      <Input
+                        className="-ms-px rounded-s-none shadow-none"
+                        placeholder="meu-slug"
+                        type="text"
+                        {...field}
+                      />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="about"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Sobre nós</FormLabel>
+                  <FormControl>
+                    <Textarea {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </CardContent>
           <CardFooter className="border-t p-4">
             <Button
