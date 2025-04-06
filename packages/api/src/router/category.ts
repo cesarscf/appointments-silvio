@@ -7,7 +7,10 @@ import { protectedProcedure, publicProcedure } from "../trpc";
 
 export const categoryRouter = {
   listCategories: protectedProcedure.query(async ({ ctx }) => {
-    const categoriesList = await ctx.db.select().from(categories);
+    const categoriesList = await ctx.db
+      .select()
+      .from(categories)
+      .where(eq(categories.establishmentId, ctx.establishmentId));
     return categoriesList;
   }),
 

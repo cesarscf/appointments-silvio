@@ -82,8 +82,6 @@ export default function BusinessHoursForm({
     }[];
   }[];
 }) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
   // Inicializa o formulário com o schema e valores padrão
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),

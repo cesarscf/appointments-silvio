@@ -45,8 +45,6 @@ export const employeeRouter = {
         },
       });
 
-      console.log(result);
-
       if (!result) {
         throw new Error("Employee não encontrado.");
       }
@@ -58,7 +56,7 @@ export const employeeRouter = {
         commission: employeeService.commission,
       }));
 
-      console.log(services);
+      console.log({ unavailabilities: result.unavailabilities });
       return {
         ...result,
         unavailabilities: result.unavailabilities,
@@ -107,12 +105,6 @@ export const employeeRouter = {
           employeeId: newEmployee.id,
           dayOfWeek: 0,
           startTime: "00:00",
-          endTime: "23:59",
-        },
-        {
-          employeeId: newEmployee.id,
-          dayOfWeek: 5,
-          startTime: "12:00",
           endTime: "23:59",
         },
       ];

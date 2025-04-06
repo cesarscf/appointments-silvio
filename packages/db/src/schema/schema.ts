@@ -18,7 +18,7 @@ export const establishments = pgTable("establishments", {
   id: uuid("id").notNull().primaryKey().defaultRandom(),
   userId: text("user_id")
     .notNull()
-    .references(() => users.id),
+    .references(() => users.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   theme: text("theme").notNull().default("blue"),
   about: text("about"),
