@@ -83,7 +83,6 @@ export const establishmentRouter = {
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      console.log(input);
       await ctx.db
         .update(establishments)
         .set({

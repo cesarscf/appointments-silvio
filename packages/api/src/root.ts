@@ -13,7 +13,7 @@ export const appRouter = createTRPCRouter({
   service: serviceRouter,
   category: categoryRouter,
   employee: employeeRouter,
-  openingHoursList: openingHoursRouter,
+  openingHours: openingHoursRouter,
   establishment: establishmentRouter,
   appointment: appointmentRouter,
   customer: customerRouter,

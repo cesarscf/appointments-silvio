@@ -12,9 +12,9 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/trpc/react";
+import BusinessHoursForm from "./opening-hours-form";
 import { UpdateStoreAppaerance } from "./update-store-appareance";
 import { UpdateStoreForm } from "./update-store-form";
-import UpdateStoreHours from "./update-store-hours";
 
 export function Store() {
   const [tab, setTab] = useQueryState("tab", {
@@ -38,7 +38,7 @@ export function Store() {
 
   const [store] = api.establishment.getEstablishmentById.useSuspenseQuery();
   const [storeHours] =
-    api.openingHoursList.listOpeningHoursByEstablishment.useSuspenseQuery();
+    api.openingHours.listOpeningHoursByEstablishment.useSuspenseQuery();
 
   return (
     <>
@@ -77,7 +77,7 @@ export function Store() {
 
         <TabsContent value="operation">
           <div className="mt-8 max-w-4xl">
-            <UpdateStoreHours storeHoursInitial={storeHours} />
+            <BusinessHoursForm openingHours={storeHours} />
           </div>
         </TabsContent>
 

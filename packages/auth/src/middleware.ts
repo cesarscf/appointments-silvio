@@ -18,6 +18,8 @@ export async function authMiddleware(request: NextRequest) {
       },
     },
   });
+
+  console.log(session);
   if (!session) {
     NextResponse.redirect(new URL("/login", request.url));
   }

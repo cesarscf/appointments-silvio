@@ -149,6 +149,7 @@ export function StorePage() {
 
       <div className="container mx-auto px-4 pb-16">
         {/* Combined About and Location Section */}
+
         <section id="about" className="mb-16 scroll-mt-32">
           <div className="mb-6">
             <h2 className="text-2xl font-bold">Sobre Nós e Localização</h2>
@@ -158,7 +159,7 @@ export function StorePage() {
           </div>
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
             <div className="flex flex-col">
-              <AboutSection />
+              <AboutSection about={data.about} />
             </div>
             <div className="flex flex-col">
               <MapSection />
