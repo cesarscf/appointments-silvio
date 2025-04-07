@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { serviceCategories, services } from "@acme/db/schema";
+import { updateServiceSchema } from "@acme/validators";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
 
@@ -65,12 +66,8 @@ export const serviceRouter = {
 
   updateService: protectedProcedure
     .input(
-      z.object({
+      updateServiceSchema.extend({
         id: z.string().uuid(),
-        name: z.string(),
-        duration: z.number(),
-        price: z.string(),
-        categoryIds: z.array(z.string().uuid()).optional(),
       }),
     )
     .mutation(async ({ input, ctx }) => {

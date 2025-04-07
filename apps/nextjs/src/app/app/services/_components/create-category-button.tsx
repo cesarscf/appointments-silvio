@@ -7,7 +7,7 @@ import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { createCategorySchema } from "@acme/validators";
+import { CreateCategory, createCategorySchema } from "@acme/validators";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -29,13 +29,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { api } from "@/trpc/react";
 
-type Inputs = z.infer<typeof createCategorySchema>;
-
 export function CreateCategoryButton() {
   const [open, setOpen] = React.useState(false);
 
   // react-hook-form
-  const form = useForm<Inputs>({
+  const form = useForm<CreateCategory>({
     resolver: zodResolver(createCategorySchema),
     defaultValues: {
       name: "",
@@ -53,10 +51,8 @@ export function CreateCategoryButton() {
     },
   });
 
-  async function onSubmit(inputs: Inputs) {
-    await createMutation.mutateAsync({
-      name: inputs.name,
-    });
+  async function onSubmit(inputs: CreateCategory) {
+    await createMutation.mutateAsync(inputs);
   }
 
   return (

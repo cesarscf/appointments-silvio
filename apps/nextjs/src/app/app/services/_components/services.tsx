@@ -41,17 +41,16 @@ export function Services() {
   ];
 
   const apiUtils = api.useUtils();
-
   const deleteServiceMutation = api.service.deleteService.useMutation({
     onSuccess: () => {
-      toast.success("Serviço excluído");
+      toast.success("Serviço excluído.");
       void apiUtils.service.listServices.invalidate();
     },
   });
 
   const deleteCategoryMutation = api.category.deleteCategory.useMutation({
     onSuccess: () => {
-      toast.success("Categoria excluída");
+      toast.success("Categoria excluída.");
       void apiUtils.category.listCategories.invalidate();
     },
   });
@@ -116,7 +115,7 @@ export function Services() {
           <div className="mt-8 max-w-2xl space-y-4">
             {categories.map((category) => (
               <Card key={category.id}>
-                <CardContent className="flex flex-col justify-between gap-4 p-4 sm:flex-row">
+                <CardContent className="flex flex-col items-center justify-between gap-4 p-4 sm:flex-row">
                   <h2>{category.name}</h2>
                   <div className="flex gap-2">
                     <UpdateCategoryButton category={category}>

@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { eq } from "@acme/db";
 import { categories, establishments } from "@acme/db/schema";
+import { createCategorySchema, updateCategorySchema } from "@acme/validators";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
 
@@ -40,9 +41,8 @@ export const categoryRouter = {
 
   updateCategory: protectedProcedure
     .input(
-      z.object({
+      updateCategorySchema.extend({
         id: z.string().uuid(),
-        name: z.string(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
@@ -68,11 +68,7 @@ export const categoryRouter = {
     }),
 
   createCategory: protectedProcedure
-    .input(
-      z.object({
-        name: z.string(),
-      }),
-    )
+    .input(createCategorySchema)
     .mutation(async ({ input, ctx }) => {
       const { name } = input;
 

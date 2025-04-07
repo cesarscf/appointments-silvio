@@ -5,9 +5,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
 
 import type { Category } from "@acme/db/schema";
+import { CreateService, createServiceSchema } from "@acme/validators";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -30,15 +30,6 @@ import { Input } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { api } from "@/trpc/react";
 
-const schema = z.object({
-  name: z.string(),
-  duration: z.number(),
-  price: z.string(),
-  categoryIds: z.array(z.string().uuid()).optional(),
-});
-
-type Inputs = z.infer<typeof schema>;
-
 export function CreateServiceButton({
   categories,
 }: {
@@ -47,11 +38,11 @@ export function CreateServiceButton({
   const [open, setOpen] = React.useState(false);
 
   // react-hook-form
-  const form = useForm<Inputs>({
-    resolver: zodResolver(schema),
+  const form = useForm<CreateService>({
+    resolver: zodResolver(createServiceSchema),
     defaultValues: {
       name: "",
-      duration: 900,
+      duration: 30,
       price: "",
       categoryIds: [],
     },
@@ -73,13 +64,8 @@ export function CreateServiceButton({
     },
   });
 
-  async function onSubmit(inputs: Inputs) {
-    await createMutation.mutateAsync({
-      name: inputs.name,
-      duration: inputs.duration,
-      price: inputs.price,
-      categoryIds: inputs.categoryIds,
-    });
+  async function onSubmit(inputs: CreateService) {
+    await createMutation.mutateAsync(inputs);
   }
 
   return (

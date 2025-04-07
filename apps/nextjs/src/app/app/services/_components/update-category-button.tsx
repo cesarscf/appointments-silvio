@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import type { Category } from "@acme/db/schema";
-import { createCategorySchema } from "@acme/validators";
+import { createCategorySchema, UpdateCategory } from "@acme/validators";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -30,8 +30,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { api } from "@/trpc/react";
 
-type Inputs = z.infer<typeof createCategorySchema>;
-
 export function UpdateCategoryButton({
   category,
   children,
@@ -42,7 +40,7 @@ export function UpdateCategoryButton({
   const [open, setOpen] = React.useState(false);
 
   // react-hook-form
-  const form = useForm<Inputs>({
+  const form = useForm<UpdateCategory>({
     resolver: zodResolver(createCategorySchema),
     defaultValues: {
       name: category.name,
@@ -60,7 +58,7 @@ export function UpdateCategoryButton({
     },
   });
 
-  async function onSubmit(inputs: Inputs) {
+  async function onSubmit(inputs: UpdateCategory) {
     await updateMutation.mutateAsync({
       id: category.id,
       name: inputs.name,

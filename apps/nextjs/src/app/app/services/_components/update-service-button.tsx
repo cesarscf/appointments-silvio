@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import type { Category, Service } from "@acme/db/schema";
-import { updateServiceSchema } from "@acme/validators";
+import { UpdateService, updateServiceSchema } from "@acme/validators";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -31,15 +31,6 @@ import { Input } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { api } from "@/trpc/react";
 
-const schema = z.object({
-  name: z.string(),
-  duration: z.number(),
-  price: z.string(),
-  categoryIds: z.array(z.string().uuid()).optional(),
-});
-
-type Inputs = z.infer<typeof schema>;
-
 export function UpdateServiceButton({
   service,
   categories,
@@ -57,8 +48,8 @@ export function UpdateServiceButton({
   const [open, setOpen] = React.useState(false);
 
   // react-hook-form
-  const form = useForm<Inputs>({
-    resolver: zodResolver(schema),
+  const form = useForm<UpdateService>({
+    resolver: zodResolver(updateServiceSchema),
     defaultValues: {
       name: service.name,
       price: service.price,
@@ -83,14 +74,14 @@ export function UpdateServiceButton({
     },
   });
 
-  async function onSubmit(inputs: Inputs) {
-    console.log(inputs);
+  async function onSubmit(inputs: UpdateService) {
+    if (inputs.categoryIds?.length === 0) {
+      return toast.error("Escolha ao menos uma categoria.");
+    }
+
     await updateMutation.mutateAsync({
       id: service.id,
-      name: inputs.name,
-      duration: inputs.duration,
-      price: inputs.price,
-      categoryIds: inputs.categoryIds,
+      ...inputs,
     });
   }
 
