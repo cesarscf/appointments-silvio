@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import type { UpdateEmployee } from "@acme/validators";
+import { applyPhoneMask } from "@acme/utils";
 import { updateEmployeeSchema } from "@acme/validators";
 
 import { DeleteConfirmationModal } from "@/components/confirm-delete-modal";
@@ -35,6 +36,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/trpc/react";
 import { EmployeeServiceManager } from "./employee-service-manager";
@@ -85,6 +87,7 @@ export function EmployeeDetails() {
       name: employee.name,
       phone: employee.phone ?? "",
       address: employee.address ?? "",
+      active: employee.active,
     },
   });
 
@@ -92,12 +95,14 @@ export function EmployeeDetails() {
   const onSubmit = async (data: UpdateEmployee) => {
     setIsSubmitting(true);
     try {
+      console.log(data);
       await updateEmployee.mutateAsync({
         id: employee.id,
         address: data.address ?? "",
         email: data.email ?? "",
         name: data.name ?? "",
         phone: data.phone ?? "",
+        active: data.active,
       });
     } catch (error) {
       console.error("Failed to update employee:", error);
@@ -238,7 +243,15 @@ export function EmployeeDetails() {
                           <FormItem>
                             <FormLabel>Telefone</FormLabel>
                             <FormControl>
-                              <Input {...field} value={field.value || ""} />
+                              <Input
+                                {...field}
+                                value={field.value || ""}
+                                onChange={(e) => {
+                                  field.onChange(
+                                    applyPhoneMask(e.target.value),
+                                  );
+                                }}
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -259,6 +272,23 @@ export function EmployeeDetails() {
                         )}
                       />
                     </div>
+
+                    <FormField
+                      control={form.control}
+                      name="active"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                          <FormLabel>Ativar/Desativar</FormLabel>
+                          <FormControl>
+                            <Switch
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
                     <Button type="submit" disabled={isSubmitting}>
                       {isSubmitting ? (

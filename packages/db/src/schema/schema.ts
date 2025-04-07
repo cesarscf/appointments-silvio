@@ -50,6 +50,7 @@ export const employees = pgTable("employees", {
     .notNull()
     .references(() => establishments.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
+  active: boolean("active").default(true).notNull(),
   email: text("email"),
   phone: text("phone"),
   address: text("address"),
@@ -78,6 +79,7 @@ export const services = pgTable("services", {
   name: text("name").notNull(),
   duration: integer("duration").notNull(),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
+  active: boolean("active").default(true).notNull(),
   establishmentId: uuid("establishment_id")
     .notNull()
     .references(() => establishments.id, { onDelete: "cascade" }),
@@ -101,6 +103,7 @@ export const employeeServices = pgTable("employee_services", {
   serviceId: uuid("service_id")
     .notNull()
     .references(() => services.id, { onDelete: "cascade" }),
+  active: boolean("active").default(true).notNull(),
   commission: decimal("commission", { precision: 5, scale: 2 }).notNull(),
 });
 

@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { boolean, z } from "zod";
 
 export const createServiceSchema = z.object({
   name: z.string(),
@@ -10,6 +10,7 @@ export const createServiceSchema = z.object({
 export const updateServiceSchema = z.object({
   name: z.string(),
   duration: z.number(),
+  active: z.boolean(),
   price: z.string(),
   categoryIds: z.array(z.string().uuid()).optional(),
 });

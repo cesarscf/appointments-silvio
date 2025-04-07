@@ -2,7 +2,8 @@ import { z } from "zod";
 
 import { and, eq } from "@acme/db";
 import { employees, employeeServices, unavailabilities } from "@acme/db/schema";
-import { createEmployeeSchema } from "@acme/validators";
+import { clearNumber } from "@acme/utils";
+import { createEmployeeSchema, updateEmployeeSchema } from "@acme/validators";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
 
@@ -279,49 +280,35 @@ export const employeeRouter = {
 
   updateEmployee: protectedProcedure
     .input(
-      z.object({
-        id: z.string(),
-        name: z.string().optional(),
-        email: z.string().optional(),
-        phone: z.string().optional(),
-        address: z.string().optional(),
+      updateEmployeeSchema.extend({
+        id: z.string().uuid(),
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const { id, name, email, phone, address } = input;
-
       const employee = await ctx.db.query.employees.findFirst({
         where: (table) =>
-          and(eq(table.id, id), eq(table.establishmentId, ctx.establishmentId)),
+          and(
+            eq(table.id, input.id),
+            eq(table.establishmentId, ctx.establishmentId),
+          ),
       });
 
       if (!employee) {
         throw new Error("Funcionário não encontrado.");
       }
 
-      const updateData: {
-        name?: string;
-        email?: string;
-        phone?: string;
-        address?: string;
-      } = {};
-
-      if (name !== undefined) updateData.name = name;
-      if (email !== undefined) updateData.email = email;
-      if (phone !== undefined) updateData.phone = phone;
-      if (address !== undefined) updateData.address = address;
-
-      if (Object.keys(updateData).length === 0) {
-        throw new Error("Nenhum dado fornecido para atualização.");
-      }
-
-      // Executa a atualização
       const [updatedEmployee] = await ctx.db
         .update(employees)
-        .set(updateData)
+        .set({
+          active: input.active,
+          address: input.address,
+          email: input.email,
+          name: input.name,
+          phone: clearNumber(input.phone ?? ""),
+        })
         .where(
           and(
-            eq(employees.id, id),
+            eq(employees.id, input.id),
             eq(employees.establishmentId, ctx.establishmentId),
           ),
         )

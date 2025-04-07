@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Employee } from "@acme/db/schema";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 
@@ -13,7 +14,13 @@ interface EmployeeCardProps {
 export function EmployeeCard({ employee }: EmployeeCardProps) {
   return (
     <Card>
-      <CardContent className="pt-6">
+      <CardContent className="relative pt-6">
+        <Badge
+          className="absolute right-2 top-2"
+          variant={employee.active ? "default" : "destructive"}
+        >
+          {employee.active ? "Ativo" : "Desativado"}
+        </Badge>
         <div className="flex items-center space-x-4">
           <Avatar className="h-12 w-12">
             {/* <AvatarImage src={employee.photo ?? ""} alt={employee.name} /> */}

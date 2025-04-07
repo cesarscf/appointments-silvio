@@ -83,12 +83,18 @@ export function CustomerCard({
         </CardContent>
         <CardFooter className="flex gap-2">
           <UpdateCustomerButton customer={customer}>
-            <Button variant="outline" size="sm" className="w-full">
+            <Button
+              type="submit"
+              variant="outline"
+              size="sm"
+              className="w-full"
+            >
               <Edit className="mr-2 h-4 w-4" />
               Editar
             </Button>
           </UpdateCustomerButton>
           <Button
+            type="button"
             variant="destructive"
             size="sm"
             className="w-full"

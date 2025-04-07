@@ -29,6 +29,7 @@ export const serviceRouter = {
       name: service.name,
       establishmentId: service.establishmentId,
       duration: service.duration,
+      active: service.active,
       price: service.price,
       categories: service.categories.map((sc) => {
         return {
@@ -83,7 +84,7 @@ export const serviceRouter = {
 
       const [updatedService] = await ctx.db
         .update(services)
-        .set({ name, duration, price })
+        .set({ name, duration, price, active: input.active })
         .where(eq(services.id, id))
         .returning();
 

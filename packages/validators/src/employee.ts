@@ -27,12 +27,12 @@ export const createEmployeeSchema = z.object({
 });
 
 export const updateEmployeeSchema = z.object({
-  id: z.string(),
-  email: z.string().email().nullable(),
+  email: z.string().email().optional(),
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
-  phone: z.string().nullable(),
-  address: z.string().nullable(),
+  active: z.boolean().optional(),
+  phone: z.string().optional(),
+  address: z.string().optional(),
 });
 
 export type CreateEmployee = z.infer<typeof createEmployeeSchema>;
-export type UpdateEmployee = z.infer<typeof createEmployeeSchema>;
+export type UpdateEmployee = z.infer<typeof updateEmployeeSchema>;

@@ -38,7 +38,13 @@ export function ServiceCard({
             <span className="text-gray-400">Sem imagem</span>
           </div>
         </CardHeader>
-        <CardContent className="space-y-2 p-4">
+        <CardContent className="relative space-y-2 p-4">
+          <Badge
+            className="absolute right-2 top-2"
+            variant={service.active ? "default" : "destructive"}
+          >
+            {service.active ? "Ativo" : "Desativado"}
+          </Badge>
           <CardTitle className="text-xl">{service.name}</CardTitle>
           <div className="flex flex-wrap gap-2">
             {service.categories.map((category) => (

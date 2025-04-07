@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
+import { Switch } from "@/components/ui/switch";
 import { api } from "@/trpc/react";
 
 export function UpdateServiceButton({
@@ -54,6 +55,7 @@ export function UpdateServiceButton({
       name: service.name,
       price: service.price,
       duration: service.duration,
+      active: service.active,
       categoryIds: service.categories.map((c) => c.id) ?? [],
     },
   });
@@ -180,6 +182,24 @@ export function UpdateServiceButton({
                         R$
                       </span>
                     </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="active"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Ativar/Desativar serviço</FormLabel>
+                  <FormControl>
+                    <Switch
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                      aria-readonly
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
