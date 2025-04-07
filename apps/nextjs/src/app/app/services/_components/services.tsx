@@ -5,7 +5,6 @@ import { Edit, Trash2 } from "lucide-react";
 import { useQueryState } from "nuqs";
 import { toast } from "sonner";
 
-import { DeleteConfirmationModal } from "@/components/confirm-delete-modal";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -14,6 +13,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -24,6 +24,7 @@ import { ServiceCard } from "./service-card";
 import { UpdateCategoryButton } from "./update-category-button";
 
 export function Services() {
+  const [searchTerm, setSearchTerm] = React.useState("");
   const [services] = api.service.listServices.useSuspenseQuery();
   const [categories] = api.category.listCategories.useSuspenseQuery();
 
@@ -41,6 +42,10 @@ export function Services() {
       title: "Categorias",
     },
   ];
+
+  const filteredServices = services.filter((service) =>
+    service.name.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
 
   const apiUtils = api.useUtils();
   const deleteServiceMutation = api.service.deleteService.useMutation({
@@ -95,8 +100,17 @@ export function Services() {
         </TabsList>
 
         <TabsContent value="service">
+          <div className="mt-4">
+            <Input
+              type="text"
+              placeholder="Filtrar por nome"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-[300px]"
+            />
+          </div>
           <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {services.map((service) => (
+            {filteredServices.map((service) => (
               <ServiceCard
                 key={service.id}
                 service={service}

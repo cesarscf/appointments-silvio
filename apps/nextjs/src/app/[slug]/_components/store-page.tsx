@@ -1,10 +1,12 @@
 "use client";
 
+import React from "react";
 import Image from "next/image";
 import { notFound, useParams } from "next/navigation";
 import { CalendarDays, Clock, MapPin, Phone, Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
@@ -16,6 +18,9 @@ import { ServicesList } from "./services-list";
 
 export function StorePage() {
   const { slug } = useParams();
+
+  const [searchTermEmployees, setSearchTermEmployees] = React.useState("");
+  const [searchTermServices, setSearchTermServices] = React.useState("");
 
   const [data] = api.establishment.getEstablishmentBySlug.useSuspenseQuery({
     slug: slug as string,
@@ -39,6 +44,14 @@ export function StorePage() {
       });
     }
   };
+
+  const filteredEmployees = data.employees.filter((employee) =>
+    employee.name.toLowerCase().includes(searchTermEmployees.toLowerCase()),
+  );
+
+  const filteredServices = data.services.filter((service) =>
+    service.name.toLowerCase().includes(searchTermServices.toLowerCase()),
+  );
 
   return (
     <main className={cn(`theme-${data.theme} min-h-screen`)}>
@@ -177,9 +190,17 @@ export function StorePage() {
               <p className="text-muted-foreground">
                 Selecione um serviço para agendar seu horário
               </p>
+              <Input
+                type="text"
+                placeholder="Filtrar por nome"
+                value={searchTermServices}
+                onChange={(e) => setSearchTermServices(e.target.value)}
+                className="mt-2 w-[300px]"
+              />
             </div>
           </div>
-          <ServicesList services={data.services} slug={data.slug} />
+
+          <ServicesList services={filteredServices} slug={data.slug} />
         </section>
 
         {/* Professionals Section */}
@@ -190,9 +211,16 @@ export function StorePage() {
               <p className="text-muted-foreground">
                 Escolha seu profissional preferido
               </p>
+              <Input
+                type="text"
+                placeholder="Filtrar por nome"
+                value={searchTermEmployees}
+                onChange={(e) => setSearchTermEmployees(e.target.value)}
+                className="mt-2 w-[300px]"
+              />
             </div>
           </div>
-          <EmployeesList employees={data.employees} slug={data.slug} />
+          <EmployeesList employees={filteredEmployees} slug={data.slug} />
         </section>
       </div>
 

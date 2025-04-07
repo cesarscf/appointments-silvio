@@ -12,7 +12,8 @@ export const employeeRouter = {
     const employeesList = await ctx.db
       .select()
       .from(employees)
-      .where(eq(employees.establishmentId, ctx.establishmentId));
+      .where(eq(employees.establishmentId, ctx.establishmentId))
+      .orderBy(employees.name);
 
     return employeesList;
   }),
