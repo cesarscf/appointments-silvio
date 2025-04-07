@@ -182,7 +182,6 @@ export function StorePage() {
 
         <Separator className="my-12" />
 
-        {/* Services Section */}
         <section id="services" className="mb-16 scroll-mt-32">
           <div className="mb-6 flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
             <div>
@@ -203,7 +202,6 @@ export function StorePage() {
           <ServicesList services={filteredServices} slug={data.slug} />
         </section>
 
-        {/* Professionals Section */}
         <section id="professionals" className="mb-16 scroll-mt-32">
           <div className="mb-6 flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
             <div>
