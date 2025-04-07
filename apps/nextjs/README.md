@@ -1,28 +1,85 @@
-# Create T3 App
+# Checklist de Ajustes no Sistema
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+## Interface do Usuário (UI)
 
-## What's next? How do I make an app with this?
+- [x] **Renomear "Slug" para "Link"**
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+- [x] **Adicionar aba "Dados Pessoais" após "Indisponibilidades"**
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+  - Verificar se pode deixa no geral mesmo.
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+- [x] **Substituir números por dias da semana**
 
-## Learn More
+- [x] **Adicionar botão "Retornar ao Menu" em todas as telas**
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+- [ ] **Melhorar campo de data de nascimento**
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+  - Permitir digitação manual.
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+- [ ] **Adicionar três barras (menu hambúrguer) no canto superior esquerdo**
 
-## How do I deploy this?
+  - Implementar ícone e menu lateral.
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+- [ ] **Botão "Deletar Funcionário"**
+  - Adicionar na tela de detalhes do funcionário (com confirmação).
+
+---
+
+## Funcionalidades
+
+- [ ] **Validação de slug/link**
+
+  - Garantir que o campo está sendo salvo corretamente (backend).
+
+- [ ] **Confirmação ao excluir serviço**
+
+  - Implementar modal com: _"Excluir este serviço removerá todos os dados relacionados. Confirmar?"_.
+
+- [ ] **Formatação do valor do serviço**
+
+  - Permitir entrada com decimais (ex: R$ 50,00).
+  - Validar formato de moeda e exibir alerta em PT-BR se inválido.
+
+- [ ] **Gerenciamento de horários**
+
+  - Corrigir bug onde agendar 14:00 para "barba" bloqueia múltiplos horários.
+  - Implementar "Replicar horário" para dias da semana (ex: copiar horário de segunda para terça).
+
+- [ ] **Campo CPF no cadastro de cliente**
+
+  - Remover obrigatoriedade OU adicionar asterisco (\*) se for obrigatório.
+
+- [ ] **Opções de cancelamento e pagamento na agenda**
+
+  - Adicionar motivo de cancelamento (ex: "cliente não compareceu").
+  - Incluir dropdown com formas de pagamento: Dinheiro, PIX, Cartão (crédito/débito), Boleto.
+
+- [ ] **Pacotes**
+  - Implementar módulo de pacotes (pendente conforme descrição).
+
+---
+
+## Correções e Ajustes Técnicos
+
+- [ ] **Salvamento do horário de funcionamento**
+
+  - Verificar conexão frontend/backend (ex: campos não mapeados).
+
+- [ ] **Comissão dos serviços vinculados a funcionários**
+
+  - Opção 1: Remover seleção de serviços no cadastro do funcionário.
+  - Opção 2: Adicionar campo "comissão" durante a vinculação de serviços.
+
+- [ ] **Data na agenda**
+  - Garantir que o calendário sempre mostre a data atual, mas permita navegação.
+
+---
+
+## Fluxo de Navegação
+
+- [ ] **Botão de retorno na tela de detalhes do funcionário**
+
+  - Adicionar botão "Voltar" ou link para a lista de funcionários.
+
+- [ ] **Padronizar botões de retorno**
+  - "Retornar ao Menu" deve ter o mesmo comportamento em todas as telas.

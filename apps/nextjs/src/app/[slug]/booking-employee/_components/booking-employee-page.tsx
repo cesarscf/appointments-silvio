@@ -9,7 +9,7 @@ import {
 } from "next/navigation";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { useQueryState } from "nuqs";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -161,7 +161,17 @@ export function BookingEmployeePage() {
   };
 
   return (
-    <div className="container mx-auto flex min-h-screen items-center justify-center py-10">
+    <div className="container relative mx-auto flex min-h-screen items-center justify-center py-10">
+      <Button
+        className="absolute left-10 top-10"
+        variant={"link"}
+        onClick={() => {
+          router.push(`/${slug}`);
+        }}
+      >
+        <ArrowLeft />
+        Voltar ao menu
+      </Button>
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">{establishment.name}</CardTitle>

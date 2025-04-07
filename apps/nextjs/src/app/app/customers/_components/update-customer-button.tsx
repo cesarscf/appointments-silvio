@@ -15,6 +15,7 @@ import { UpdateCustomer, updateCustomerSchema } from "@acme/validators";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { DateInput } from "@/components/ui/date-input";
 import {
   Dialog,
   DialogContent,
@@ -32,13 +33,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
-import { applyCpfMask, applyPhoneMask, cn } from "@/lib/utils";
+import { applyCpfMask, applyPhoneMask } from "@/lib/utils";
 import { api } from "@/trpc/react";
 
 export function UpdateCustomerButton({
@@ -156,36 +152,12 @@ export function UpdateCustomerButton({
               render={({ field }) => (
                 <FormItem className="flex flex-col">
                   <FormLabel>Data de nascimento *</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground",
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP", { locale: ptBR })
-                          ) : (
-                            <span>Escolha uma data</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        locale={ptBR}
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) => date > new Date()} // Desabilita datas futuras
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
+                  <DateInput
+                    locale={ptBR}
+                    value={field.value!}
+                    onChange={field.onChange}
+                    placeholder="DD/MM/AAAA"
+                  />
                   <FormMessage />
                 </FormItem>
               )}

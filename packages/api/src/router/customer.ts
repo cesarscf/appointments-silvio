@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { eq } from "@acme/db";
@@ -72,6 +73,17 @@ export const customerRouter = {
   createCustomer: protectedProcedure
     .input(createCustomerSchema)
     .mutation(async ({ input, ctx }) => {
+      const customerWithSamePhone = await ctx.db.query.customers.findFirst({
+        where: eq(customers.phoneNumber, clearNumber(input.phoneNumber)),
+      });
+
+      if (customerWithSamePhone) {
+        throw new TRPCError({
+          code: "UNPROCESSABLE_CONTENT",
+          message: "Um cliente com esse numero já foi cadastrado",
+        });
+      }
+
       const [newCustomer] = await ctx.db
         .insert(customers)
         .values({

@@ -135,9 +135,9 @@ export const customers = pgTable("customers", {
     .notNull()
     .references(() => establishments.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
-  cpf: text("cpf").notNull().unique(),
   birthDate: timestamp("birth_date", { mode: "date" }).notNull(),
-  phoneNumber: text("phone_number"),
+  phoneNumber: text("phone_number").notNull().unique(),
+  cpf: text("cpf"),
   email: text("email"),
   address: text("address"),
 });
