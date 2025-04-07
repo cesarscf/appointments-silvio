@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+
+import { daysOfWeekPtBr } from "@acme/utils";
+import { UpdateOpeningHours, updateOpeningHoursSchema } from "@acme/validators";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -15,78 +17,24 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/trpc/react";
 import { DayScheduleForm } from "./day-schedule-form";
 
-// Define o schema para intervalos
-const intervalSchema = z.object({
-  id: z.string().optional(),
-  openingHourId: z.string().optional(),
-  startTime: z.string(),
-  endTime: z.string(),
-});
-
-// Define o schema para horários de funcionamento
-const openingHourSchema = z.object({
-  id: z.string().optional(),
-  establishmentId: z.string().optional(),
-  dayOfWeek: z.number().min(0).max(6),
-  openingTime: z.string(),
-  closingTime: z.string(),
-  intervals: z.array(intervalSchema),
-});
-
-// Define o schema para o formulário
 const formSchema = z.object({
-  businessHours: z.array(openingHourSchema),
+  hours: updateOpeningHoursSchema,
 });
 
-// Tipo para os valores do formulário
-type FormValues = z.infer<typeof formSchema>;
+interface OpeningHoursFormProps {
+  data: UpdateOpeningHours;
+}
 
-// Dias da semana
-const DIAS_DA_SEMANA = [
-  "Domingo",
-  "Segunda-feira",
-  "Terça-feira",
-  "Quarta-feira",
-  "Quinta-feira",
-  "Sexta-feira",
-  "Sábado",
-];
-
-export default function BusinessHoursForm({
-  openingHours,
-}: {
-  openingHours: {
-    id: string;
-    establishmentId: string;
-    dayOfWeek: number;
-    openingTime: string;
-    closingTime: string;
-    intervals: {
-      id: string;
-      openingHourId: string;
-      startTime: string;
-      endTime: string;
-    }[];
-  }[];
-}) {
-  // Inicializa o formulário com o schema e valores padrão
-  const form = useForm<FormValues>({
+export default function OpeningHoursForm({ data }: OpeningHoursFormProps) {
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      businessHours: openingHours,
+      hours: data,
     },
   });
 
@@ -98,8 +46,8 @@ export default function BusinessHoursForm({
     },
   });
 
-  async function onSubmit(data: FormValues) {
-    await updateMutation.mutateAsync(data.businessHours);
+  async function onSubmit(data: z.infer<typeof formSchema>) {
+    await updateMutation.mutateAsync(data.hours);
   }
 
   return (
@@ -112,14 +60,14 @@ export default function BusinessHoursForm({
           <CardContent>
             <Tabs defaultValue="0" className="w-full">
               <TabsList className="mb-4 grid grid-cols-7">
-                {DIAS_DA_SEMANA.map((dia, index) => (
+                {daysOfWeekPtBr.map((dia, index) => (
                   <TabsTrigger key={index} value={index.toString()}>
                     {dia.substring(0, 3)}
                   </TabsTrigger>
                 ))}
               </TabsList>
 
-              {DIAS_DA_SEMANA.map((dia, index) => (
+              {daysOfWeekPtBr.map((dia, index) => (
                 <TabsContent key={index} value={index.toString()}>
                   <DayScheduleForm form={form} dayIndex={index} dayName={dia} />
                 </TabsContent>

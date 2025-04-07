@@ -9,7 +9,10 @@ import { z } from "zod";
 
 import { Establishment } from "@acme/db/schema";
 import { slugify } from "@acme/utils";
-import { updateStoreSchema } from "@acme/validators";
+import {
+  UpdateEstablishment,
+  updateEstablishmentSchema,
+} from "@acme/validators";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -32,33 +35,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/trpc/react";
 
-const schema = z.object({
-  name: z
-    .string()
-    .min(3, "O nome deve ter pelo menos 3 caracteres.")
-    .max(50, "O nome pode ter no máximo 50 caracteres.")
-    .optional(),
-  logo: z.string().url("O logo deve ser uma URL válida.").optional(),
-  theme: z.string().optional(),
-  about: z.string().optional(),
-  slug: z
-    .string()
-    .regex(
-      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-      "O slug deve conter apenas letras minúsculas, números e hifens.",
-    )
-    .optional(),
-});
-
-type Inputs = z.infer<typeof schema>;
-
 export function UpdateStoreForm({ store }: { store: Establishment }) {
   // react-hook-form
-  const form = useForm<Inputs>({
-    resolver: zodResolver(schema),
+  const form = useForm<UpdateEstablishment>({
+    resolver: zodResolver(updateEstablishmentSchema),
     defaultValues: {
       name: store.name,
       slug: store.slug,
+      about: store.about ?? "",
     },
   });
 
@@ -71,10 +55,8 @@ export function UpdateStoreForm({ store }: { store: Establishment }) {
     },
   });
 
-  async function onSubmit(inputs: Inputs) {
-    await updateMutation.mutateAsync({
-      ...inputs,
-    });
+  async function onSubmit(inputs: UpdateEstablishment) {
+    await updateMutation.mutateAsync(inputs);
   }
 
   const slugState = form.watch("slug");

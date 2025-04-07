@@ -8,6 +8,16 @@ export const daysOfWeek = [
   "saturday",
 ];
 
+export const daysOfWeekPtBr = [
+  "Domingo",
+  "Segunda-feira",
+  "Terça-feira",
+  "Quarta-feira",
+  "Quinta-feira",
+  "Sexta-feira",
+  "Sábado",
+];
+
 export function slugify(str: string) {
   return str
     .toLowerCase()

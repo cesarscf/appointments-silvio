@@ -50,6 +50,9 @@ export const employees = pgTable("employees", {
     .notNull()
     .references(() => establishments.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
+  email: text("email"),
+  phone: text("phone"),
+  address: text("address"),
 });
 
 export const unavailabilities = pgTable("unavailabilities", {

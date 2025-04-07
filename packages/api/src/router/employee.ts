@@ -68,6 +68,9 @@ export const employeeRouter = {
     .input(
       z.object({
         name: z.string(),
+        email: z.string(),
+        phone: z.string(),
+        address: z.string(),
         serviceIds: z.array(z.string()),
       }),
     )
@@ -281,5 +284,58 @@ export const employeeRouter = {
         success: true,
         message: "Service desvilculado do funcionário.",
       };
+    }),
+
+  updateEmployee: protectedProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string().optional(),
+        email: z.string().optional(),
+        phone: z.string().optional(),
+        address: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { id, name, email, phone, address } = input;
+
+      const employee = await ctx.db.query.employees.findFirst({
+        where: (table) =>
+          and(eq(table.id, id), eq(table.establishmentId, ctx.establishmentId)),
+      });
+
+      if (!employee) {
+        throw new Error("Funcionário não encontrado.");
+      }
+
+      const updateData: {
+        name?: string;
+        email?: string;
+        phone?: string;
+        address?: string;
+      } = {};
+
+      if (name !== undefined) updateData.name = name;
+      if (email !== undefined) updateData.email = email;
+      if (phone !== undefined) updateData.phone = phone;
+      if (address !== undefined) updateData.address = address;
+
+      if (Object.keys(updateData).length === 0) {
+        throw new Error("Nenhum dado fornecido para atualização.");
+      }
+
+      // Executa a atualização
+      const [updatedEmployee] = await ctx.db
+        .update(employees)
+        .set(updateData)
+        .where(
+          and(
+            eq(employees.id, id),
+            eq(employees.establishmentId, ctx.establishmentId),
+          ),
+        )
+        .returning();
+
+      return updatedEmployee;
     }),
 };

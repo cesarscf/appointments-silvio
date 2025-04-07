@@ -28,10 +28,35 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
+import { Textarea } from "@/components/ui/textarea";
+import { applyPhoneMask } from "@/lib/utils";
 import { api } from "@/trpc/react";
 
-const schema = z.object({ name: z.string(), serviceIds: z.array(z.string()) });
+const schema = z.object({
+  name: z
+    .string()
+    .trim()
+    .min(1, { message: "Name is required" })
+    .max(100, { message: "Name must be less than 100 characters" }),
 
+  phone: z.string(),
+
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .email({ message: "Invalid email address" }),
+
+  address: z
+    .string()
+    .trim()
+    .min(5, { message: "Address must be at least 5 characters" })
+    .max(255, { message: "Address must be less than 255 characters" }),
+
+  serviceIds: z.array(
+    z.string().uuid({ message: "Invalid service ID format" }),
+  ),
+});
 type Inputs = z.infer<typeof schema>;
 
 export function CreateEmployeeButton({ services }: { services: Service[] }) {
@@ -42,6 +67,9 @@ export function CreateEmployeeButton({ services }: { services: Service[] }) {
     resolver: zodResolver(schema),
     defaultValues: {
       name: "",
+      email: "",
+      phone: "",
+      address: "",
       serviceIds: [],
     },
   });
@@ -63,9 +91,18 @@ export function CreateEmployeeButton({ services }: { services: Service[] }) {
   async function onSubmit(inputs: Inputs) {
     await createMutation.mutateAsync({
       name: inputs.name,
+      address: inputs.address,
+      email: inputs.email,
+      phone: inputs.phone,
       serviceIds: inputs.serviceIds,
     });
   }
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const phone = e.target.value.replace(/\D/g, "");
+    const formattedPhone = applyPhoneMask(phone);
+    form.setValue("phone", formattedPhone);
+  };
 
   return (
     <Dialog
@@ -94,6 +131,52 @@ export function CreateEmployeeButton({ services }: { services: Service[] }) {
                   <FormLabel>Nome</FormLabel>
                   <FormControl>
                     <Input type="text" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Telefone</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="text"
+                      {...field}
+                      onChange={handlePhoneChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input type="text" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Endereço</FormLabel>
+                  <FormControl>
+                    <Textarea {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

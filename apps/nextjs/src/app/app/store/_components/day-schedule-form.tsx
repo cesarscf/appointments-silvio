@@ -26,25 +26,24 @@ export function DayScheduleForm({
   dayIndex,
   dayName,
 }: DayScheduleFormProps) {
-  const dayData = form.watch(`businessHours.${dayIndex}`);
+  const dayData = form.watch(`hours.${dayIndex}`);
 
   const addInterval = () => {
     const currentIntervals =
-      form.getValues(`businessHours.${dayIndex}.intervals`) || [];
-    form.setValue(`businessHours.${dayIndex}.intervals`, [
+      form.getValues(`hours.${dayIndex}.intervals`) || [];
+    form.setValue(`hours.${dayIndex}.intervals`, [
       ...currentIntervals,
       { startTime: "12:00", endTime: "13:00" },
     ]);
   };
 
-  // Remove um intervalo
   const removeInterval = (intervalIndex: number) => {
     const currentIntervals =
-      form.getValues(`businessHours.${dayIndex}.intervals`) || [];
+      form.getValues(`hours.${dayIndex}.intervals`) || [];
     const updatedIntervals = currentIntervals.filter(
       (_: any, i: number) => i !== intervalIndex,
     );
-    form.setValue(`businessHours.${dayIndex}.intervals`, updatedIntervals);
+    form.setValue(`hours.${dayIndex}.intervals`, updatedIntervals);
   };
 
   return (
@@ -54,7 +53,7 @@ export function DayScheduleForm({
       <div className="grid grid-cols-2 gap-4">
         <FormField
           control={form.control}
-          name={`businessHours.${dayIndex}.openingTime`}
+          name={`hours.${dayIndex}.openingTime`}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Horário de Abertura</FormLabel>
@@ -68,7 +67,7 @@ export function DayScheduleForm({
 
         <FormField
           control={form.control}
-          name={`businessHours.${dayIndex}.closingTime`}
+          name={`hours.${dayIndex}.closingTime`}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Horário de Fechamento</FormLabel>
@@ -105,7 +104,7 @@ export function DayScheduleForm({
                     <div className="grid flex-1 grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
-                        name={`businessHours.${dayIndex}.intervals.${intervalIndex}.startTime`}
+                        name={`hours.${dayIndex}.intervals.${intervalIndex}.startTime`}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Hora de Início</FormLabel>
@@ -119,7 +118,7 @@ export function DayScheduleForm({
 
                       <FormField
                         control={form.control}
-                        name={`businessHours.${dayIndex}.intervals.${intervalIndex}.endTime`}
+                        name={`hours.${dayIndex}.intervals.${intervalIndex}.endTime`}
                         render={({ field }) => (
                           <FormItem>
                             <FormLabel>Hora de Término</FormLabel>

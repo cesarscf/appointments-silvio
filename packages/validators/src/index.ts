@@ -7,3 +7,6 @@ export * from "./employee";
 export * from "./clients";
 export * from "./store-hours";
 export * from "./appointment";
+// ...
+export * from "./establishment";
+export * from "./opening-hours";

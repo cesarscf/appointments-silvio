@@ -4,6 +4,7 @@ import { z } from "zod";
 import { eq } from "@acme/db";
 import { establishments } from "@acme/db/schema";
 import { slugify } from "@acme/utils";
+import { updateEstablishmentSchema } from "@acme/validators";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
 
@@ -74,14 +75,7 @@ export const establishmentRouter = {
   }),
 
   updateEstablishment: protectedProcedure
-    .input(
-      z.object({
-        name: z.string().optional(),
-        logo: z.string().optional(),
-        theme: z.string().optional(),
-        slug: z.string().optional(),
-      }),
-    )
+    .input(updateEstablishmentSchema)
     .mutation(async ({ input, ctx }) => {
       await ctx.db
         .update(establishments)
