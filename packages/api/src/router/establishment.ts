@@ -20,8 +20,12 @@ export const establishmentRouter = {
         where: (table, { eq }) => eq(table.slug, input.slug),
         with: {
           categories: true,
-          employees: true,
-          services: true,
+          employees: {
+            where: (employee, { eq }) => eq(employee.active, true),
+          },
+          services: {
+            where: (service, { eq }) => eq(service.active, true),
+          },
         },
       });
 

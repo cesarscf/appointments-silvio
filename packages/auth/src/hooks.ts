@@ -15,6 +15,8 @@ export async function createDefaultOrganization(user: {
       name: user.name,
       slug: `${slugify(user.name)}-${generateId().slice(0, 8)}`,
       userId: user.id,
+      about:
+        "Atendemos com qualidade, cuidado e dedicação. Aqui, você encontra um serviço feito para você, com horários flexíveis e uma equipe pronta para te receber. Agende sua visita!",
     })
     .returning();
 
