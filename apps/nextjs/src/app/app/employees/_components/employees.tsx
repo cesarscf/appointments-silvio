@@ -40,6 +40,7 @@ export function Employees() {
         {employees.map((employee) => (
           <EmployeeCard key={employee.id} employee={employee} />
         ))}
+
         {employeesEmpty ? "Nenhum funcionário cadastrado" : null}
       </div>
     </>

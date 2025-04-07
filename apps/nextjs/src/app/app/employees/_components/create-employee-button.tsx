@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import type { Service } from "@acme/db/schema";
+import { applyPhoneMask } from "@acme/utils";
+import { CreateEmployee, createEmployeeSchema } from "@acme/validators";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -29,42 +31,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { Textarea } from "@/components/ui/textarea";
-import { applyPhoneMask } from "@/lib/utils";
 import { api } from "@/trpc/react";
-
-const schema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, { message: "Name is required" })
-    .max(100, { message: "Name must be less than 100 characters" }),
-
-  phone: z.string(),
-
-  email: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .email({ message: "Invalid email address" }),
-
-  address: z
-    .string()
-    .trim()
-    .min(5, { message: "Address must be at least 5 characters" })
-    .max(255, { message: "Address must be less than 255 characters" }),
-
-  serviceIds: z.array(
-    z.string().uuid({ message: "Invalid service ID format" }),
-  ),
-});
-type Inputs = z.infer<typeof schema>;
 
 export function CreateEmployeeButton({ services }: { services: Service[] }) {
   const [open, setOpen] = React.useState(false);
 
   // react-hook-form
-  const form = useForm<Inputs>({
-    resolver: zodResolver(schema),
+  const form = useForm<CreateEmployee>({
+    resolver: zodResolver(createEmployeeSchema),
     defaultValues: {
       name: "",
       email: "",
@@ -88,14 +62,8 @@ export function CreateEmployeeButton({ services }: { services: Service[] }) {
     },
   });
 
-  async function onSubmit(inputs: Inputs) {
-    await createMutation.mutateAsync({
-      name: inputs.name,
-      address: inputs.address,
-      email: inputs.email,
-      phone: inputs.phone,
-      serviceIds: inputs.serviceIds,
-    });
+  async function onSubmit(inputs: CreateEmployee) {
+    await createMutation.mutateAsync(inputs);
   }
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {

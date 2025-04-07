@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Save } from "lucide-react";
 import { useQueryState } from "nuqs";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
+
+import { UpdateEmployee, updateEmployeeSchema } from "@acme/validators";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -37,19 +39,9 @@ import { api } from "@/trpc/react";
 import { EmployeeServiceManager } from "./employee-service-manager";
 import { EmployeeUnavailabilityForm } from "./update-unavailabilities-form";
 
-// Define the form schema with Zod
-const formSchema = z.object({
-  id: z.string(),
-  email: z.string().email().nullable(),
-  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
-  phone: z.string().nullable(),
-  address: z.string().nullable(),
-});
-
-type FormValues = z.infer<typeof formSchema>;
-
 export function EmployeeDetails() {
   const { id } = useParams();
+  const router = useRouter();
   const [employee] = api.employee.getEmployeeById.useSuspenseQuery({
     id: id as string,
   });
@@ -72,20 +64,30 @@ export function EmployeeDetails() {
     },
   });
 
+  const deleteEmployee = api.employee.deleteEmployee.useMutation({
+    onSuccess: () => {
+      toast.success("Funcionário excluído");
+      utils.employee.listEmployees.invalidate();
+      router.push("/app/employees");
+    },
+    onError: (err) => {
+      toast.error(err.message);
+    },
+  });
+
   // Initialize the form with employee data
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<UpdateEmployee>({
+    resolver: zodResolver(updateEmployeeSchema),
     defaultValues: {
-      id: employee.id,
-      email: employee.email,
+      email: employee.email ?? "",
       name: employee.name,
-      phone: employee.phone,
-      address: employee.address,
+      phone: employee.phone ?? "",
+      address: employee.address ?? "",
     },
   });
 
   // Handle form submission
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: UpdateEmployee) => {
     setIsSubmitting(true);
     try {
       await updateEmployee.mutateAsync({
@@ -261,6 +263,23 @@ export function EmployeeDetails() {
                         <Loader2 className="size-4 animate-spin" />
                       ) : (
                         "Salvar Alterações"
+                      )}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant={"destructive"}
+                      className="ml-2"
+                      disabled={deleteEmployee.isPending}
+                      onClick={() => {
+                        deleteEmployee.mutate({
+                          id: employee.id,
+                        });
+                      }}
+                    >
+                      {deleteEmployee.isPending ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        "Excluir"
                       )}
                     </Button>
                   </form>

@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { and, eq } from "@acme/db";
 import { employees, employeeServices, unavailabilities } from "@acme/db/schema";
+import { createEmployeeSchema } from "@acme/validators";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
 
@@ -65,20 +66,10 @@ export const employeeRouter = {
     }),
 
   createEmployee: protectedProcedure
-    .input(
-      z.object({
-        name: z.string(),
-        email: z.string(),
-        phone: z.string(),
-        address: z.string(),
-        serviceIds: z.array(z.string()),
-      }),
-    )
+    .input(createEmployeeSchema)
     .mutation(async ({ input, ctx }) => {
-      const { name, serviceIds } = input;
-
       const employeeWithSameName = await ctx.db.query.employees.findFirst({
-        where: (table) => eq(table.name, name),
+        where: (table) => eq(table.name, input.name),
       });
 
       if (employeeWithSameName) {
@@ -88,7 +79,7 @@ export const employeeRouter = {
       const [newEmployee] = await ctx.db
         .insert(employees)
         .values({
-          name,
+          ...input,
           establishmentId: ctx.establishmentId,
         })
         .returning();
@@ -114,8 +105,8 @@ export const employeeRouter = {
 
       await ctx.db.insert(unavailabilities).values(defaultUnavailabilities);
 
-      if (serviceIds.length > 0) {
-        const employeeServicesData = serviceIds.map((serviceId) => ({
+      if (input.serviceIds.length > 0) {
+        const employeeServicesData = input.serviceIds.map((serviceId) => ({
           employeeId: newEmployee.id,
           serviceId,
           commission: "0.00",
