@@ -317,4 +317,58 @@ export const employeeRouter = {
 
       return updatedEmployee;
     }),
+
+  updateEmployeeCommission: protectedProcedure
+    .input(
+      z.object({
+        employeeId: z.string(),
+        serviceId: z.string(),
+        commission: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      // Verifica se o funcionário pertence ao estabelecimento
+      const employee = await ctx.db.query.employees.findFirst({
+        where: (table) =>
+          and(
+            eq(table.id, input.employeeId),
+            eq(table.establishmentId, ctx.establishmentId),
+          ),
+      });
+
+      if (!employee) {
+        throw new Error("Funcionário não encontrado.");
+      }
+
+      // Verifica se o serviço pertence ao estabelecimento
+      const service = await ctx.db.query.services.findFirst({
+        where: (table) =>
+          and(
+            eq(table.id, input.serviceId),
+            eq(table.establishmentId, ctx.establishmentId),
+          ),
+      });
+
+      if (!service) {
+        throw new Error("Serviço não encontrado.");
+      }
+
+      // Atualiza a comissão na tabela de relacionamento
+      const [updatedCommission] = await ctx.db
+        .update(employeeServices)
+        .set({ commission: input.commission })
+        .where(
+          and(
+            eq(employeeServices.employeeId, input.employeeId),
+            eq(employeeServices.serviceId, input.serviceId),
+          ),
+        )
+        .returning();
+
+      if (!updatedCommission) {
+        throw new Error("Falha ao atualizar a comissão.");
+      }
+
+      return updatedCommission;
+    }),
 };

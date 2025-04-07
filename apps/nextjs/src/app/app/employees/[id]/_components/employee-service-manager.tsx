@@ -1,10 +1,8 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
+import * as React from "react";
 import { Loader2, Trash2 } from "lucide-react";
-import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import * as z from "zod";
 
 import type { Service } from "@acme/db/schema";
 
@@ -27,14 +25,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -64,40 +54,33 @@ interface EmployeeServiceManagerProps {
   services: Service[];
 }
 
-const schema = z.object({
-  serviceId: z.string(),
-  commission: z.string().optional(),
-});
-
-type Inputs = z.infer<typeof schema>;
-
 export function EmployeeServiceManager({
   employeeId,
   services,
   employeeServices,
 }: EmployeeServiceManagerProps) {
-  const form = useForm<Inputs>({
-    resolver: zodResolver(schema),
-    defaultValues: {
-      serviceId: "",
-      commission: "",
-    },
-  });
+  const [selectedService, setSelectedService] = React.useState("");
+  const [newCommission, setNewCommission] = React.useState("");
+  const [editCommission, setEditCommission] = React.useState("");
+  const [editingService, setEditingService] = React.useState<string | null>(
+    null,
+  );
 
   const apiUtils = api.useUtils();
+
+  // Mutations
   const deleteMutation = api.employee.deleteEmployeeService.useMutation({
     onSuccess: () => {
-      toast.success("Serviço desvinculado do funcionário");
-      form.reset();
+      toast.success("Serviço desvinculado");
       void apiUtils.employee.getEmployeeById.invalidate();
     },
-    onError: (error) => {
-      toast.error(error.message);
-    },
   });
+
   const createMutation = api.employee.addServiceToEmployee.useMutation({
     onSuccess: () => {
-      toast.success("Serviço vinculado ao funcionário");
+      toast.success("Serviço vinculado");
+      setSelectedService("");
+      setNewCommission("");
       void apiUtils.employee.getEmployeeById.invalidate();
     },
     onError: (error) => {
@@ -105,17 +88,36 @@ export function EmployeeServiceManager({
     },
   });
 
-  async function onSubmit(data: Inputs) {
-    if (data.serviceId === "") {
-      return toast.error("Escolha um serviço");
-    }
+  const updateMutation = api.employee.updateEmployeeCommission.useMutation({
+    onSuccess: () => {
+      toast.success("Comissão atualizada");
+      setEditingService(null);
+      void apiUtils.employee.getEmployeeById.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message);
+    },
+  });
+
+  const handleAddService = () => {
+    if (!selectedService) return toast.error("Selecione um serviço");
 
     createMutation.mutate({
       employeeId,
-      serviceId: data.serviceId,
-      commission: data.commission,
+      serviceId: selectedService,
+      commission: newCommission || "0.00",
     });
-  }
+  };
+
+  const handleUpdateCommission = () => {
+    if (!editingService || !editCommission) return;
+
+    updateMutation.mutate({
+      employeeId,
+      serviceId: editingService,
+      commission: editCommission,
+    });
+  };
 
   return (
     <Card className="w-full max-w-3xl">
@@ -124,54 +126,49 @@ export function EmployeeServiceManager({
         <CardDescription>Gerenciar serviços e comissões</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              <FormField
-                control={form.control}
-                name="serviceId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Serviço</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione um serviço" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {services.map((service) => (
-                          <SelectItem key={service.id} value={service.id}>
-                            {service.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="space-y-2">
+            <label>Serviço</label>
+            <Select
+              value={selectedService}
+              onValueChange={setSelectedService}
+              disabled={createMutation.isPending}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione um serviço" />
+              </SelectTrigger>
+              <SelectContent>
+                {services.map((service) => (
+                  <SelectItem key={service.id} value={service.id}>
+                    {service.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-              <FormField
-                control={form.control}
-                name="commission"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Comissão (%)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Opcional" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          <div className="space-y-2">
+            <label>Comissão (%)</label>
+            <Input
+              placeholder="Opcional"
+              value={newCommission}
+              onChange={(e) => setNewCommission(e.target.value)}
+              disabled={createMutation.isPending}
+            />
+          </div>
 
-              <div className="flex items-end">
-                <Button type="submit">Adicionar</Button>
-              </div>
-            </div>
-          </form>
-        </Form>
+          <div className="flex items-end">
+            <Button
+              onClick={handleAddService}
+              disabled={createMutation.isPending}
+            >
+              {createMutation.isPending && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Adicionar
+            </Button>
+          </div>
+        </div>
 
         <div className="rounded-md border">
           <Table>
@@ -189,53 +186,83 @@ export function EmployeeServiceManager({
                     colSpan={3}
                     className="py-6 text-center text-muted-foreground"
                   >
-                    Nenhum serviço atribuído ainda
+                    Nenhum serviço atribuído
                   </TableCell>
                 </TableRow>
               ) : (
                 employeeServices.map((service) => (
                   <TableRow key={service.id}>
                     <TableCell>{service.name}</TableCell>
-                    <TableCell>{service.commission} %</TableCell>
                     <TableCell>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="text-destructive hover:text-destructive"
+                      {Number(service.commission).toFixed(2)}%
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex space-x-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-primary hover:text-primary"
+                          onClick={() => {
+                            setEditingService(service.id);
+                            setEditCommission(service.commission);
+                          }}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="lucide lucide-pencil"
                           >
-                            <Trash2 className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Isso removerá o serviço deste funcionário.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => {
-                                deleteMutation.mutate({
-                                  serviceId: service.id,
-                                  employeeId,
-                                });
-                              }}
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                            <path d="m15 5 4 4" />
+                          </svg>
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="text-destructive hover:text-destructive"
                             >
-                              {deleteMutation.isPending ? (
-                                <Loader2 className="size-4 animate-spin" />
-                              ) : (
-                                "Confirmar"
-                              )}
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Confirmar exclusão
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Remover este serviço do funcionário?
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() =>
+                                  deleteMutation.mutate({
+                                    serviceId: service.id,
+                                    employeeId,
+                                  })
+                                }
+                                className="bg-destructive hover:bg-destructive/90"
+                              >
+                                {deleteMutation.isPending ? (
+                                  <Loader2 className="size-4 animate-spin" />
+                                ) : (
+                                  "Confirmar"
+                                )}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -244,6 +271,41 @@ export function EmployeeServiceManager({
           </Table>
         </div>
       </CardContent>
+
+      {/* Edição de Comissão */}
+      <AlertDialog
+        open={!!editingService}
+        onOpenChange={(open) => !open && setEditingService(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Editar Comissão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Digite a nova porcentagem de comissão
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Input
+              value={editCommission}
+              onChange={(e) => setEditCommission(e.target.value)}
+              placeholder="Ex: 25.50"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleUpdateCommission}
+              disabled={updateMutation.isPending}
+            >
+              {updateMutation.isPending ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                "Salvar"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
