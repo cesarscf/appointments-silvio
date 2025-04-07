@@ -79,9 +79,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             },
             {
               title: "Clientes",
-              url: "/app/clients",
+              url: "/app/customers",
               icon: Users,
-              isActive: segments.includes("clients"),
+              isActive: segments.includes("customers"),
             },
             {
               title: "Loja",

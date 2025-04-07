@@ -1,12 +1,12 @@
 import { api, HydrateClient } from "@/trpc/server";
-import Clients from "./_components/clients";
+import { Customers } from "./_components/customers";
 
 export default function Page() {
   void api.customer.listCustomers.prefetch();
 
   return (
     <HydrateClient>
-      <Clients />
+      <Customers />
     </HydrateClient>
   );
 }

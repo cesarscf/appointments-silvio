@@ -11,21 +11,22 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { api } from "@/trpc/react";
-import { CustomerCard } from "./client-card";
-import { CreateClientButton } from "./create-client-button";
+import { CreateCustomerButton } from "./create-customer-button";
+import { CustomerCard } from "./customer-card";
 
-export default function Clients() {
-  const [clients] = api.customer.listCustomers.useSuspenseQuery();
+export function Customers() {
+  const [customers] = api.customer.listCustomers.useSuspenseQuery();
 
   const apiUtils = api.useUtils();
   const deleteMutation = api.customer.deleteCustomer.useMutation({
     onSuccess: () => {
-      toast.success("Cliente excluído");
+      toast.success("Cliente excluído.");
       void apiUtils.customer.listCustomers.invalidate();
     },
   });
 
-  const clientsEmpty = clients.length < 1;
+  const customersEmpty = customers.length < 1;
+
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
@@ -39,12 +40,12 @@ export default function Clients() {
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
-          <CreateClientButton />
+          <CreateCustomerButton />
         </div>
       </header>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 px-8 pb-8 sm:grid-cols-2 md:grid-cols-3">
-        {clients.map((client) => (
+      <div className="mt-4 grid grid-cols-1 gap-6 px-8 pb-8 sm:grid-cols-2 md:grid-cols-3">
+        {customers.map((client) => (
           <CustomerCard
             key={client.id}
             customer={client}
@@ -56,7 +57,7 @@ export default function Clients() {
           />
         ))}
 
-        {clientsEmpty ? "Nenhum cliente cadastrado" : null}
+        {customersEmpty ? "Nenhum cliente cadastrado..." : null}
       </div>
     </>
   );

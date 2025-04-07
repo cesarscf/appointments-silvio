@@ -15,7 +15,7 @@ import type { Customer } from "@acme/db/schema";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { applyCpfMask, applyPhoneMask } from "@/lib/utils";
-import { UpdateCustomerButton } from "./update-client-button";
+import { UpdateCustomerButton } from "./update-customer-button";
 
 export function CustomerCard({
   customer,

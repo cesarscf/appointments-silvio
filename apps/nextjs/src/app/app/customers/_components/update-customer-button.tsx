@@ -9,6 +9,10 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import type { Customer } from "@acme/db/schema";
+import { clearNumber } from "@acme/utils";
+import { UpdateCustomer, updateCustomerSchema } from "@acme/validators";
+
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -34,79 +38,59 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
+import { applyCpfMask, applyPhoneMask, cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
 
-const schema = z.object({
-  name: z.string(),
-  cpf: z.string(),
-  birthDate: z.coerce.date(),
-  phoneNumber: z.string().optional(),
-  email: z.string().optional(),
-  address: z.string().optional(),
-});
-
-type Inputs = z.infer<typeof schema>;
-
-export function CreateClientButton() {
+export function UpdateCustomerButton({
+  customer,
+  children,
+}: {
+  customer: Customer;
+  children: React.ReactNode;
+}) {
   const [open, setOpen] = React.useState(false);
 
   // react-hook-form
-  const form = useForm<Inputs>({
-    resolver: zodResolver(schema),
+  const form = useForm<UpdateCustomer>({
+    resolver: zodResolver(updateCustomerSchema),
     defaultValues: {
-      name: "",
-      address: "",
-      birthDate: new Date(),
-      cpf: "",
-      email: "",
-      phoneNumber: "",
+      id: customer.id,
+      name: customer.name,
+      phoneNumber: customer.phoneNumber ?? "",
+      birthDate: new Date(customer.birthDate),
+      cpf: customer.cpf ?? "",
+      email: customer.email ?? "",
+      address: customer.address ?? "",
     },
   });
 
   const apiUtils = api.useUtils();
 
-  const createMutation = api.customer.createCustomer.useMutation({
+  const updateMutation = api.customer.updateCustomer.useMutation({
     onSuccess: () => {
-      toast.success("Cliente adicionado com sucesso.");
+      toast.success("Cliente atualizado.");
       void apiUtils.customer.listCustomers.invalidate();
       setOpen(false);
       form.reset();
     },
     onError: (error) => {
-      toast.error("Erro ao adicionar cliente.", {
+      toast.error("Erro ao atualizar cliente.", {
         description: error.message,
       });
     },
   });
 
-  async function onSubmit(inputs: Inputs) {
-    await createMutation.mutateAsync({
+  async function onSubmit(inputs: UpdateCustomer) {
+    await updateMutation.mutateAsync({
       name: inputs.name,
       birthDate: inputs.birthDate,
-      phoneNumber: inputs.phoneNumber?.replace(/\D/g, "") ?? "",
-      address: inputs.address ?? "",
-      cpf: inputs.cpf.replace(/\D/g, "") ?? "",
-      email: inputs.email ?? "",
+      address: inputs.address,
+      phoneNumber: inputs.phoneNumber ?? "",
+      cpf: inputs.cpf ?? "",
+      email: inputs.email,
+      id: customer.id,
     });
   }
-
-  const applyCpfMask = (value: string) => {
-    return value
-      .replace(/\D/g, "")
-      .replace(/(\d{3})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d)/, "$1.$2")
-      .replace(/(\d{3})(\d{1,2})/, "$1-$2")
-      .slice(0, 14);
-  };
-
-  const applyPhoneMask = (value: string) => {
-    return value
-      .replace(/\D/g, "")
-      .replace(/(\d{2})(\d)/, "($1) $2")
-      .replace(/(\d{5})(\d)/, "$1-$2")
-      .slice(0, 15);
-  };
 
   return (
     <Dialog
@@ -116,13 +100,11 @@ export function CreateClientButton() {
         setOpen((prev) => !prev);
       }}
     >
-      <DialogTrigger asChild className="ml-auto mr-4">
-        <Button>Adicionar cliente</Button>
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Novo cliente</DialogTitle>
-          <DialogDescription>Adicione um novo cliente</DialogDescription>
+          <DialogTitle>Atualizar cliente</DialogTitle>
+          <DialogDescription>Atualize o cliente</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -156,7 +138,7 @@ export function CreateClientButton() {
                       <Input
                         type="text"
                         placeholder="(00) 00000-0000"
-                        {...field}
+                        value={field.value}
                         onChange={(e) => {
                           field.onChange(applyPhoneMask(e.target.value));
                         }}
@@ -199,7 +181,7 @@ export function CreateClientButton() {
                         locale={ptBR}
                         selected={field.value}
                         onSelect={field.onChange}
-                        disabled={(date) => date > new Date()}
+                        disabled={(date) => date > new Date()} // Desabilita datas futuras
                         initialFocus
                       />
                     </PopoverContent>
@@ -237,7 +219,7 @@ export function CreateClientButton() {
                     <Input
                       type="text"
                       placeholder="000.000.000-00"
-                      {...field}
+                      value={field.value}
                       onChange={(e) => {
                         field.onChange(applyCpfMask(e.target.value));
                       }}
@@ -268,16 +250,16 @@ export function CreateClientButton() {
             <Button
               type="submit"
               className="ml-auto w-fit"
-              disabled={createMutation.isPending}
+              disabled={updateMutation.isPending}
             >
-              {createMutation.isPending && (
+              {updateMutation.isPending && (
                 <Loader2
                   className="mr-2 size-4 animate-spin"
                   aria-hidden="true"
                 />
               )}
-              Criar
-              <span className="sr-only">Criar</span>
+              Salvar
+              <span className="sr-only">Salvar</span>
             </Button>
           </form>
         </Form>

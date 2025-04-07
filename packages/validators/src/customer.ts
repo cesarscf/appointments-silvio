@@ -1,14 +1,14 @@
 import { z } from "zod";
 
-export const createClientSchema = z.object({
+export const createCustomerSchema = z.object({
   name: z
     .string()
     .min(3, { message: "O nome deve ter pelo menos 3 caracteres." })
     .max(256, { message: "O nome não pode exceder 256 caracteres." }),
-  phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, {
+  phoneNumber: z.string().min(15, {
     message: "Por favor, insira um número de telefone válido.",
   }),
-  birthday: z.coerce.date({
+  birthDate: z.coerce.date({
     required_error: "É necessária uma data de nascimento.",
   }),
 
@@ -17,19 +17,20 @@ export const createClientSchema = z.object({
   address: z.string().optional(),
 });
 
-export const updateClientSchema = z.object({
+export const updateCustomerSchema = z.object({
+  id: z.string().uuid(),
   name: z
     .string()
     .min(3, { message: "O nome deve ter pelo menos 3 caracteres." })
     .max(256, { message: "O nome não pode exceder 256 caracteres." })
     .optional(),
-  phone: z
+  phoneNumber: z
     .string()
-    .regex(/^\+?[1-9]\d{1,14}$/, {
+    .min(15, {
       message: "Por favor, insira um número de telefone válido.",
     })
     .optional(),
-  birthday: z.coerce
+  birthDate: z.coerce
     .date({
       required_error: "É necessária uma data de nascimento.",
     })
@@ -38,3 +39,6 @@ export const updateClientSchema = z.object({
   cpf: z.string().optional(),
   address: z.string().optional(),
 });
+
+export type CreateCustomer = z.infer<typeof createCustomerSchema>;
+export type UpdateCustomer = z.infer<typeof updateCustomerSchema>;

@@ -1,12 +1,10 @@
 export * from "./auth";
-export * from "./store";
 export * from "./category";
 export * from "./service";
 export * from "./employee";
 export * from "./employee";
-export * from "./clients";
-export * from "./store-hours";
 export * from "./appointment";
 // ...
 export * from "./establishment";
 export * from "./opening-hours";
+export * from "./customer";

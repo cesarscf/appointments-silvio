@@ -2,6 +2,8 @@ import { z } from "zod";
 
 import { eq } from "@acme/db";
 import { customers } from "@acme/db/schema";
+import { clearNumber } from "@acme/utils";
+import { createCustomerSchema, updateCustomerSchema } from "@acme/validators";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
 
@@ -11,6 +13,7 @@ export const customerRouter = {
       .select()
       .from(customers)
       .where(eq(customers.establishmentId, ctx.establishmentId));
+
     return customersList;
   }),
 
@@ -35,17 +38,7 @@ export const customerRouter = {
     }),
 
   updateCustomer: protectedProcedure
-    .input(
-      z.object({
-        id: z.string().uuid(),
-        name: z.string().optional(),
-        cpf: z.string().optional(),
-        birthDate: z.coerce.date().optional(),
-        phoneNumber: z.string().optional(),
-        email: z.string().optional(),
-        address: z.string().optional(),
-      }),
-    )
+    .input(updateCustomerSchema)
     .mutation(async ({ input, ctx }) => {
       const { id, ...data } = input;
 
@@ -61,7 +54,11 @@ export const customerRouter = {
 
       const [updatedCustomer] = await ctx.db
         .update(customers)
-        .set(data)
+        .set({
+          ...data,
+          cpf: clearNumber(input.cpf ?? ""),
+          phoneNumber: clearNumber(input.phoneNumber ?? ""),
+        })
         .where(eq(customers.id, id))
         .returning();
 
@@ -73,28 +70,17 @@ export const customerRouter = {
     }),
 
   createCustomer: protectedProcedure
-    .input(
-      z.object({
-        name: z.string(),
-        cpf: z.string(),
-        birthDate: z.coerce.date(),
-        phoneNumber: z.string().optional(),
-        email: z.string().optional(),
-        address: z.string().optional(),
-      }),
-    )
+    .input(createCustomerSchema)
     .mutation(async ({ input, ctx }) => {
-      const { name, cpf, birthDate, phoneNumber, email, address } = input;
-
       const [newCustomer] = await ctx.db
         .insert(customers)
         .values({
-          name,
-          cpf,
-          birthDate,
-          phoneNumber,
-          email,
-          address,
+          name: input.name,
+          birthDate: input.birthDate,
+          phoneNumber: clearNumber(input.phoneNumber),
+          cpf: clearNumber(input.cpf ?? ""),
+          email: input.email ?? "",
+          address: input.address ?? "",
           establishmentId: ctx.establishmentId,
         })
         .returning();
