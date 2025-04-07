@@ -1,8 +1,10 @@
+import React from "react";
 import Image from "next/image";
 import { Clock, Edit, Trash2 } from "lucide-react";
 
 import type { Category, Service } from "@acme/db/schema";
 
+import { DeleteConfirmationModal } from "@/components/confirm-delete-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,47 +29,60 @@ export function ServiceCard({
   onDelete,
   deleteIsPending,
 }: ServiceCardProps) {
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
   return (
-    <Card className="w-full overflow-hidden">
-      <CardHeader className="p-0">
-        <div className="flex h-28 w-full items-center justify-center bg-gray-200">
-          <span className="text-gray-400">Sem imagem</span>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-2 p-4">
-        <CardTitle className="text-xl">{service.name}</CardTitle>
-        <div className="flex flex-wrap gap-2">
-          {service.categories.map((category) => (
-            <Badge key={category.id}>{category.name}</Badge>
-          ))}
-        </div>
-        <div className="flex items-center justify-between">
-          <Badge variant="secondary" className="text-lg">
-            {formatPrice(service.price)}
-          </Badge>
-          <div className="flex items-center text-sm text-gray-500">
-            <Clock className="mr-1 h-4 w-4" />
-            <span>{formatTime(service.duration.toString())} min</span>
+    <>
+      <Card className="w-full overflow-hidden">
+        <CardHeader className="p-0">
+          <div className="flex h-28 w-full items-center justify-center bg-gray-200">
+            <span className="text-gray-400">Sem imagem</span>
           </div>
-        </div>
-        <div className="flex justify-between">
-          <UpdateServiceButton categories={categories} service={service}>
-            <Button variant="outline" size="sm">
-              <Edit className="mr-2 h-4 w-4" />
-              Editar
+        </CardHeader>
+        <CardContent className="space-y-2 p-4">
+          <CardTitle className="text-xl">{service.name}</CardTitle>
+          <div className="flex flex-wrap gap-2">
+            {service.categories.map((category) => (
+              <Badge key={category.id}>{category.name}</Badge>
+            ))}
+          </div>
+          <div className="flex items-center justify-between">
+            <Badge variant="secondary" className="text-lg">
+              {formatPrice(service.price)}
+            </Badge>
+            <div className="flex items-center text-sm text-gray-500">
+              <Clock className="mr-1 h-4 w-4" />
+              <span>{formatTime(service.duration.toString())} min</span>
+            </div>
+          </div>
+          <div className="flex justify-between">
+            <UpdateServiceButton categories={categories} service={service}>
+              <Button variant="outline" size="sm">
+                <Edit className="mr-2 h-4 w-4" />
+                Editar
+              </Button>
+            </UpdateServiceButton>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => setIsDeleteModalOpen(true)}
+              disabled={deleteIsPending}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Excluir
             </Button>
-          </UpdateServiceButton>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => onDelete(service.id)}
-            disabled={deleteIsPending}
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Excluir
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+          </div>
+        </CardContent>
+      </Card>
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={() => {
+          onDelete(service.id);
+          setIsDeleteModalOpen(false);
+        }}
+        title="Confirmar exclusão"
+        description={`Tem certeza de que deseja excluir ${service.name}? Essa ação é irreversível e todos os itens relacionados a este serviço também serão excluídos.`}
+      />
+    </>
   );
 }

@@ -3,14 +3,15 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Save } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useQueryState } from "nuqs";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import * as z from "zod";
 
-import { UpdateEmployee, updateEmployeeSchema } from "@acme/validators";
+import type { UpdateEmployee } from "@acme/validators";
+import { updateEmployeeSchema } from "@acme/validators";
 
+import { DeleteConfirmationModal } from "@/components/confirm-delete-modal";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -53,6 +54,7 @@ export function EmployeeDetails() {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const updateEmployee = api.employee.updateEmployee.useMutation({
     onSuccess: () => {
@@ -269,18 +271,9 @@ export function EmployeeDetails() {
                       type="button"
                       variant={"destructive"}
                       className="ml-2"
-                      disabled={deleteEmployee.isPending}
-                      onClick={() => {
-                        deleteEmployee.mutate({
-                          id: employee.id,
-                        });
-                      }}
+                      onClick={() => setIsDeleteModalOpen(true)}
                     >
-                      {deleteEmployee.isPending ? (
-                        <Loader2 className="size-4 animate-spin" />
-                      ) : (
-                        "Excluir"
-                      )}
+                      Excluir
                     </Button>
                   </form>
                 </Form>
@@ -308,6 +301,19 @@ export function EmployeeDetails() {
           </div>
         </TabsContent>
       </Tabs>
+
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={() => {
+          deleteEmployee.mutate({
+            id: employee.id,
+          });
+          setIsDeleteModalOpen(false);
+        }}
+        title="Confirmar exclusão"
+        description={`Tem certeza que deseja excluir ${employee.name}? Essa ação é irreversível e todos os itens relacionados a este funcionário também serão excluídos.`}
+      />
     </>
   );
 }

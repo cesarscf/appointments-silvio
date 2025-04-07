@@ -1,9 +1,11 @@
 "use client";
 
+import React from "react";
 import { Edit, Trash2 } from "lucide-react";
 import { useQueryState } from "nuqs";
 import { toast } from "sonner";
 
+import { DeleteConfirmationModal } from "@/components/confirm-delete-modal";
 import {
   Breadcrumb,
   BreadcrumbItem,

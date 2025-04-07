@@ -1,17 +1,21 @@
+"use client";
+
+import { useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   Calendar,
   Edit,
-  FileUser,
+  FileIcon as FileUser,
   MailIcon,
-  MapPinHouse,
+  MapPinIcon as MapPinHouse,
   PhoneIcon,
   Trash2,
 } from "lucide-react";
 
 import type { Customer } from "@acme/db/schema";
 
+import { DeleteConfirmationModal } from "@/components/confirm-delete-modal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { applyCpfMask, applyPhoneMask } from "@/lib/utils";
@@ -24,64 +28,85 @@ export function CustomerCard({
   customer: Customer;
   onDelete: (id: string) => void;
 }) {
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+
+  const handleDelete = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    onDelete(customer.id);
+    setIsDeleteModalOpen(false);
+  };
+
   return (
-    <Card className="w-full max-w-sm">
-      <CardContent className="flex items-center space-x-4 p-4">
-        <div className="flex-1 space-y-1">
-          <p className="text-md mb-2 font-medium leading-none">
-            {customer.name}
-          </p>
-          <div className="flex items-center text-sm text-muted-foreground">
-            <PhoneIcon className="mr-1 h-4 w-4" />
-            {applyPhoneMask(customer.phoneNumber ?? "")}
+    <>
+      <Card className="w-full max-w-sm">
+        <CardContent className="flex items-center space-x-4 p-4">
+          <div className="flex-1 space-y-1">
+            <p className="text-md mb-2 font-medium leading-none">
+              {customer.name}
+            </p>
+            <div className="flex items-center text-sm text-muted-foreground">
+              <PhoneIcon className="mr-1 h-4 w-4" />
+              {applyPhoneMask(customer.phoneNumber ?? "")}
+            </div>
+
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Calendar className="mr-1 h-4 w-4" />
+              {format(customer.birthDate, "PPP", { locale: ptBR })}
+            </div>
+
+            <div className="flex items-center text-sm text-muted-foreground">
+              <MailIcon className="mr-1 h-4 w-4" />
+              {customer.email == "" || customer.email == null
+                ? "Não informado"
+                : customer.email}
+            </div>
+
+            <div className="flex items-center text-sm text-muted-foreground">
+              <FileUser className="mr-1 h-4 w-4" />
+
+              {customer.cpf == "" || customer.cpf == null
+                ? "Não informado"
+                : applyCpfMask(customer.cpf)}
+            </div>
+
+            <div className="flex items-center text-sm text-muted-foreground">
+              <MapPinHouse className="mr-1 h-4 w-4" />
+
+              {customer.address == "" || customer.address == null
+                ? "Não informado"
+                : customer.address}
+            </div>
           </div>
-
-          <div className="flex items-center text-sm text-muted-foreground">
-            <Calendar className="mr-1 h-4 w-4" />
-            {format(customer.birthDate, "PPP", { locale: ptBR })}
-          </div>
-
-          <div className="flex items-center text-sm text-muted-foreground">
-            <MailIcon className="mr-1 h-4 w-4" />
-            {customer.email == "" || customer.email == null
-              ? "Não informado"
-              : customer.email}
-          </div>
-
-          <div className="flex items-center text-sm text-muted-foreground">
-            <FileUser className="mr-1 h-4 w-4" />
-
-            {customer.cpf == "" || customer.cpf == null
-              ? "Não informado"
-              : applyCpfMask(customer.cpf)}
-          </div>
-
-          <div className="flex items-center text-sm text-muted-foreground">
-            <MapPinHouse className="mr-1 h-4 w-4" />
-
-            {customer.address == "" || customer.address == null
-              ? "Não informado"
-              : customer.address}
-          </div>
-        </div>
-      </CardContent>
-      <CardFooter className="flex gap-2">
-        <UpdateCustomerButton customer={customer}>
-          <Button variant="outline" size="sm" className="w-full">
-            <Edit className="mr-2 h-4 w-4" />
-            Editar
+        </CardContent>
+        <CardFooter className="flex gap-2">
+          <UpdateCustomerButton customer={customer}>
+            <Button variant="outline" size="sm" className="w-full">
+              <Edit className="mr-2 h-4 w-4" />
+              Editar
+            </Button>
+          </UpdateCustomerButton>
+          <Button
+            variant="destructive"
+            size="sm"
+            className="w-full"
+            onClick={handleDelete}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Excluir
           </Button>
-        </UpdateCustomerButton>
-        <Button
-          variant="destructive"
-          size="sm"
-          className="w-full"
-          onClick={() => onDelete(customer.id)}
-        >
-          <Trash2 className="mr-2 h-4 w-4" />
-          Excluir
-        </Button>
-      </CardFooter>
-    </Card>
+        </CardFooter>
+      </Card>
+
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Confirmar exclusão"
+        description={`Tem certeza que deseja excluir ${customer.name}? Essa ação é irreversível e todos os itens relacionados a este cliente também serão excluídos.`}
+      />
+    </>
   );
 }
