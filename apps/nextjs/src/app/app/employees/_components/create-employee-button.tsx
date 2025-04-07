@@ -1,11 +1,11 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
 
 import type { Service } from "@acme/db/schema";
 import { applyPhoneMask } from "@acme/utils";
@@ -34,6 +34,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/trpc/react";
 
 export function CreateEmployeeButton({ services }: { services: Service[] }) {
+  const router = useRouter();
   const [open, setOpen] = React.useState(false);
 
   // react-hook-form
@@ -51,11 +52,13 @@ export function CreateEmployeeButton({ services }: { services: Service[] }) {
   const apiUtils = api.useUtils();
 
   const createMutation = api.employee.createEmployee.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Funcionário criado.");
       void apiUtils.employee.listEmployees.invalidate();
+      void apiUtils.establishment.getOnboardingCheck.invalidate();
       setOpen(false);
       form.reset();
+      router.push(`/app/employees/${data.id}`);
     },
     onError: (error) => {
       toast.error(error.message);
@@ -63,6 +66,9 @@ export function CreateEmployeeButton({ services }: { services: Service[] }) {
   });
 
   async function onSubmit(inputs: CreateEmployee) {
+    if (inputs.serviceIds.length < 1) {
+      return toast.error("Adicione ao menos um serviço a este funcionário.");
+    }
     await createMutation.mutateAsync(inputs);
   }
 

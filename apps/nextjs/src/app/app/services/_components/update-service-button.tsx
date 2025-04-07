@@ -66,6 +66,7 @@ export function UpdateServiceButton({
     onSuccess: () => {
       toast.success("Serviço atualizado.");
       void apiUtils.service.listServices.invalidate();
+      void apiUtils.establishment.getOnboardingCheck.invalidate();
       setOpen(false);
       form.reset();
     },

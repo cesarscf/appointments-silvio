@@ -23,13 +23,22 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { api } from "@/trpc/react";
+import { OnboardingChecklist } from "./onboarding-checklist";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const segments = useSelectedLayoutSegments();
 
   const [store] = api.establishment.getEstablishmentById.useSuspenseQuery();
+  const [onboardingCheck] =
+    api.establishment.getOnboardingCheck.useSuspenseQuery();
+
+  const isOnboardingComplete =
+    onboardingCheck.serviceCreated &&
+    onboardingCheck.categoryCreated &&
+    onboardingCheck.employeeCreated;
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -51,6 +60,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
+        {!isOnboardingComplete && (
+          <>
+            <OnboardingChecklist onboardingCheck={onboardingCheck} />
+            <SidebarSeparator />
+          </>
+        )}
         <NavMain
           items={[
             {

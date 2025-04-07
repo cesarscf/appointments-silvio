@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { eq } from "@acme/db";
-import { establishments } from "@acme/db/schema";
+import { establishments, services } from "@acme/db/schema";
 import { slugify } from "@acme/utils";
 import { updateEstablishmentSchema } from "@acme/validators";
 
@@ -88,4 +88,24 @@ export const establishmentRouter = {
         })
         .where(eq(establishments.id, ctx.establishmentId));
     }),
+
+  getOnboardingCheck: protectedProcedure.query(async ({ ctx }) => {
+    const servicesResult = await ctx.db.query.services.findMany({
+      where: eq(services.establishmentId, ctx.establishmentId),
+    });
+
+    const categoriesResult = await ctx.db.query.categories.findMany({
+      where: eq(services.establishmentId, ctx.establishmentId),
+    });
+
+    const employeesResult = await ctx.db.query.employees.findMany({
+      where: eq(services.establishmentId, ctx.establishmentId),
+    });
+
+    return {
+      serviceCreated: servicesResult.length > 0,
+      categoryCreated: categoriesResult.length > 0,
+      employeeCreated: employeesResult.length > 0,
+    };
+  }),
 };

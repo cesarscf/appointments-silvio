@@ -45,6 +45,7 @@ export function CreateCategoryButton() {
   const createMutation = api.category.createCategory.useMutation({
     onSuccess: () => {
       void apiUtils.category.listCategories.invalidate();
+      void apiUtils.establishment.getOnboardingCheck.invalidate();
       toast.success("Categoria criada.");
       setOpen(false);
       form.reset();

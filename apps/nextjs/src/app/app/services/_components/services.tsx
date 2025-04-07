@@ -52,6 +52,7 @@ export function Services() {
     onSuccess: () => {
       toast.success("Serviço excluído.");
       void apiUtils.service.listServices.invalidate();
+      void apiUtils.establishment.getOnboardingCheck.invalidate();
     },
   });
 
@@ -59,6 +60,7 @@ export function Services() {
     onSuccess: () => {
       toast.success("Categoria excluída.");
       void apiUtils.category.listCategories.invalidate();
+      void apiUtils.establishment.getOnboardingCheck.invalidate();
     },
   });
 

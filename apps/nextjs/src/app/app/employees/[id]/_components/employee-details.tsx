@@ -61,7 +61,8 @@ export function EmployeeDetails() {
   const updateEmployee = api.employee.updateEmployee.useMutation({
     onSuccess: () => {
       toast.success("Funcionário atualizado");
-      utils.employee.getEmployeeById.invalidate({ id: id as string });
+      void utils.employee.getEmployeeById.invalidate({ id: id as string });
+      void utils.establishment.getOnboardingCheck.invalidate();
     },
     onError: (err) => {
       toast.error(err.message);
@@ -71,7 +72,8 @@ export function EmployeeDetails() {
   const deleteEmployee = api.employee.deleteEmployee.useMutation({
     onSuccess: () => {
       toast.success("Funcionário excluído");
-      utils.employee.listEmployees.invalidate();
+      void utils.employee.listEmployees.invalidate();
+      void utils.establishment.getOnboardingCheck.invalidate();
       router.push("/app/employees");
     },
     onError: (err) => {
@@ -95,7 +97,6 @@ export function EmployeeDetails() {
   const onSubmit = async (data: UpdateEmployee) => {
     setIsSubmitting(true);
     try {
-      console.log(data);
       await updateEmployee.mutateAsync({
         id: employee.id,
         address: data.address ?? "",

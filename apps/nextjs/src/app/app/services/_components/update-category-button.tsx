@@ -53,6 +53,7 @@ export function UpdateCategoryButton({
     onSuccess: () => {
       toast.success("Categoria atualizada.");
       void apiUtils.category.listCategories.invalidate();
+      void apiUtils.establishment.getOnboardingCheck.invalidate();
       setOpen(false);
       form.reset();
     },

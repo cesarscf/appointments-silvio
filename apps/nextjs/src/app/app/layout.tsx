@@ -14,6 +14,7 @@ export default async function Layout({ children }: React.PropsWithChildren) {
   }
 
   void api.establishment.getEstablishmentById.prefetch();
+  void api.establishment.getOnboardingCheck.prefetch();
 
   return (
     <SidebarProvider>

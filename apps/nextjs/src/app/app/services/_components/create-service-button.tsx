@@ -54,6 +54,7 @@ export function CreateServiceButton({
     onSuccess: () => {
       toast.success("Serviço criado com sucesso.");
       void apiUtils.service.listServices.invalidate();
+      void apiUtils.establishment.getOnboardingCheck.invalidate();
       setOpen(false);
       form.reset();
     },
