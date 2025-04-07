@@ -124,7 +124,13 @@ export function Services() {
               />
             ))}
           </div>
-          {servicesEmpty ? "Nenhum serviço cadastrado" : null}
+          {filteredServices.length === 0 && (
+            <p className="text-muted-foreground">
+              {services.length === 0
+                ? "Nenhum serviço cadastrado"
+                : "Nenhum serviço encontrado"}
+            </p>
+          )}
         </TabsContent>
 
         <TabsContent value="category">

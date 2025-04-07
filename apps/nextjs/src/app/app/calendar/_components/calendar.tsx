@@ -72,23 +72,6 @@ export default function Calendar() {
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button className="ml-auto" size="sm" asChild>
-                <Link
-                  href={`/app/calendar/new?today=${new Date().toISOString()}`}
-                >
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Novo Agendamento
-                </Link>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Adicionar novo agendamento</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
       </header>
       <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
         <Card className="shadow-sm">
