@@ -43,7 +43,7 @@ export function Customers() {
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbPage>
-                  Clientes {`(${customers.length})`}
+                  Clientes {`(${customers.length}) `}
                 </BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>

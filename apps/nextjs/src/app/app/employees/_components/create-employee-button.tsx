@@ -66,9 +66,6 @@ export function CreateEmployeeButton({ services }: { services: Service[] }) {
   });
 
   async function onSubmit(inputs: CreateEmployee) {
-    if (inputs.serviceIds.length < 1) {
-      return toast.error("Adicione ao menos um serviço a este funcionário.");
-    }
     await createMutation.mutateAsync(inputs);
   }
 

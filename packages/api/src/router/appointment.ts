@@ -206,8 +206,9 @@ export const appointmentRouter = {
         date: z.date(),
       }),
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
       const { serviceId, employeeId, establishmentId, date } = input;
+      const { db } = ctx;
       const dayOfWeek = date.getDay(); // 0 (Domingo) a 6 (Sábado)
 
       // 1. Buscar informações do serviço
@@ -328,6 +329,13 @@ export const appointmentRouter = {
         }
       }
 
+      // Verificação de data/hora atual
+      const now = new Date();
+      const isToday =
+        date.getFullYear() === now.getFullYear() &&
+        date.getMonth() === now.getMonth() &&
+        date.getDate() === now.getDate();
+
       return {
         service,
         date,
@@ -335,7 +343,10 @@ export const appointmentRouter = {
           openingTime: openingHoursResult.openingTime,
           closingTime: openingHoursResult.closingTime,
         },
-        availableSlots: slots.filter((slot) => slot.available),
+        availableSlots: slots.filter((slot) => {
+          const isFutureSlot = !isToday || slot.start >= now;
+          return slot.available && isFutureSlot;
+        }),
       };
     }),
 };
