@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ptBR } from "date-fns/locale";
+import { format, parse } from "date-fns";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -12,7 +12,6 @@ import { applyCpfMask, applyPhoneMask } from "@acme/utils";
 import { createCustomerSchema } from "@acme/validators";
 
 import { Button } from "@/components/ui/button";
-import { DateInput } from "@/components/ui/date-input";
 import {
   Dialog,
   DialogContent,
@@ -136,20 +135,61 @@ export function CreateCustomerButton() {
             <FormField
               control={form.control}
               name="birthDate"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Data de nascimento *</FormLabel>
-                  <FormControl>
-                    <DateInput
-                      locale={ptBR}
-                      value={field.value}
-                      onChange={field.onChange}
-                      placeholder="DD/MM/AAAA"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const [displayValue, setDisplayValue] = React.useState(
+                  field.value ? format(field.value, "dd/MM/yyyy") : "",
+                );
+
+                React.useEffect(() => {
+                  setDisplayValue(
+                    field.value ? format(field.value, "dd/MM/yyyy") : "",
+                  );
+                }, [field.value]);
+
+                return (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Data de nascimento *</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="DD/MM/AAAA"
+                        value={displayValue}
+                        onChange={(e) => {
+                          const rawValue = e.target.value.replace(/\D/g, "");
+                          let formattedValue = "";
+
+                          // Aplica a máscara
+                          if (rawValue.length > 0) {
+                            formattedValue = rawValue
+                              .slice(0, 8)
+                              .replace(/^(\d{2})/, "$1/")
+                              .replace(/^(\d{2}\/\d{2})/, "$1/")
+                              .slice(0, 10);
+                          }
+
+                          setDisplayValue(formattedValue);
+
+                          // Tenta parsear apenas quando completo
+                          if (formattedValue.length === 10) {
+                            try {
+                              const date = parse(
+                                formattedValue,
+                                "dd/MM/yyyy",
+                                new Date(),
+                              );
+                              if (!isNaN(date.getTime())) {
+                                field.onChange(date);
+                              }
+                            } catch {
+                              field.onChange(new Date("invalid"));
+                            }
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
 
             <FormField
