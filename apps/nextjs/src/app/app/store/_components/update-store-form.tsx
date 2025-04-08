@@ -2,17 +2,15 @@
 
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { ImageIcon, Loader2, Upload } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { Establishment } from "@acme/db/schema";
+import type { Establishment } from "@acme/db/schema";
+import type { UpdateEstablishment } from "@acme/validators";
 import { slugify } from "@acme/utils";
-import {
-  UpdateEstablishment,
-  updateEstablishmentSchema,
-} from "@acme/validators";
+import { updateEstablishmentSchema } from "@acme/validators";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -35,14 +33,29 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/trpc/react";
 
+// Extended schema to include logo
+const extendedSchema = updateEstablishmentSchema.extend({
+  logo: z.string().optional(),
+});
+
+// Extended type
+type ExtendedUpdateEstablishment = UpdateEstablishment & {
+  logo?: string;
+};
+
 export function UpdateStoreForm({ store }: { store: Establishment }) {
+  const [logoPreview, setLogoPreview] = React.useState<string | null>(
+    store.logo || null,
+  );
+
   // react-hook-form
-  const form = useForm<UpdateEstablishment>({
-    resolver: zodResolver(updateEstablishmentSchema),
+  const form = useForm<ExtendedUpdateEstablishment>({
+    resolver: zodResolver(extendedSchema),
     defaultValues: {
       name: store.name,
       slug: store.slug,
       about: store.about ?? "",
+      logo: store.logo ?? "",
     },
   });
 
@@ -55,7 +68,7 @@ export function UpdateStoreForm({ store }: { store: Establishment }) {
     },
   });
 
-  async function onSubmit(inputs: UpdateEstablishment) {
+  async function onSubmit(inputs: ExtendedUpdateEstablishment) {
     await updateMutation.mutateAsync(inputs);
   }
 
@@ -64,6 +77,35 @@ export function UpdateStoreForm({ store }: { store: Establishment }) {
   React.useEffect(() => {
     form.setValue("slug", slugify(slugState ?? ""));
   }, [slugState]);
+
+  // Function to convert image to base64
+  const convertToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      if (file.size > 1024 * 1024) {
+        toast.error("A imagem deve ter menos de 1MB");
+        return;
+      }
+
+      const base64 = await convertToBase64(file);
+      setLogoPreview(base64);
+      form.setValue("logo", base64);
+    } catch (error) {
+      console.error("Erro ao converter imagem:", error);
+      toast.error("Erro ao processar a imagem");
+    }
+  };
 
   return (
     <Form {...form}>
@@ -107,6 +149,67 @@ export function UpdateStoreForm({ store }: { store: Establishment }) {
                         type="text"
                         {...field}
                       />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="logo"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Logo da loja</FormLabel>
+                  <FormControl>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4">
+                        <div className="relative flex h-24 w-24 items-center justify-center rounded-md border border-dashed">
+                          {logoPreview ? (
+                            <img
+                              src={logoPreview || "/placeholder.svg"}
+                              alt="Logo preview"
+                              className="h-full w-full rounded-md object-contain p-2"
+                            />
+                          ) : (
+                            <ImageIcon className="h-10 w-10 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            id="logo-upload"
+                            className="hidden"
+                            onChange={handleLogoUpload}
+                          />
+                          <label
+                            htmlFor="logo-upload"
+                            className="inline-flex h-9 cursor-pointer items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+                          >
+                            <Upload className="mr-2 h-4 w-4" />
+                            Enviar logo
+                          </label>
+                          {logoPreview && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setLogoPreview(null);
+                                form.setValue("logo", "");
+                              }}
+                            >
+                              Remover
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Envie uma imagem de até 1MB. Formatos recomendados: PNG,
+                        JPG.
+                      </p>
                     </div>
                   </FormControl>
                   <FormMessage />

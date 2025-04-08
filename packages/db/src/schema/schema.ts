@@ -23,6 +23,7 @@ export const establishments = pgTable("establishments", {
   theme: text("theme").notNull().default("blue"),
   about: text("about"),
   slug: text("slug").notNull(),
+  logo: text("logo"),
 });
 
 export const openingHours = pgTable("opening_hours", {

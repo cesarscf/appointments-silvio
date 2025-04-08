@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import { useSelectedLayoutSegments } from "next/navigation";
 import {
   Calendar,
@@ -46,10 +47,22 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href={`/${store.slug}`} target="_blank">
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <Command className="size-4" />
-                </div>
+              <a href={`/${store.slug}`} target="_blank" rel="noreferrer">
+                {store.logo ? (
+                  <div className="relative h-8 w-8 overflow-hidden rounded-md">
+                    <Image
+                      src={store.logo}
+                      alt={`${store.name} logo`}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                    <Command className="size-4" />
+                  </div>
+                )}
+
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-semibold">{store.name}</span>
                   <span className="truncate text-xs">{store.slug}</span>
