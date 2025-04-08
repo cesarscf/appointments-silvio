@@ -33,8 +33,6 @@ export function Customers() {
     customer.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  const customersEmpty = customers.length < 1;
-
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
@@ -44,7 +42,9 @@ export function Customers() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbPage>Clientes</BreadcrumbPage>
+                <BreadcrumbPage>
+                  Clientes {`(${customers.length})`}
+                </BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>

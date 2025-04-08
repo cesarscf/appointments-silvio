@@ -158,8 +158,6 @@ export const employeeRouter = {
     .mutation(async ({ input, ctx }) => {
       const { employeeId, serviceId, commission } = input;
 
-      console.log(serviceId);
-
       const employee = await ctx.db.query.employees.findFirst({
         where: (table) =>
           eq(table.id, employeeId) &&

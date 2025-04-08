@@ -66,7 +66,7 @@ export const appointmentRouter = {
       let customer = await db.query.customers.findFirst({
         where: or(
           eq(customers.phoneNumber, input.customer.phoneNumber),
-          eq(customers.cpf, input.customer.cpf),
+          eq(customers.establishmentId, input.establishmentId),
         ),
       });
 

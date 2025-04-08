@@ -18,6 +18,46 @@ export const customerRouter = {
     return customersList;
   }),
 
+  getCustomerById: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      const result = await ctx.db.query.customers.findFirst({
+        where: eq(customers.id, input.id),
+      });
+
+      if (!result) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Cliente não encontrado.",
+        });
+      }
+
+      return result;
+    }),
+
+  listCustomerAppointments: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      const result = await ctx.db.query.appointments.findMany({
+        where: eq(customers.id, input.id),
+        with: {
+          employee: true,
+          service: true,
+          customer: true,
+        },
+        orderBy: (appointments, { desc }) => [desc(appointments.startTime)],
+      });
+
+      return result;
+    }),
   deleteCustomer: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
     .mutation(async ({ input, ctx }) => {

@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
   Calendar,
   Edit,
   FileIcon as FileUser,
+  History,
   MailIcon,
   MapPinIcon as MapPinHouse,
   PhoneIcon,
@@ -42,7 +44,17 @@ export function CustomerCard({
   return (
     <>
       <Card className="w-full max-w-sm">
-        <CardContent className="flex items-center space-x-4 p-4">
+        <CardContent className="relative flex items-center space-x-4 p-4">
+          <Button
+            size="sm"
+            asChild
+            variant="secondary"
+            className="absolute right-3 top-3"
+          >
+            <Link href={`/app/customers/${customer.id}`}>
+              <History className="size-3" /> Histórico
+            </Link>
+          </Button>
           <div className="flex-1 space-y-1">
             <p className="text-md mb-2 font-medium leading-none">
               {customer.name}

@@ -1,18 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
-import { CheckCircle, Loader2, PlusCircle } from "lucide-react";
-import { toast } from "sonner";
+import { useParams, useRouter } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
   BreadcrumbItem,
+  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
+  BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -27,16 +25,17 @@ import {
 import { formatDateWithHour } from "@/lib/utils";
 import { api } from "@/trpc/react";
 
-export default function Calendar() {
-  const [clickedId, setClickedId] = React.useState("");
-  const [appointments, { refetch }] =
-    api.appointment.listAppointments.useSuspenseQuery();
-
-  const checkInMutation = api.appointment.checkInAppointment.useMutation({
-    onSuccess: () => {
-      toast.success("Checkin realizado.");
-      refetch();
+export function CustomerAppointments() {
+  const { id } = useParams();
+  const [appointments] = api.customer.listCustomerAppointments.useSuspenseQuery(
+    {
+      id: id as string,
     },
+  );
+
+  console.log(appointments);
+  const [customer] = api.customer.getCustomerById.useSuspenseQuery({
+    id: id as string,
   });
 
   const getStatusBadgeColor = (status: string) => {
@@ -52,25 +51,28 @@ export default function Calendar() {
 
   return (
     <>
-      <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center border-b bg-background px-4 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-        <div className="flex items-center gap-2">
+      <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+        <div className="flex items-center gap-2 px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
           <Breadcrumb>
             <BreadcrumbList>
+              <BreadcrumbItem className="hidden md:block">
+                <BreadcrumbLink href="/app/employees">Clientes</BreadcrumbLink>
+              </BreadcrumbItem>
+              <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage className="text-lg font-semibold">
-                  Agenda
-                </BreadcrumbPage>
+                <BreadcrumbPage>{customer.name}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
         </div>
       </header>
+
       <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
         <Card className="shadow-sm">
           <CardHeader className="pb-3">
-            <CardTitle>Agendamentos</CardTitle>
+            <CardTitle>Histórico de agendamentos</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
@@ -113,36 +115,7 @@ export default function Calendar() {
                               : "Concluído"}
                           </Badge>
                         </TableCell>
-                        <TableCell>
-                          {appointment.checkin ? (
-                            <Badge
-                              variant="secondary"
-                              className="border-green-200 bg-green-50 text-green-700"
-                            >
-                              <CheckCircle className="mr-1 h-3 w-3" /> Realizado
-                            </Badge>
-                          ) : (
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              disabled={checkInMutation.isPending}
-                              className="h-8 w-20"
-                              onClick={() => {
-                                setClickedId(appointment.id);
-                                checkInMutation.mutate({
-                                  appointmentId: appointment.id,
-                                });
-                              }}
-                            >
-                              {checkInMutation.isPending &&
-                              clickedId === appointment.id ? (
-                                <Loader2 className="ml-2 size-4 animate-spin" />
-                              ) : (
-                                "Checkin"
-                              )}
-                            </Button>
-                          )}
-                        </TableCell>
+                        <TableCell>{appointment.checkin}</TableCell>
                         <TableCell>{appointment.service.name || "-"}</TableCell>
                         <TableCell>
                           {appointment.employee.name || "-"}

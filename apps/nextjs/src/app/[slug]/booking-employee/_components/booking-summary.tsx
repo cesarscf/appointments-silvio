@@ -1,8 +1,10 @@
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
+import { applyPhoneMask } from "@acme/utils";
+
 import { Separator } from "@/components/ui/separator";
-import { formatPrice } from "@/lib/utils";
+import { applyCpfMask, formatPrice } from "@/lib/utils";
 
 interface BookingSummaryProps {
   service: {
@@ -72,7 +74,7 @@ export function BookingSummary({
           {customer.phoneNumber && (
             <div className="flex justify-between">
               <span className="text-muted-foreground">Telefone:</span>
-              <span>{customer.phoneNumber}</span>
+              <span>{applyPhoneMask(customer.phoneNumber)}</span>
             </div>
           )}
           {customer.email && (
@@ -84,7 +86,7 @@ export function BookingSummary({
           {customer.cpf && (
             <div className="flex justify-between">
               <span className="text-muted-foreground">CPF:</span>
-              <span>{customer.cpf}</span>
+              <span>{applyCpfMask(customer.cpf)}</span>
             </div>
           )}
         </div>
