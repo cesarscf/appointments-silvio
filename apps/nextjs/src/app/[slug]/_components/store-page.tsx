@@ -67,9 +67,9 @@ export function StorePage() {
       <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur">
         <div className="container mx-auto flex flex-col items-center justify-between px-4 py-3 md:flex-row">
           <div className="flex items-center gap-4">
-            <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border-2 border-primary md:h-16 md:w-16">
+            <div className="relative flex h-12 w-12 items-center justify-center overflow-hidden rounded-full md:h-16 md:w-16">
               <Image
-                src={"/placeholder.svg"}
+                src={data.logo ?? "/placeholder.svg"}
                 alt={`${data.name} Logo`}
                 width={64}
                 height={64}

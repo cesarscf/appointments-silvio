@@ -208,7 +208,7 @@ export function UpdateStoreForm({ store }: { store: Establishment }) {
                       </div>
                       <p className="text-xs text-muted-foreground">
                         Envie uma imagem de até 1MB. Formatos recomendados: PNG,
-                        JPG.
+                        JPG, SVG.
                       </p>
                     </div>
                   </FormControl>
