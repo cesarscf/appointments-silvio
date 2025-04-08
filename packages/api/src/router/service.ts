@@ -84,7 +84,12 @@ export const serviceRouter = {
 
       const [updatedService] = await ctx.db
         .update(services)
-        .set({ name, duration, price, active: input.active })
+        .set({
+          name,
+          duration,
+          price: price.replace(",", "."),
+          active: input.active,
+        })
         .where(eq(services.id, id))
         .returning();
 
@@ -115,13 +120,13 @@ export const serviceRouter = {
     )
     .mutation(async ({ input, ctx }) => {
       const { name, duration, price, categoryIds } = input;
-
+      console.log(price);
       const [newService] = await ctx.db
         .insert(services)
         .values({
           name,
           duration,
-          price,
+          price: price.replace(",", "."),
           establishmentId: ctx.establishmentId,
         })
         .returning();

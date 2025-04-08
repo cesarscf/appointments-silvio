@@ -53,7 +53,7 @@ export function UpdateServiceButton({
     resolver: zodResolver(updateServiceSchema),
     defaultValues: {
       name: service.name,
-      price: service.price,
+      price: service.price.replace(".", ","),
       duration: service.duration,
       active: service.active,
       categoryIds: service.categories.map((c) => c.id) ?? [],
@@ -152,7 +152,8 @@ export function UpdateServiceButton({
                   <FormLabel>Duração (minutos)</FormLabel>
                   <FormControl>
                     <Input
-                      type="number"
+                      type="numeric"
+                      inputMode="decimal"
                       {...field}
                       onChange={(e) => {
                         field.onChange(Number(e.target.value));
@@ -176,7 +177,7 @@ export function UpdateServiceButton({
                       <Input
                         {...field}
                         className="-me-px rounded-e-none ps-8 shadow-none"
-                        placeholder="0.00"
+                        placeholder="0,00"
                         type="text"
                       />
                       <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-sm text-muted-foreground peer-disabled:opacity-50">
