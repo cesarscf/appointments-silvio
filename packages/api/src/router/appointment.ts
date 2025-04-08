@@ -10,6 +10,7 @@ import {
   services,
   unavailabilities,
 } from "@acme/db/schema";
+import { clearNumber } from "@acme/utils";
 import { publicCreateAppointmentSchema } from "@acme/validators";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
@@ -29,6 +30,8 @@ export const appointmentRouter = {
   publicCreateAppointment: publicProcedure
     .input(publicCreateAppointmentSchema)
     .mutation(async ({ ctx, input }) => {
+      const customerPhone = clearNumber(input.customer.phoneNumber ?? "");
+
       const service = await db.query.services.findFirst({
         where: eq(services.id, input.serviceId),
       });
@@ -65,23 +68,29 @@ export const appointmentRouter = {
 
       let customer = await db.query.customers.findFirst({
         where: or(
-          eq(customers.phoneNumber, input.customer.phoneNumber),
+          eq(customers.phoneNumber, customerPhone),
           eq(customers.establishmentId, input.establishmentId),
         ),
       });
 
+      console.log({ customer });
+
+      const customerPayload = {
+        ...input.customer,
+        phoneNumber: customerPhone,
+        cpf: clearNumber(input.customer.cpf ?? ""),
+        establishmentId: input.establishmentId,
+      };
+
       if (!customer) {
         [customer] = await db
           .insert(customers)
-          .values({
-            ...input.customer,
-            establishmentId: input.establishmentId,
-          })
+          .values(customerPayload)
           .returning();
       } else {
         await db
           .update(customers)
-          .set(input.customer)
+          .set(customerPayload)
           .where(eq(customers.id, customer.id!));
       }
 

@@ -2,7 +2,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { eq } from "@acme/db";
-import { customers } from "@acme/db/schema";
+import { appointments, customers } from "@acme/db/schema";
 import { clearNumber } from "@acme/utils";
 import { createCustomerSchema, updateCustomerSchema } from "@acme/validators";
 
@@ -46,14 +46,15 @@ export const customerRouter = {
       }),
     )
     .query(async ({ input, ctx }) => {
+      console.log(input);
       const result = await ctx.db.query.appointments.findMany({
-        where: eq(customers.id, input.id),
+        where: eq(appointments.customerId, input.id),
         with: {
           employee: true,
           service: true,
           customer: true,
         },
-        orderBy: (appointments, { desc }) => [desc(appointments.startTime)],
+        orderBy: (appointments, { asc }) => [asc(appointments.startTime)],
       });
 
       return result;

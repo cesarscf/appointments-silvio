@@ -33,7 +33,6 @@ export function CustomerAppointments() {
     },
   );
 
-  console.log(appointments);
   const [customer] = api.customer.getCustomerById.useSuspenseQuery({
     id: id as string,
   });
@@ -115,7 +114,9 @@ export function CustomerAppointments() {
                               : "Concluído"}
                           </Badge>
                         </TableCell>
-                        <TableCell>{appointment.checkin}</TableCell>
+                        <TableCell>
+                          {appointment.checkin ? "Feito" : "Não realizado"}
+                        </TableCell>
                         <TableCell>{appointment.service.name || "-"}</TableCell>
                         <TableCell>
                           {appointment.employee.name || "-"}
