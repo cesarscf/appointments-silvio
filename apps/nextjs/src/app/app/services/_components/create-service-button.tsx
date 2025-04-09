@@ -170,7 +170,7 @@ export function CreateServiceButton({
                           {imagePreview ? (
                             <img
                               src={imagePreview || "/placeholder.svg"}
-                              alt="Logo preview"
+                              alt="Imagem preview"
                               className="h-full w-full rounded-md object-contain p-2"
                             />
                           ) : (
@@ -181,16 +181,16 @@ export function CreateServiceButton({
                           <Input
                             type="file"
                             accept="image/*"
-                            id="logo-upload"
+                            id="image-upload"
                             className="hidden"
                             onChange={handleLogoUpload}
                           />
                           <label
-                            htmlFor="logo-upload"
+                            htmlFor="image-upload"
                             className="inline-flex h-9 cursor-pointer items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
                           >
                             <Upload className="mr-2 h-4 w-4" />
-                            Enviar logo
+                            Enviar imagem
                           </label>
                           {imagePreview && (
                             <Button
