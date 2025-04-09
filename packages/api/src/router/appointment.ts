@@ -209,14 +209,30 @@ export const appointmentRouter = {
     .query(async ({ input, ctx }) => {
       const { serviceId, employeeId, establishmentId, date } = input;
       const { db } = ctx;
-      const dayOfWeek = date.getDay(); // 0 (Domingo) a 6 (Sábado)
+
+      console.log("=== INÍCIO DA REQUISIÇÃO ===");
+      console.log("Input:", {
+        serviceId,
+        employeeId,
+        establishmentId,
+        date: date.toISOString(),
+      });
+
+      const dayOfWeek = date.getDay();
+      console.log(
+        "Dia da semana calculado:",
+        dayOfWeek,
+        `(${["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"][dayOfWeek]})`,
+      );
 
       // 1. Buscar informações do serviço
       const service = await db.query.services.findFirst({
         where: eq(services.id, serviceId),
       });
 
+      console.log("Serviço encontrado:", service);
       if (!service) {
+        console.error("Serviço não encontrado para ID:", serviceId);
         throw new Error("Serviço não encontrado");
       }
 
@@ -231,7 +247,9 @@ export const appointmentRouter = {
         },
       });
 
+      console.log("Horário de funcionamento encontrado:", openingHoursResult);
       if (!openingHoursResult) {
+        console.log("Nenhum horário encontrado para este dia");
         return {
           available: false,
           message: "Estabelecimento não funciona neste dia",
@@ -252,6 +270,12 @@ export const appointmentRouter = {
           })
         : [];
 
+      console.log(
+        "Indisponibilidades encontradas:",
+        employeeUnavailabilities.length,
+        employeeUnavailabilities,
+      );
+
       // 4. Buscar agendamentos existentes
       const existingAppointments = await db.query.appointments.findMany({
         where: and(
@@ -262,15 +286,19 @@ export const appointmentRouter = {
         ),
       });
 
-      // 5. Gerar slots disponíveis
-      const slots: {
-        start: Date;
-        end: Date;
-        available: boolean;
-        reason?: string;
-      }[] = [];
+      console.log(
+        "Agendamentos existentes:",
+        existingAppointments.length,
+        existingAppointments.map((a) => ({
+          start: a.startTime.toISOString(),
+          end: a.endTime.toISOString(),
+        })),
+      );
 
-      // Processar cada intervalo do dia
+      // 5. Gerar slots disponíveis
+      const slots = [];
+      console.log("Processando intervalos:", openingHoursResult.intervals);
+
       for (const interval of openingHoursResult.intervals.length > 0
         ? openingHoursResult.intervals
         : [
@@ -282,23 +310,41 @@ export const appointmentRouter = {
         const intervalStart = parse(interval.startTime, "HH:mm:ss", date);
         const intervalEnd = parse(interval.endTime, "HH:mm:ss", date);
 
+        console.log("\nProcessando intervalo:", {
+          start: intervalStart.toISOString(),
+          end: intervalEnd.toISOString(),
+        });
+
         let currentSlotStart = intervalStart;
+        let slotCount = 0;
 
         while (currentSlotStart < intervalEnd) {
           const slotEnd = addMinutes(currentSlotStart, service.duration);
+          slotCount++;
 
-          // Verificar se o slot ultrapassa o intervalo
+          console.log(`\nSlot ${slotCount}:`, {
+            currentSlotStart: currentSlotStart.toISOString(),
+            slotEnd: slotEnd.toISOString(),
+            serviceDuration: service.duration,
+          });
+
           if (slotEnd > intervalEnd) {
+            console.log("Slot ultrapassa intervalo - pulando");
             currentSlotStart = addMinutes(currentSlotStart, 15);
             continue;
           }
 
-          // Verificar conflitos com agendamentos
+          // Verificar conflitos
           const hasConflict = existingAppointments.some((appointment) => {
-            return (
+            const conflict =
               appointment.startTime < slotEnd &&
-              appointment.endTime > currentSlotStart
-            );
+              appointment.endTime > currentSlotStart;
+            if (conflict)
+              console.log(
+                "Conflito encontrado com agendamento:",
+                appointment.id,
+              );
+            return conflict;
           });
 
           // Verificar indisponibilidades
@@ -308,7 +354,10 @@ export const appointmentRouter = {
             const uaStart = parse(ua.startTime, "HH:mm:ss", date);
             const uaEnd = parse(ua.endTime, "HH:mm:ss", date);
 
-            return currentSlotStart < uaEnd && slotEnd > uaStart;
+            const unavailable = currentSlotStart < uaEnd && slotEnd > uaStart;
+            if (unavailable)
+              console.log("Conflito com indisponibilidade:", ua.id);
+            return unavailable;
           });
 
           slots.push({
@@ -320,6 +369,17 @@ export const appointmentRouter = {
               : isUnavailable
                 ? "Funcionário indisponível"
                 : undefined,
+          });
+
+          console.log("Slot adicionado:", {
+            start: currentSlotStart.toISOString(),
+            end: slotEnd.toISOString(),
+            available: !hasConflict && !isUnavailable,
+            reason: hasConflict
+              ? "Conflito"
+              : isUnavailable
+                ? "Indisponível"
+                : "Disponível",
           });
 
           currentSlotStart = addMinutes(
@@ -336,6 +396,21 @@ export const appointmentRouter = {
         date.getMonth() === now.getMonth() &&
         date.getDate() === now.getDate();
 
+      console.log("\nFiltro final:");
+      console.log("Data atual:", now.toISOString());
+      console.log("É hoje?", isToday);
+      console.log("Slots antes do filtro:", slots.length);
+
+      const filteredSlots = slots.filter((slot) => {
+        const isFutureSlot = !isToday || slot.start >= now;
+        if (!isFutureSlot)
+          console.log("Slot removido (passado):", slot.start.toISOString());
+        return slot.available && isFutureSlot;
+      });
+
+      console.log("Slots após filtro:", filteredSlots.length);
+      console.log("=== FIM DA REQUISIÇÃO ===\n");
+
       return {
         service,
         date,
@@ -343,10 +418,7 @@ export const appointmentRouter = {
           openingTime: openingHoursResult.openingTime,
           closingTime: openingHoursResult.closingTime,
         },
-        availableSlots: slots.filter((slot) => {
-          const isFutureSlot = !isToday || slot.start >= now;
-          return slot.available && isFutureSlot;
-        }),
+        availableSlots: filteredSlots,
       };
     }),
 };
