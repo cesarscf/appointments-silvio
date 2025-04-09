@@ -1,4 +1,5 @@
 import { addMinutes, endOfDay, parse, startOfDay } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 import { z } from "zod";
 
 import { and, eq, gt, gte, isNull, lt, lte, or } from "@acme/db";
@@ -209,30 +210,18 @@ export const appointmentRouter = {
     .query(async ({ input, ctx }) => {
       const { serviceId, employeeId, establishmentId, date } = input;
       const { db } = ctx;
+      const timeZone = "America/Sao_Paulo"; // Altere para o fuso correto ou busque do banco
 
-      console.log("=== INÍCIO DA REQUISIÇÃO ===");
-      console.log("Input:", {
-        serviceId,
-        employeeId,
-        establishmentId,
-        date: date.toISOString(),
-      });
-
-      const dayOfWeek = date.getDay();
-      console.log(
-        "Dia da semana calculado:",
-        dayOfWeek,
-        `(${["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"][dayOfWeek]})`,
-      );
+      // Converter datas para o fuso horário do estabelecimento
+      const zonedDate = toZonedTime(date, timeZone);
+      const dayOfWeek = zonedDate.getDay();
 
       // 1. Buscar informações do serviço
       const service = await db.query.services.findFirst({
         where: eq(services.id, serviceId),
       });
 
-      console.log("Serviço encontrado:", service);
       if (!service) {
-        console.error("Serviço não encontrado para ID:", serviceId);
         throw new Error("Serviço não encontrado");
       }
 
@@ -247,9 +236,7 @@ export const appointmentRouter = {
         },
       });
 
-      console.log("Horário de funcionamento encontrado:", openingHoursResult);
       if (!openingHoursResult) {
-        console.log("Nenhum horário encontrado para este dia");
         return {
           available: false,
           message: "Estabelecimento não funciona neste dia",
@@ -270,94 +257,57 @@ export const appointmentRouter = {
           })
         : [];
 
-      console.log(
-        "Indisponibilidades encontradas:",
-        employeeUnavailabilities.length,
-        employeeUnavailabilities,
-      );
-
       // 4. Buscar agendamentos existentes
       const existingAppointments = await db.query.appointments.findMany({
         where: and(
-          gte(appointments.startTime, startOfDay(date)),
-          lte(appointments.endTime, endOfDay(date)),
+          gte(appointments.startTime, startOfDay(zonedDate)),
+          lte(appointments.endTime, endOfDay(zonedDate)),
           employeeId ? eq(appointments.employeeId, employeeId) : undefined,
           eq(appointments.establishmentId, establishmentId),
         ),
       });
 
-      console.log(
-        "Agendamentos existentes:",
-        existingAppointments.length,
-        existingAppointments.map((a) => ({
-          start: a.startTime.toISOString(),
-          end: a.endTime.toISOString(),
-        })),
-      );
-
       // 5. Gerar slots disponíveis
-      const slots = [];
-      console.log("Processando intervalos:", openingHoursResult.intervals);
+      const slots: Array<{
+        start: Date;
+        end: Date;
+        available: boolean;
+        reason?: string;
+      }> = [];
+      const intervals =
+        openingHoursResult.intervals.length > 0
+          ? openingHoursResult.intervals
+          : [
+              {
+                startTime: openingHoursResult.openingTime,
+                endTime: openingHoursResult.closingTime,
+              },
+            ];
 
-      for (const interval of openingHoursResult.intervals.length > 0
-        ? openingHoursResult.intervals
-        : [
-            {
-              startTime: openingHoursResult.openingTime,
-              endTime: openingHoursResult.closingTime,
-            },
-          ]) {
-        const intervalStart = parse(interval.startTime, "HH:mm:ss", date);
-        const intervalEnd = parse(interval.endTime, "HH:mm:ss", date);
-
-        console.log("\nProcessando intervalo:", {
-          start: intervalStart.toISOString(),
-          end: intervalEnd.toISOString(),
-        });
-
+      for (const interval of intervals) {
+        const intervalStart = parse(interval.startTime, "HH:mm:ss", zonedDate);
+        const intervalEnd = parse(interval.endTime, "HH:mm:ss", zonedDate);
         let currentSlotStart = intervalStart;
-        let slotCount = 0;
 
         while (currentSlotStart < intervalEnd) {
           const slotEnd = addMinutes(currentSlotStart, service.duration);
-          slotCount++;
-
-          console.log(`\nSlot ${slotCount}:`, {
-            currentSlotStart: currentSlotStart.toISOString(),
-            slotEnd: slotEnd.toISOString(),
-            serviceDuration: service.duration,
-          });
 
           if (slotEnd > intervalEnd) {
-            console.log("Slot ultrapassa intervalo - pulando");
             currentSlotStart = addMinutes(currentSlotStart, 15);
             continue;
           }
 
-          // Verificar conflitos
-          const hasConflict = existingAppointments.some((appointment) => {
-            const conflict =
+          const hasConflict = existingAppointments.some(
+            (appointment) =>
               appointment.startTime < slotEnd &&
-              appointment.endTime > currentSlotStart;
-            if (conflict)
-              console.log(
-                "Conflito encontrado com agendamento:",
-                appointment.id,
-              );
-            return conflict;
-          });
+              appointment.endTime > currentSlotStart,
+          );
 
-          // Verificar indisponibilidades
           const isUnavailable = employeeUnavailabilities.some((ua) => {
             if (!ua.startTime || !ua.endTime) return false;
-
-            const uaStart = parse(ua.startTime, "HH:mm:ss", date);
-            const uaEnd = parse(ua.endTime, "HH:mm:ss", date);
-
-            const unavailable = currentSlotStart < uaEnd && slotEnd > uaStart;
-            if (unavailable)
-              console.log("Conflito com indisponibilidade:", ua.id);
-            return unavailable;
+            const uaStart = parse(ua.startTime, "HH:mm:ss", zonedDate);
+            const uaEnd = parse(ua.endTime, "HH:mm:ss", zonedDate);
+            return currentSlotStart < uaEnd && slotEnd > uaStart;
           });
 
           slots.push({
@@ -371,17 +321,6 @@ export const appointmentRouter = {
                 : undefined,
           });
 
-          console.log("Slot adicionado:", {
-            start: currentSlotStart.toISOString(),
-            end: slotEnd.toISOString(),
-            available: !hasConflict && !isUnavailable,
-            reason: hasConflict
-              ? "Conflito"
-              : isUnavailable
-                ? "Indisponível"
-                : "Disponível",
-          });
-
           currentSlotStart = addMinutes(
             currentSlotStart,
             Math.max(15, service.duration),
@@ -389,27 +328,25 @@ export const appointmentRouter = {
         }
       }
 
-      // Verificação de data/hora atual
+      // Filtro final com fuso horário
       const now = new Date();
-      const isToday =
-        date.getFullYear() === now.getFullYear() &&
-        date.getMonth() === now.getMonth() &&
-        date.getDate() === now.getDate();
-
-      console.log("\nFiltro final:");
-      console.log("Data atual:", now.toISOString());
-      console.log("É hoje?", isToday);
-      console.log("Slots antes do filtro:", slots.length);
+      const zonedNow = toZonedTime(now, timeZone);
+      const isToday = [
+        zonedDate.getFullYear(),
+        zonedDate.getMonth(),
+        zonedDate.getDate(),
+      ].every(
+        (val, idx) =>
+          val ===
+          [zonedNow.getFullYear(), zonedNow.getMonth(), zonedNow.getDate()][
+            idx
+          ],
+      );
 
       const filteredSlots = slots.filter((slot) => {
-        const isFutureSlot = !isToday || slot.start >= now;
-        if (!isFutureSlot)
-          console.log("Slot removido (passado):", slot.start.toISOString());
-        return slot.available && isFutureSlot;
+        const zonedSlotStart = toZonedTime(slot.start, timeZone);
+        return slot.available && (!isToday || zonedSlotStart >= zonedNow);
       });
-
-      console.log("Slots após filtro:", filteredSlots.length);
-      console.log("=== FIM DA REQUISIÇÃO ===\n");
 
       return {
         service,
