@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { serviceCategories, services } from "@acme/db/schema";
-import { updateServiceSchema } from "@acme/validators";
+import { createServiceSchema, updateServiceSchema } from "@acme/validators";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
 
@@ -31,6 +31,7 @@ export const serviceRouter = {
       duration: service.duration,
       active: service.active,
       price: service.price,
+      image: service.image,
       categories: service.categories.map((sc) => {
         return {
           id: sc.category.id,
@@ -72,7 +73,7 @@ export const serviceRouter = {
       }),
     )
     .mutation(async ({ input, ctx }) => {
-      const { id, name, duration, price, categoryIds } = input;
+      const { id, name, duration, price, categoryIds, active, image } = input;
 
       const service = await ctx.db.query.services.findFirst({
         where: eq(services.id, id),
@@ -89,6 +90,7 @@ export const serviceRouter = {
           duration,
           price: price.replace(",", "."),
           active: input.active,
+          image,
         })
         .where(eq(services.id, id))
         .returning();
@@ -110,16 +112,9 @@ export const serviceRouter = {
     }),
 
   createService: protectedProcedure
-    .input(
-      z.object({
-        name: z.string(),
-        duration: z.number(),
-        price: z.string(),
-        categoryIds: z.array(z.string().uuid()).optional(),
-      }),
-    )
+    .input(createServiceSchema)
     .mutation(async ({ input, ctx }) => {
-      const { name, duration, price, categoryIds } = input;
+      const { name, duration, price, categoryIds, image } = input;
       console.log(price);
       const [newService] = await ctx.db
         .insert(services)
@@ -128,6 +123,7 @@ export const serviceRouter = {
           duration,
           price: price.replace(",", "."),
           establishmentId: ctx.establishmentId,
+          image,
         })
         .returning();
 

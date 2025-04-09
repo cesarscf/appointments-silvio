@@ -24,7 +24,7 @@ export function ServicesList({
         >
           <div className="relative h-48 w-full">
             <img
-              src={"/placeholder.svg"}
+              src={service.image ?? "/placeholder.svg"}
               alt={service.name}
               className="h-full w-full object-cover"
             />

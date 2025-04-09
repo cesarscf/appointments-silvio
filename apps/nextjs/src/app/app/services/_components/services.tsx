@@ -64,7 +64,6 @@ export function Services() {
     },
   });
 
-  const servicesEmpty = services.length < 1;
   const categoriesEmpty = categories.length < 1;
 
   return (

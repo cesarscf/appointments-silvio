@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Image from "next/image";
 import { Clock, Edit, Trash2 } from "lucide-react";
@@ -33,10 +35,13 @@ export function ServiceCard({
   return (
     <>
       <Card className="w-full overflow-hidden">
-        <CardHeader className="p-0">
-          <div className="flex h-28 w-full items-center justify-center bg-gray-200">
-            <span className="text-gray-400">Sem imagem</span>
-          </div>
+        <CardHeader className="relative h-48 p-0">
+          <Image
+            src={service.image ?? "/placeholder.svg"}
+            alt={`${service.name} Logo`}
+            fill
+            className="object-cover"
+          />
         </CardHeader>
         <CardContent className="relative space-y-2 p-4">
           <Badge

@@ -310,6 +310,7 @@ export const employeeRouter = {
           address: input.address,
           email: input.email,
           name: input.name,
+          image: input.image,
           phone: clearNumber(input.phone ?? ""),
         })
         .where(

@@ -20,7 +20,7 @@ export const createEmployeeSchema = z.object({
     .trim()
     .min(5, { message: "Address must be at least 5 characters" })
     .max(255, { message: "Address must be less than 255 characters" }),
-
+  image: z.string().optional(),
   serviceIds: z.array(
     z.string().uuid({ message: "Invalid service ID format" }),
   ),
@@ -32,6 +32,7 @@ export const updateEmployeeSchema = z.object({
   active: z.boolean().optional(),
   phone: z.string().optional(),
   address: z.string().optional(),
+  image: z.string().optional(),
 });
 
 export type CreateEmployee = z.infer<typeof createEmployeeSchema>;

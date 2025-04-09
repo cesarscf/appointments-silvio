@@ -23,7 +23,7 @@ export function EmployeeCard({ employee }: EmployeeCardProps) {
         </Badge>
         <div className="flex items-center space-x-4">
           <Avatar className="h-12 w-12">
-            {/* <AvatarImage src={employee.photo ?? ""} alt={employee.name} /> */}
+            <AvatarImage src={employee.image ?? ""} alt={employee.name} />
             <AvatarFallback>{employee.name.charAt(0)}</AvatarFallback>
           </Avatar>
           <div>

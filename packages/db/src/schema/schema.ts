@@ -55,6 +55,7 @@ export const employees = pgTable("employees", {
   email: text("email"),
   phone: text("phone"),
   address: text("address"),
+  image: text("image"),
 });
 
 export const unavailabilities = pgTable("unavailabilities", {
@@ -81,6 +82,7 @@ export const services = pgTable("services", {
   duration: integer("duration").notNull(),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   active: boolean("active").default(true).notNull(),
+  image: text("image"),
   establishmentId: uuid("establishment_id")
     .notNull()
     .references(() => establishments.id, { onDelete: "cascade" }),
