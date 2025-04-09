@@ -17,11 +17,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { applyPhoneMask, cn } from "@/lib/utils";
 import { api } from "@/trpc/react";
@@ -58,7 +53,7 @@ export function CustomerForm({
     defaultValues: {
       name: client?.name ?? "",
       address: client?.address ?? "",
-      birthDate: client?.birthDate ?? new Date(),
+      birthDate: client?.birthDate ?? undefined,
       cpf: client?.cpf ?? "",
       email: client?.email ?? "",
       phoneNumber: client?.phoneNumber ?? "",
