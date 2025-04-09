@@ -90,22 +90,22 @@ export const employeeRouter = {
         throw new Error("Falha ao criar o funcionário.");
       }
 
-      const defaultUnavailabilities = [
-        {
-          employeeId: newEmployee.id,
-          dayOfWeek: 6,
-          startTime: "00:00",
-          endTime: "23:59",
-        },
-        {
-          employeeId: newEmployee.id,
-          dayOfWeek: 0,
-          startTime: "00:00",
-          endTime: "23:59",
-        },
-      ];
+      // const defaultUnavailabilities = [
+      //   {
+      //     employeeId: newEmployee.id,
+      //     dayOfWeek: 6,
+      //     startTime: "00:00",
+      //     endTime: "23:59",
+      //   },
+      //   {
+      //     employeeId: newEmployee.id,
+      //     dayOfWeek: 0,
+      //     startTime: "00:00",
+      //     endTime: "23:59",
+      //   },
+      // ];
 
-      await ctx.db.insert(unavailabilities).values(defaultUnavailabilities);
+      // await ctx.db.insert(unavailabilities).values(defaultUnavailabilities);
 
       if (input.serviceIds.length > 0) {
         const employeeServicesData = input.serviceIds.map((serviceId) => ({
@@ -241,6 +241,13 @@ export const employeeRouter = {
       await ctx.db
         .delete(unavailabilities)
         .where(eq(unavailabilities.employeeId, employeeId));
+
+      if (unavailabilitiesItens.length < 1) {
+        return {
+          success: true,
+          message: "Indisponibilidades atualizadas com sucesso.",
+        };
+      }
 
       const newUnavailabilities = unavailabilitiesItens.map(
         (unavailability) => ({

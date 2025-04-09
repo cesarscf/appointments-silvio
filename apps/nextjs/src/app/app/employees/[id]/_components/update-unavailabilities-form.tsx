@@ -103,6 +103,7 @@ export function EmployeeUnavailabilityForm({
     });
 
   async function onSubmit(inputs: Inputs) {
+    console.log(inputs);
     await createMutation.mutateAsync({
       employeeId: inputs.employeeId,
       unavailabilitiesItens: inputs.unavailabilitiesItens,
@@ -227,8 +228,8 @@ export function EmployeeUnavailabilityForm({
                     variant="ghost"
                     size="sm"
                     className="mt-2 text-destructive"
-                    onClick={() => fields.length > 1 && remove(index)}
-                    disabled={fields.length <= 1}
+                    onClick={() => fields.length > 0 && remove(index)}
+                    disabled={fields.length < 1}
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
                     Remover
