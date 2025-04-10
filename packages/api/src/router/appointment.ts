@@ -213,7 +213,7 @@ export const appointmentRouter = {
       const { serviceId, employeeId, establishmentId } = input;
       const { db } = ctx;
 
-      const date = toZonedTime(input.date.toISOString(), "America/Sao_Paulo");
+      const date = toZonedTime(input.date, "America/Sao_Paulo");
 
       console.log("=== INÍCIO DA REQUISIÇÃO ===");
       console.log("Input:", {
@@ -397,6 +397,7 @@ export const appointmentRouter = {
 
       // Verificação de data/hora atual
       const now = toZonedTime(new Date(), "America/Sao_Paulo");
+
       const isToday =
         date.getFullYear() === now.getFullYear() &&
         date.getMonth() === now.getMonth() &&
