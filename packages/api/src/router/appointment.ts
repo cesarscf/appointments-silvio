@@ -15,6 +15,8 @@ import { publicCreateAppointmentSchema } from "@acme/validators";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
 
+const brazilOffset = -3;
+
 export const appointmentRouter = {
   listAppointments: protectedProcedure.query(async ({ ctx }) => {
     return await ctx.db.query.appointments.findMany({
@@ -203,7 +205,7 @@ export const appointmentRouter = {
         serviceId: z.string().uuid(),
         employeeId: z.string().uuid().optional(),
         establishmentId: z.string().uuid(),
-        date: z.date(),
+        date: z.coerce.date(),
       }),
     )
     .query(async ({ input, ctx }) => {
@@ -215,7 +217,7 @@ export const appointmentRouter = {
         serviceId,
         employeeId,
         establishmentId,
-        date: date.toISOString(),
+        date: date.toLocaleString(),
         defaultDate: date,
       });
 
