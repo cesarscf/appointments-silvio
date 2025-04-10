@@ -72,6 +72,7 @@ export function TimeSlotPicker({
             selected={date}
             onSelect={(newDate) => {
               if (newDate) {
+                console.log(date);
                 setDate(newDate);
               }
             }}
