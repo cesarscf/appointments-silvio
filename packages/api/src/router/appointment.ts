@@ -407,6 +407,8 @@ export const appointmentRouter = {
       console.log("É hoje?", isToday);
       console.log("Slots antes do filtro:", slots.length);
 
+      console.log("slots: ", slots);
+
       const filteredSlots = slots.filter((slot) => {
         const isFutureSlot = !isToday || slot.start >= now;
         if (!isFutureSlot)
@@ -415,6 +417,7 @@ export const appointmentRouter = {
       });
 
       console.log("Slots após filtro:", filteredSlots.length);
+      console.log("Slots filtrados:", filteredSlots);
       console.log("=== FIM DA REQUISIÇÃO ===\n");
 
       return {
