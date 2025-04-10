@@ -216,6 +216,7 @@ export const appointmentRouter = {
         employeeId,
         establishmentId,
         date: date.toISOString(),
+        defaultDate: date,
       });
 
       const dayOfWeek = date.getDay();
