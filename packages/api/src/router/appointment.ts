@@ -448,6 +448,7 @@ export const appointmentRouter = {
       });
 
       console.log("Slots após filtro:", filteredSlots.length);
+      console.log("Slots filtrado:", filteredSlots);
       console.log("=== FIM DA REQUISIÇÃO ===");
 
       return {
