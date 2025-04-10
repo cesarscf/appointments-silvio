@@ -45,6 +45,7 @@ export function TimeSlotPicker({
       },
     );
 
+  console.log("slots => ", availability?.availableSlots);
   const timeSlots =
     availability?.availableSlots?.map((slot) => ({
       time: format(slot.start, "HH:mm"),
