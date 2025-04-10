@@ -396,7 +396,7 @@ export const appointmentRouter = {
       }
 
       // Verificação de data/hora atual
-      const now = new Date();
+      const now = toZonedTime(new Date(), "America/Sao_Paulo");
       const isToday =
         date.getFullYear() === now.getFullYear() &&
         date.getMonth() === now.getMonth() &&
