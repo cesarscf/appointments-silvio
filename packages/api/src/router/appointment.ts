@@ -1,4 +1,5 @@
 import { addMinutes, endOfDay, parse, startOfDay } from "date-fns";
+import { toZonedTime } from "date-fns-tz";
 import { z } from "zod";
 
 import { and, eq, gt, gte, isNull, lt, lte, or } from "@acme/db";
@@ -205,19 +206,21 @@ export const appointmentRouter = {
         serviceId: z.string().uuid(),
         employeeId: z.string().uuid().optional(),
         establishmentId: z.string().uuid(),
-        date: z.coerce.date(),
+        date: z.date(),
       }),
     )
     .query(async ({ input, ctx }) => {
-      const { serviceId, employeeId, establishmentId, date } = input;
+      const { serviceId, employeeId, establishmentId } = input;
       const { db } = ctx;
+
+      const date = toZonedTime(input.date.toISOString(), "America/Sao_Paulo");
 
       console.log("=== INÍCIO DA REQUISIÇÃO ===");
       console.log("Input:", {
         serviceId,
         employeeId,
         establishmentId,
-        date: date.toLocaleString(),
+        date,
         defaultDate: date,
       });
 
