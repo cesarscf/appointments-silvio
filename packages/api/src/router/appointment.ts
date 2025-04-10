@@ -1,5 +1,12 @@
-import { addMinutes, endOfDay, parse, startOfDay } from "date-fns";
-import { toZonedTime } from "date-fns-tz";
+import {
+  addMinutes,
+  endOfDay,
+  isSameDay,
+  parse,
+  parseISO,
+  startOfDay,
+} from "date-fns";
+import { format, toZonedTime } from "date-fns-tz";
 import { z } from "zod";
 
 import { and, eq, gt, gte, isNull, lt, lte, or } from "@acme/db";
@@ -213,18 +220,18 @@ export const appointmentRouter = {
       const { serviceId, employeeId, establishmentId } = input;
       const { db } = ctx;
 
-      const date = toZonedTime(input.date, "America/Sao_Paulo");
+      const timeZone = "America/Sao_Paulo";
+      const zonedDate = toZonedTime(input.date, timeZone);
 
       console.log("=== INÍCIO DA REQUISIÇÃO ===");
       console.log("Input:", {
         serviceId,
         employeeId,
         establishmentId,
-        date,
-        defaultDate: date,
+        date: format(zonedDate, "yyyy-MM-dd'T'HH:mm:ssXXX", { timeZone }),
       });
 
-      const dayOfWeek = date.getDay();
+      const dayOfWeek = zonedDate.getDay();
       console.log(
         "Dia da semana calculado:",
         dayOfWeek,
@@ -285,8 +292,8 @@ export const appointmentRouter = {
       // 4. Buscar agendamentos existentes
       const existingAppointments = await db.query.appointments.findMany({
         where: and(
-          gte(appointments.startTime, startOfDay(date)),
-          lte(appointments.endTime, endOfDay(date)),
+          gte(appointments.startTime, startOfDay(zonedDate)),
+          lte(appointments.endTime, endOfDay(zonedDate)),
           employeeId ? eq(appointments.employeeId, employeeId) : undefined,
           eq(appointments.establishmentId, establishmentId),
         ),
@@ -296,29 +303,35 @@ export const appointmentRouter = {
         "Agendamentos existentes:",
         existingAppointments.length,
         existingAppointments.map((a) => ({
-          start: a.startTime,
-          end: a.endTime,
+          start: format(a.startTime, "yyyy-MM-dd'T'HH:mm:ssXXX", { timeZone }),
+          end: format(a.endTime, "yyyy-MM-dd'T'HH:mm:ssXXX", { timeZone }),
         })),
       );
 
       // 5. Gerar slots disponíveis
       const slots = [];
-      console.log("Processando intervalos:", openingHoursResult.intervals);
 
-      for (const interval of openingHoursResult.intervals.length > 0
-        ? openingHoursResult.intervals
-        : [
-            {
-              startTime: openingHoursResult.openingTime,
-              endTime: openingHoursResult.closingTime,
-            },
-          ]) {
-        const intervalStart = parse(interval.startTime, "HH:mm:ss", date);
-        const intervalEnd = parse(interval.endTime, "HH:mm:ss", date);
+      const intervals =
+        openingHoursResult.intervals.length > 0
+          ? openingHoursResult.intervals
+          : [
+              {
+                startTime: openingHoursResult.openingTime,
+                endTime: openingHoursResult.closingTime,
+              },
+            ];
+
+      console.log("Processando intervalos:", intervals);
+
+      for (const interval of intervals) {
+        const intervalStart = parse(interval.startTime, "HH:mm:ss", zonedDate);
+        const intervalEnd = parse(interval.endTime, "HH:mm:ss", zonedDate);
 
         console.log("\nProcessando intervalo:", {
-          start: intervalStart,
-          end: intervalEnd,
+          start: format(intervalStart, "yyyy-MM-dd'T'HH:mm:ssXXX", {
+            timeZone,
+          }),
+          end: format(intervalEnd, "yyyy-MM-dd'T'HH:mm:ssXXX", { timeZone }),
         });
 
         let currentSlotStart = intervalStart;
@@ -329,8 +342,12 @@ export const appointmentRouter = {
           slotCount++;
 
           console.log(`\nSlot ${slotCount}:`, {
-            currentSlotStart: currentSlotStart,
-            slotEnd: slotEnd,
+            currentSlotStart: format(
+              currentSlotStart,
+              "yyyy-MM-dd'T'HH:mm:ssXXX",
+              { timeZone },
+            ),
+            slotEnd: format(slotEnd, "yyyy-MM-dd'T'HH:mm:ssXXX", { timeZone }),
             serviceDuration: service.duration,
           });
 
@@ -340,35 +357,55 @@ export const appointmentRouter = {
             continue;
           }
 
-          // Verificar conflitos
+          // Verificar conflitos com agendamentos existentes
           const hasConflict = existingAppointments.some((appointment) => {
             const conflict =
               appointment.startTime < slotEnd &&
               appointment.endTime > currentSlotStart;
-            if (conflict)
+            if (conflict) {
               console.log(
                 "Conflito encontrado com agendamento:",
                 appointment.id,
+                format(appointment.startTime, "HH:mm", { timeZone }),
+                "-",
+                format(appointment.endTime, "HH:mm", { timeZone }),
               );
+            }
             return conflict;
           });
 
-          // Verificar indisponibilidades
+          // Verificar indisponibilidades do funcionário
           const isUnavailable = employeeUnavailabilities.some((ua) => {
             if (!ua.startTime || !ua.endTime) return false;
 
-            const uaStart = parse(ua.startTime, "HH:mm:ss", date);
-            const uaEnd = parse(ua.endTime, "HH:mm:ss", date);
+            const uaStart = parse(ua.startTime, "HH:mm:ss", zonedDate);
+            const uaEnd = parse(ua.endTime, "HH:mm:ss", zonedDate);
 
             const unavailable = currentSlotStart < uaEnd && slotEnd > uaStart;
-            if (unavailable)
-              console.log("Conflito com indisponibilidade:", ua.id);
+            if (unavailable) {
+              console.log(
+                "Conflito com indisponibilidade:",
+                ua.id,
+                format(uaStart, "HH:mm", { timeZone }),
+                "-",
+                format(uaEnd, "HH:mm", { timeZone }),
+              );
+            }
             return unavailable;
           });
 
+          const formattedStart = format(
+            currentSlotStart,
+            "yyyy-MM-dd'T'HH:mm:ssXXX",
+            { timeZone },
+          );
+          const formattedEnd = format(slotEnd, "yyyy-MM-dd'T'HH:mm:ssXXX", {
+            timeZone,
+          });
+
           slots.push({
-            start: currentSlotStart,
-            end: slotEnd,
+            start: formattedStart,
+            end: formattedEnd,
             available: !hasConflict && !isUnavailable,
             reason: hasConflict
               ? "Horário já agendado"
@@ -378,14 +415,9 @@ export const appointmentRouter = {
           });
 
           console.log("Slot adicionado:", {
-            start: currentSlotStart,
-            end: slotEnd,
+            start: formattedStart,
+            end: formattedEnd,
             available: !hasConflict && !isUnavailable,
-            reason: hasConflict
-              ? "Conflito"
-              : isUnavailable
-                ? "Indisponível"
-                : "Disponível",
           });
 
           currentSlotStart = addMinutes(
@@ -395,34 +427,32 @@ export const appointmentRouter = {
         }
       }
 
-      // Verificação de data/hora atual
-      const now = toZonedTime(new Date(), "America/Sao_Paulo");
-
-      const isToday =
-        date.getFullYear() === now.getFullYear() &&
-        date.getMonth() === now.getMonth() &&
-        date.getDate() === now.getDate();
+      const now = toZonedTime(new Date(), timeZone);
+      const isToday = isSameDay(zonedDate, now);
 
       console.log("\nFiltro final:");
-      console.log("Data atual:", now);
+      console.log(
+        "Data atual:",
+        format(now, "yyyy-MM-dd'T'HH:mm:ssXXX", { timeZone }),
+      );
       console.log("É hoje?", isToday);
       console.log("Slots antes do filtro:", slots.length);
 
-      console.log("slots: ", slots);
-
       const filteredSlots = slots.filter((slot) => {
-        const isFutureSlot = !isToday || slot.start >= now;
-        if (!isFutureSlot) console.log("Slot removido (passado):", slot.start);
+        const slotDate = parseISO(slot.start);
+        const isFutureSlot = !isToday || slotDate >= now;
+        if (!isFutureSlot) {
+          console.log("Slot removido (passado):", slot.start);
+        }
         return slot.available && isFutureSlot;
       });
 
       console.log("Slots após filtro:", filteredSlots.length);
-      console.log("Slots filtrados:", filteredSlots);
-      console.log("=== FIM DA REQUISIÇÃO ===\n");
+      console.log("=== FIM DA REQUISIÇÃO ===");
 
       return {
         service,
-        date,
+        date: format(zonedDate, "yyyy-MM-dd'T'HH:mm:ssXXX", { timeZone }),
         openingHours: {
           openingTime: openingHoursResult.openingTime,
           closingTime: openingHoursResult.closingTime,
