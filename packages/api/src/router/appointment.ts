@@ -428,34 +428,29 @@ export const appointmentRouter = {
         }
       }
 
-      const now = toZonedTime(new Date(), timeZone);
-      const nowInSaoPaulo = toZonedTime(now, timeZone);
-
-      const isToday = isSameDay(zonedDate, now);
+      const nowInSaoPaulo = toZonedTime(new Date(), timeZone);
+      const isToday = isSameDay(zonedDate, nowInSaoPaulo);
 
       console.log("\nFiltro final:");
       console.log(
-        "Data atual:",
-        format(now, "yyyy-MM-dd'T'HH:mm:ssXXX", { timeZone }),
+        "Data atual REAL:",
+        format(nowInSaoPaulo, "yyyy-MM-dd'T'HH:mm:ssXXX", { timeZone }),
       );
-      console.log("É hoje?", isToday);
-      console.log("Slots antes do filtro:", slots.length);
 
       const filteredSlots = slots.filter((slot) => {
+        // Converter o slot para Date no timezone correto
         const slotDate = parseISO(slot.start);
         const slotDateInSP = toZonedTime(slotDate, timeZone);
 
-        // Verifica se o slot já passou (considerando o timezone)
+        // Verificação precisa do horário
         const isPastSlot = isToday && isAfter(nowInSaoPaulo, slotDateInSP);
 
         if (isPastSlot) {
           console.log(
             "Slot removido (passado):",
-            slot.start,
-            "| Now:",
-            format(nowInSaoPaulo, "HH:mm"),
-            "| Slot:",
             format(slotDateInSP, "HH:mm"),
+            "<",
+            format(nowInSaoPaulo, "HH:mm"),
           );
         }
 
