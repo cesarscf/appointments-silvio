@@ -1,6 +1,7 @@
 import {
   addMinutes,
   endOfDay,
+  isAfter,
   isSameDay,
   parse,
   parseISO,
@@ -428,6 +429,8 @@ export const appointmentRouter = {
       }
 
       const now = toZonedTime(new Date(), timeZone);
+      const nowInSaoPaulo = toZonedTime(now, timeZone);
+
       const isToday = isSameDay(zonedDate, now);
 
       console.log("\nFiltro final:");
@@ -440,11 +443,23 @@ export const appointmentRouter = {
 
       const filteredSlots = slots.filter((slot) => {
         const slotDate = parseISO(slot.start);
-        const isFutureSlot = !isToday || slotDate >= now;
-        if (!isFutureSlot) {
-          console.log("Slot removido (passado):", slot.start);
+        const slotDateInSP = toZonedTime(slotDate, timeZone);
+
+        // Verifica se o slot já passou (considerando o timezone)
+        const isPastSlot = isToday && isAfter(nowInSaoPaulo, slotDateInSP);
+
+        if (isPastSlot) {
+          console.log(
+            "Slot removido (passado):",
+            slot.start,
+            "| Now:",
+            format(nowInSaoPaulo, "HH:mm"),
+            "| Slot:",
+            format(slotDateInSP, "HH:mm"),
+          );
         }
-        return slot.available && isFutureSlot;
+
+        return slot.available && !isPastSlot;
       });
 
       console.log("Slots após filtro:", filteredSlots.length);
