@@ -296,8 +296,8 @@ export const appointmentRouter = {
         "Agendamentos existentes:",
         existingAppointments.length,
         existingAppointments.map((a) => ({
-          start: a.startTime.toISOString(),
-          end: a.endTime.toISOString(),
+          start: a.startTime,
+          end: a.endTime,
         })),
       );
 
@@ -317,8 +317,8 @@ export const appointmentRouter = {
         const intervalEnd = parse(interval.endTime, "HH:mm:ss", date);
 
         console.log("\nProcessando intervalo:", {
-          start: intervalStart.toISOString(),
-          end: intervalEnd.toISOString(),
+          start: intervalStart,
+          end: intervalEnd,
         });
 
         let currentSlotStart = intervalStart;
@@ -329,8 +329,8 @@ export const appointmentRouter = {
           slotCount++;
 
           console.log(`\nSlot ${slotCount}:`, {
-            currentSlotStart: currentSlotStart.toISOString(),
-            slotEnd: slotEnd.toISOString(),
+            currentSlotStart: currentSlotStart,
+            slotEnd: slotEnd,
             serviceDuration: service.duration,
           });
 
@@ -378,8 +378,8 @@ export const appointmentRouter = {
           });
 
           console.log("Slot adicionado:", {
-            start: currentSlotStart.toISOString(),
-            end: slotEnd.toISOString(),
+            start: currentSlotStart,
+            end: slotEnd,
             available: !hasConflict && !isUnavailable,
             reason: hasConflict
               ? "Conflito"
@@ -404,7 +404,7 @@ export const appointmentRouter = {
         date.getDate() === now.getDate();
 
       console.log("\nFiltro final:");
-      console.log("Data atual:", now.toISOString());
+      console.log("Data atual:", now);
       console.log("É hoje?", isToday);
       console.log("Slots antes do filtro:", slots.length);
 
@@ -412,8 +412,7 @@ export const appointmentRouter = {
 
       const filteredSlots = slots.filter((slot) => {
         const isFutureSlot = !isToday || slot.start >= now;
-        if (!isFutureSlot)
-          console.log("Slot removido (passado):", slot.start.toISOString());
+        if (!isFutureSlot) console.log("Slot removido (passado):", slot.start);
         return slot.available && isFutureSlot;
       });
 
