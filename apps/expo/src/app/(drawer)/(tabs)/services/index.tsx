@@ -6,14 +6,17 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 
 import { api } from "@/utils/api";
 
 export default function Services() {
-  const { data, isLoading, refetch } = api.service.all.useQuery();
-  const deleteClient = api.service.delete.useMutation({
+  const router = useRouter();
+
+  const { data, isLoading, refetch } = api.service.listServices.useQuery();
+  const deleteClient = api.service.deleteService.useMutation({
     onSuccess: () => refetch(),
   });
 
@@ -26,10 +29,17 @@ export default function Services() {
         {
           text: "Excluir",
           style: "destructive",
-          onPress: () => deleteClient.mutate({ serviceId: id }),
+          onPress: () => deleteClient.mutate({ id }),
         },
       ],
     );
+  };
+
+  const handleEdit = (id: string) => {
+    router.push({
+      pathname: "/(drawer)/(tabs)/services/[id]",
+      params: { id },
+    });
   };
 
   if (isLoading) {
@@ -56,22 +66,25 @@ export default function Services() {
             <View className="ml-4 flex-1">
               <Text className="text-xl font-semibold">{item.name}</Text>
 
-              {item.description && (
-                <Text className="text-gray-500">{item.description}</Text>
-              )}
-
               <Text className="text-gray-400">
-                Temp. estimado: {item.estimatedTime}
+                Temp. estimado: {item.duration}
               </Text>
 
               <Text className="text-gray-500">{item.price}</Text>
             </View>
 
             <TouchableOpacity
-              className="ml-4 rounded-xl bg-red-500 p-2"
+              className="ml-4 rounded-xl p-2"
+              onPress={() => handleEdit(item.id)}
+            >
+              <Feather name="edit" size={20} color="#3B82F6" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="ml-4 rounded-xl p-2"
               onPress={() => handleDelete(item.id)}
             >
-              <Feather name="trash" size={24} color="white" />
+              <Feather name="trash" size={20} color="#EF4444" />
             </TouchableOpacity>
           </View>
         )}

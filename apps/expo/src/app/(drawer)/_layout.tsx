@@ -39,7 +39,7 @@ export function DrawerContent() {
       <DrawerItem
         label={"Clientes"}
         onPress={() => {
-          router.push("/(drawer)/(tabs)/clients");
+          router.push("/(drawer)/(tabs)/customers");
         }}
       />
       <DrawerItem
