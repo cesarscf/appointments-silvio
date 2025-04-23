@@ -1,6 +1,6 @@
 import { Text, View } from "react-native";
 
-import { AddClientForm } from "@/components/forms/add-client-form";
+import { AddClientForm } from "@/components/forms/add-customer-form";
 
 export default function NewClient() {
   return (

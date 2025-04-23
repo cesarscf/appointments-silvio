@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { format } from "date-fns";
@@ -12,6 +13,7 @@ import { format } from "date-fns";
 import { api } from "@/utils/api";
 
 export default function Customers() {
+  const router = useRouter();
   const { data, isLoading, refetch } = api.customer.listCustomers.useQuery();
 
   const deleteClient = api.customer.deleteCustomer.useMutation({
@@ -34,7 +36,10 @@ export default function Customers() {
   };
 
   const handleEdit = (id: string) => {
-    console.log("Editar cliente com ID:", id);
+    router.push({
+      pathname: "/(drawer)/(tabs)/customers/[id]",
+      params: { id },
+    });
   };
 
   if (isLoading) {
