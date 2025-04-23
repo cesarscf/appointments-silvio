@@ -3,6 +3,7 @@ import "@bacons/text-decoder/install";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useColorScheme } from "nativewind";
+import ToastManager from "toastify-react-native";
 
 import { TRPCProvider } from "@/utils/api";
 
@@ -33,6 +34,7 @@ export default function RootLayout() {
           <Stack.Screen name="(drawer)" options={DRAWER_OPTIONS} />
           <Stack.Screen name="sign-in" />
         </Stack>
+        <ToastManager />
       </GestureHandlerRootView>
     </TRPCProvider>
   );

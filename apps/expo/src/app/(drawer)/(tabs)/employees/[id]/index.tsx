@@ -9,6 +9,7 @@ import {
 import { useLocalSearchParams } from "expo-router";
 
 import { EditEmployeeForm } from "@/components/forms/edit-employee-form";
+import { EmployeeServiceManager } from "@/components/forms/manager-employee-form";
 import { api } from "@/utils/api";
 
 const tabs = ["Geral", "Serviços", "Indisponibilidades"];
@@ -16,8 +17,7 @@ const tabs = ["Geral", "Serviços", "Indisponibilidades"];
 export default function Page() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [activeTab, setActiveTab] = React.useState("Geral");
+  const [activeTab, setActiveTab] = React.useState("Serviços");
 
   if (!id) throw new Error("Not found!");
 
@@ -25,6 +25,7 @@ export default function Page() {
     { id },
     { enabled: !!id },
   );
+  const { data: services } = api.service.listServices.useQuery();
 
   if (isPending) {
     return (
@@ -58,12 +59,11 @@ export default function Page() {
         {activeTab === "Geral" && <EditEmployeeForm employee={data} />}
 
         {activeTab === "Serviços" && (
-          <View>
-            <Text className="text-lg font-semibold">Serviços</Text>
-            <Text>
-              {data?.services?.join(", ") || "Nenhum serviço cadastrado"}
-            </Text>
-          </View>
+          <EmployeeServiceManager
+            services={services ?? []}
+            employeeId={data.id}
+            employeeServices={data.services}
+          />
         )}
 
         {activeTab === "Indisponibilidades" && (
