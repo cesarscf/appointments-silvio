@@ -1,11 +1,11 @@
-import { ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator, Image, Text, View } from "react-native";
 import { Link } from "expo-router";
 import { FlashList } from "@shopify/flash-list";
 
 import { api } from "@/utils/api";
 
 export default function Index() {
-  const { data, isPending } = api.employee.all.useQuery();
+  const { data, isPending } = api.employee.listEmployees.useQuery();
 
   if (isPending) {
     return (
@@ -22,13 +22,16 @@ export default function Index() {
         estimatedItemSize={80}
         ItemSeparatorComponent={() => <View className="h-2" />}
         renderItem={({ item }) => (
-          <View className="mb-4 flex flex-row items-center gap-3 rounded-lg rounded-md border border-zinc-200 bg-white p-4">
-            <View className="size-20 rounded-full bg-zinc-200" />
+          <View className="mb-4 flex flex-row items-center gap-3 rounded-lg border border-zinc-200 bg-white p-4">
+            <Image
+              src={item.image ?? ""}
+              style={{ width: 50, height: 50, borderRadius: 25 }}
+            />
+
             <View>
               <Text className="text-xl font-semibold text-black">
                 {item.name}
               </Text>
-              <Text className="text-base text-gray-600">Data: {item.role}</Text>
             </View>
 
             <Link
