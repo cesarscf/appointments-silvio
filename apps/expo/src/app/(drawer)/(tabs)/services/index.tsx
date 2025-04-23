@@ -10,6 +10,7 @@ import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 
+import { formatPrice } from "@/utils";
 import { api } from "@/utils/api";
 
 export default function Services() {
@@ -67,10 +68,10 @@ export default function Services() {
               <Text className="text-xl font-semibold">{item.name}</Text>
 
               <Text className="text-gray-400">
-                Temp. estimado: {item.duration}
+                Temp. estimado: {item.duration} min
               </Text>
 
-              <Text className="text-gray-500">{item.price}</Text>
+              <Text className="text-gray-500">{formatPrice(item.price)}</Text>
             </View>
 
             <TouchableOpacity

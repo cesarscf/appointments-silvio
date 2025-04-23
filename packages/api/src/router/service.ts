@@ -163,6 +163,46 @@ export const serviceRouter = {
       return service;
     }),
 
+  getServiceByIdWithCategories: publicProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { id } = input;
+
+      const service = await ctx.db.query.services.findFirst({
+        where: (table, { eq }) => eq(table.id, id),
+        with: {
+          categories: {
+            with: {
+              category: {
+                columns: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!service) {
+        throw new Error("Serviço não encontrado.");
+      }
+
+      return {
+        ...service,
+        categories: service.categories.map((sc) => {
+          return {
+            id: sc.category.id,
+            name: sc.category.name,
+          };
+        }),
+      };
+    }),
+
   getEmployeesByService: publicProcedure
     .input(
       z.object({

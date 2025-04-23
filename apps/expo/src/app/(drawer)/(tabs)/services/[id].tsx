@@ -1,16 +1,19 @@
-import { ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 
 import { AddClientForm } from "@/components/forms/add-customer-form";
 import { EditCustomerForm } from "@/components/forms/edit-customer-form";
+import { EditServiceForm } from "@/components/forms/edit-service-form";
 import { api } from "@/utils/api";
 
 export default function EditCustomer() {
   const { id } = useLocalSearchParams();
 
-  const { data, isLoading } = api.service.getServiceById.useQuery({
-    id: id as string,
-  });
+  const { data, isLoading } = api.service.getServiceByIdWithCategories.useQuery(
+    {
+      id: id as string,
+    },
+  );
 
   if (isLoading) {
     return (
@@ -23,11 +26,13 @@ export default function EditCustomer() {
   if (!data) return null;
 
   return (
-    <View className="flex-1 p-6">
-      <Text className="mb-4 text-xl font-bold text-gray-800">
-        Editar cliente
-      </Text>
-      {/* <EditCustomerForm customer={data} /> */}
-    </View>
+    <ScrollView>
+      <View className="flex-1 p-6">
+        <Text className="mb-4 text-xl font-bold text-gray-800">
+          Editar cliente
+        </Text>
+        <EditServiceForm service={data} />
+      </View>
+    </ScrollView>
   );
 }
