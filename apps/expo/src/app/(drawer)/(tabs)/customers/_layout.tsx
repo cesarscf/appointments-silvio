@@ -12,7 +12,7 @@ export default function Layout() {
           title: "Clientes",
           headerLeft: () => <DrawerToggleButton />,
           headerRight: () => (
-            <Link href="/(drawer)/(tabs)/clients/new" asChild>
+            <Link href="/(drawer)/(tabs)/customers/new" asChild>
               <Pressable>
                 <Feather name="plus" size={24} color="blue" />
               </Pressable>

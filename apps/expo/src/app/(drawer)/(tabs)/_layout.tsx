@@ -27,7 +27,7 @@ export default function AppLayout() {
       />
 
       <Tabs.Screen
-        name="clients"
+        name="customers"
         options={{
           tabBarLabel: "Clientes",
           tabBarIcon: ({ color, size }) => (

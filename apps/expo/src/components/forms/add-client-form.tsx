@@ -1,3 +1,5 @@
+import type { z } from "better-auth";
+import React from "react";
 import {
   ActivityIndicator,
   Text,
@@ -7,35 +9,34 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { zodResolver } from "@hookform/resolvers/zod";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import type { z } from "better-auth";
+import { format, parse } from "date-fns";
 import { Controller, useForm } from "react-hook-form";
 
-import { createClientSchema } from "@acme/validators";
+import { createCustomerSchema } from "@acme/validators";
 
 import { api } from "@/utils/api";
 
-type Inputs = z.infer<typeof createClientSchema>;
+type Inputs = z.infer<typeof createCustomerSchema>;
 
 export function AddClientForm() {
   const router = useRouter();
   const utils = api.useUtils();
 
   const form = useForm<Inputs>({
-    resolver: zodResolver(createClientSchema),
+    resolver: zodResolver(createCustomerSchema),
     defaultValues: {
       name: "",
-      phone: "",
-      birthday: new Date(),
+      phoneNumber: "",
+      birthDate: undefined,
       email: "",
       cpf: "",
       address: "",
     },
   });
 
-  const createMutation = api.clientR.create.useMutation({
+  const createMutation = api.customer.createCustomer.useMutation({
     async onSuccess() {
-      await utils.clientR.all.invalidate();
+      await utils.customer.listCustomers.invalidate();
       router.back();
     },
   });
@@ -68,7 +69,7 @@ export function AddClientForm() {
         />
         <Controller
           control={form.control}
-          name="phone"
+          name="phoneNumber"
           render={({ field, fieldState }) => (
             <View className="mb-4">
               <Text className="text-sm font-medium text-gray-700">
@@ -135,31 +136,61 @@ export function AddClientForm() {
         />
         <Controller
           control={form.control}
-          name="birthday"
-          render={({ field }) => (
-            <View className="mb-4">
-              <Text className="text-sm font-medium text-gray-700">
-                Data de Nascimento
-              </Text>
-              <DateTimePicker
-                value={field.value}
-                mode="date"
-                display="default"
-                locale="pt-BR"
-                onChange={(_, selectedDate) => {
-                  if (selectedDate) field.onChange(selectedDate);
-                }}
-                style={{
-                  marginTop: 8,
-                  padding: 10,
-                  borderRadius: 8,
-                  borderColor: "#ccc",
-                  borderWidth: 1,
-                  backgroundColor: "#f8f8f8",
-                }}
-              />
-            </View>
-          )}
+          name="birthDate"
+          render={({ field }) => {
+            const [displayValue, setDisplayValue] = React.useState(
+              field.value ? format(field.value, "dd/MM/yyyy") : "",
+            );
+
+            React.useEffect(() => {
+              setDisplayValue(
+                field.value ? format(field.value, "dd/MM/yyyy") : "",
+              );
+            }, [field.value]);
+
+            return (
+              <View className="flex flex-col">
+                <Text className="text-sm font-medium text-gray-700">
+                  Data de Nascimento
+                </Text>
+                <TextInput
+                  className="mt-1 rounded-lg border border-gray-300 bg-gray-50 p-4 focus:border-blue-500"
+                  placeholder="DD/MM/AAAA"
+                  value={displayValue}
+                  onChangeText={(text) => {
+                    const rawValue = text.replace(/\D/g, "");
+                    let formattedValue = "";
+
+                    // Aplica a máscara
+                    if (rawValue.length > 0) {
+                      formattedValue = rawValue
+                        .slice(0, 8)
+                        .replace(/^(\d{2})/, "$1/")
+                        .replace(/^(\d{2}\/\d{2})/, "$1/")
+                        .slice(0, 10);
+                    }
+
+                    setDisplayValue(formattedValue);
+
+                    if (formattedValue.length === 10) {
+                      try {
+                        const date = parse(
+                          formattedValue,
+                          "dd/MM/yyyy",
+                          new Date(),
+                        );
+                        if (!isNaN(date.getTime())) {
+                          field.onChange(date);
+                        }
+                      } catch {
+                        field.onChange(new Date("invalid"));
+                      }
+                    }
+                  }}
+                />
+              </View>
+            );
+          }}
         />
       </View>
 
