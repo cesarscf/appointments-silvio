@@ -3,9 +3,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { FlashList } from "@shopify/flash-list";
 
 import { api } from "@/utils/api";
+import { formatDateWithHour } from "@/utils";
 
 export default function Index() {
-  const { data, isPending } = api.appointment.all.useQuery();
+  const { data, isPending } = api.appointment.listAppointments.useQuery();
 
   if (isPending) {
     return (
@@ -22,18 +23,18 @@ export default function Index() {
         estimatedItemSize={80}
         ItemSeparatorComponent={() => <View className="h-2" />}
         renderItem={({ item }) => (
-          <View className="mb-4 rounded-lg rounded-md border border-zinc-200 bg-white p-4">
+          <View className="mb-4 rounded-lg border border-zinc-200 bg-white p-4">
             <Text className="text-xl font-semibold text-black">
-              Cliente: {item.client.name}
+              Cliente: {item.customer.name}
             </Text>
             <Text className="text-base text-gray-600">
-              Data: {item.date.toString()}
+              Data: {formatDateWithHour(item.startTime)}
             </Text>
             <Text className="text-base text-gray-600">
               Status: {item.status}
             </Text>
             <Text className="text-base text-gray-600">
-              Check-in: {item.checkIn ? "Sim" : "Não"}
+              Check-in: {item.checkin ? "Sim" : "Não"}
             </Text>
             <Text className="text-base text-gray-600">
               Serviço: {item.service.name}

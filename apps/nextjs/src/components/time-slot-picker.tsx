@@ -45,7 +45,6 @@ export function TimeSlotPicker({
       },
     );
 
-  console.log("slots => ", availability?.availableSlots);
   const timeSlots =
     availability?.availableSlots?.map((slot) => ({
       time: format(slot.start, "HH:mm"),
@@ -107,6 +106,7 @@ export function TimeSlotPicker({
                               variant={isSelected ? "default" : "outline"}
                               size="sm"
                               className="w-full"
+                              // @ts-ignore
                               onClick={() => handleTimeSelect(time, start, end)}
                             >
                               {time}
