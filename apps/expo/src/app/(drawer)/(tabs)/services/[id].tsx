@@ -8,6 +8,7 @@ import {
 import { useLocalSearchParams } from "expo-router";
 
 import { EditServiceForm } from "@/components/forms/edit-service-form";
+import { LoadingScreen } from "@/components/loading-screen";
 import { api } from "@/utils/api";
 
 export default function EditCustomer() {
@@ -20,11 +21,7 @@ export default function EditCustomer() {
   );
 
   if (isLoading) {
-    return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <ActivityIndicator style={{ width: 16, height: 16 }} />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   if (!data) return null;

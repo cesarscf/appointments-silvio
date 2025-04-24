@@ -10,6 +10,7 @@ import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 
+import { LoadingScreen } from "@/components/loading-screen";
 import { formatPrice } from "@/utils";
 import { api } from "@/utils/api";
 
@@ -44,11 +45,7 @@ export default function Services() {
   };
 
   if (isLoading) {
-    return (
-      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <ActivityIndicator style={{ width: 16, height: 16 }} />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   return (

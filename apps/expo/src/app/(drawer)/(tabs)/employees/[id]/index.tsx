@@ -12,16 +12,15 @@ import { EditEmployeeForm } from "@/components/forms/edit-employee-form";
 import { EmployeeServiceManager } from "@/components/forms/manager-employee-form";
 import { api } from "@/utils/api";
 
-const tabs = ["Geral", "Serviços", "Indisponibilidades"];
+const TABS = ["Geral", "Serviços", "Indisponibilidades"];
 
-export default function Page() {
+export default function EmployeeDetailsPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
-
   const [activeTab, setActiveTab] = React.useState("Serviços");
 
   if (!id) throw new Error("Not found!");
 
-  const { data, isPending } = api.employee.getEmployeeById.useQuery(
+  const { data: employee, isPending } = api.employee.getEmployeeById.useQuery(
     { id },
     { enabled: !!id },
   );
@@ -29,25 +28,72 @@ export default function Page() {
 
   if (isPending) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator className="size-4" />
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator style={{ width: 16, height: 16 }} />
       </View>
     );
   }
 
-  if (!data) throw new Error("Not found!");
+  if (!employee) throw new Error("Not found!");
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case "Geral":
+        return <EditEmployeeForm employee={employee} />;
+      case "Serviços":
+        return (
+          <EmployeeServiceManager
+            services={services ?? []}
+            employeeId={employee.id}
+            employeeServices={employee.services}
+          />
+        );
+      case "Indisponibilidades":
+        return (
+          <View style={{ padding: 16 }}>
+            <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 8 }}>
+              Indisponibilidades
+            </Text>
+            <Text>
+              {employee?.unavailabilities?.join(", ") ||
+                "Nenhuma indisponibilidade registrada"}
+            </Text>
+          </View>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
-    <View className="flex-1">
-      <View className="flex-row border-b border-gray-300 bg-white">
-        {tabs.map((tab) => (
+    <View style={{ flex: 1 }}>
+      {/* Barra de abas */}
+      <View
+        style={{
+          flexDirection: "row",
+          borderBottomWidth: 1,
+          borderColor: "#d1d5db",
+          backgroundColor: "white",
+        }}
+      >
+        {TABS.map((tab) => (
           <TouchableOpacity
             key={tab}
             onPress={() => setActiveTab(tab)}
-            className={`flex-1 items-center py-4 ${activeTab === tab ? "border-b-2 border-blue-500" : ""}`}
+            style={{
+              flex: 1,
+              alignItems: "center",
+              paddingVertical: 16,
+              borderBottomWidth: activeTab === tab ? 2 : 0,
+              borderColor: activeTab === tab ? "#3b82f6" : "transparent",
+            }}
           >
             <Text
-              className={`text-base ${activeTab === tab ? "font-bold text-blue-500" : "text-gray-500"}`}
+              style={{
+                fontSize: 16,
+                fontWeight: activeTab === tab ? "bold" : "normal",
+                color: activeTab === tab ? "#3b82f6" : "#6b7280",
+              }}
             >
               {tab}
             </Text>
@@ -55,26 +101,9 @@ export default function Page() {
         ))}
       </View>
 
-      <ScrollView className="flex-1 p-4">
-        {activeTab === "Geral" && <EditEmployeeForm employee={data} />}
-
-        {activeTab === "Serviços" && (
-          <EmployeeServiceManager
-            services={services ?? []}
-            employeeId={data.id}
-            employeeServices={data.services}
-          />
-        )}
-
-        {activeTab === "Indisponibilidades" && (
-          <View>
-            <Text className="text-lg font-semibold">Indisponibilidades</Text>
-            <Text>
-              {data?.unavailabilities?.join(", ") ||
-                "Nenhuma indisponibilidade registrada"}
-            </Text>
-          </View>
-        )}
+      {/* Conteúdo da aba selecionada */}
+      <ScrollView style={{ flex: 1, padding: 16 }}>
+        {renderTabContent()}
       </ScrollView>
     </View>
   );
