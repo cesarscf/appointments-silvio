@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { MultiSelect } from "@/components/ui/multi-select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/trpc/react";
 
@@ -116,178 +117,186 @@ export function CreateEmployeeButton({ services }: { services: Service[] }) {
       <DialogTrigger asChild className="ml-auto mr-4">
         <Button>Novo Funcionário</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Novo funcionário</DialogTitle>
-          <DialogDescription>Adicione um novo funcionário</DialogDescription>
-        </DialogHeader>
+      <DialogContent className="flex flex-col gap-0 p-0 sm:max-h-[min(740px,90vh)] sm:max-w-lg [&>button:last-child]:hidden">
+        <ScrollArea className="flex max-h-full flex-col overflow-hidden">
+          <DialogHeader className="contents space-y-0 text-left">
+            <DialogTitle className="px-6 pt-6">Novo funcionário</DialogTitle>
+            <DialogDescription className="px-6">
+              Adicione um novo funcionário
+            </DialogDescription>
+            <div className="p-6">
+              <Form {...form}>
+                <form
+                  className="grid gap-4"
+                  onSubmit={form.handleSubmit(onSubmit)}
+                >
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nome</FormLabel>
+                        <FormControl>
+                          <Input type="text" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-        <Form {...form}>
-          <form className="grid gap-4" onSubmit={form.handleSubmit(onSubmit)}>
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nome</FormLabel>
-                  <FormControl>
-                    <Input type="text" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Telefone</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="text"
-                      {...field}
-                      onChange={handlePhoneChange}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="text" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Endereço</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="image"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Foto</FormLabel>
-                  <FormControl>
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-4">
-                        <div className="relative flex h-24 w-24 items-center justify-center rounded-md border border-dashed">
-                          {imagePreview ? (
-                            <img
-                              src={imagePreview || "/placeholder.svg"}
-                              alt="Logo preview"
-                              className="h-full w-full rounded-md object-contain p-2"
-                            />
-                          ) : (
-                            <ImageIcon className="h-10 w-10 text-muted-foreground" />
-                          )}
-                        </div>
-                        <div className="flex flex-col gap-2">
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Telefone</FormLabel>
+                        <FormControl>
                           <Input
-                            type="file"
-                            accept="image/*"
-                            id="logo-upload"
-                            className="hidden"
-                            onChange={handleLogoUpload}
+                            type="text"
+                            {...field}
+                            onChange={handlePhoneChange}
                           />
-                          <label
-                            htmlFor="logo-upload"
-                            className="inline-flex h-9 cursor-pointer items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
-                          >
-                            <Upload className="mr-2 h-4 w-4" />
-                            Enviar logo
-                          </label>
-                          {imagePreview && (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setImagePreview(null);
-                                form.setValue("image", "");
-                              }}
-                            >
-                              Remover
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Envie uma imagem de até 1MB. Formatos recomendados: PNG,
-                        JPG, SVG.
-                      </p>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-            {services.length === 0 ? null : (
-              <FormField
-                control={form.control}
-                name="serviceIds"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      Adicione os serviços realizado por esse funcionário
-                    </FormLabel>
-                    <FormControl>
-                      <MultiSelect
-                        options={services.map((service) => ({
-                          label: service.name,
-                          value: service.id,
-                        }))}
-                        // @ts-ignore
-                        selected={field.value}
-                        onChange={field.onChange}
-                        placeholder="Selecione as categorias"
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input type="text" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="address"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Endereço</FormLabel>
+                        <FormControl>
+                          <Textarea {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="image"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Foto</FormLabel>
+                        <FormControl>
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-4">
+                              <div className="relative flex h-24 w-24 items-center justify-center rounded-md border border-dashed">
+                                {imagePreview ? (
+                                  <img
+                                    src={imagePreview || "/placeholder.svg"}
+                                    alt="Logo preview"
+                                    className="h-full w-full rounded-md object-contain p-2"
+                                  />
+                                ) : (
+                                  <ImageIcon className="h-10 w-10 text-muted-foreground" />
+                                )}
+                              </div>
+                              <div className="flex flex-col gap-2">
+                                <Input
+                                  type="file"
+                                  accept="image/*"
+                                  id="logo-upload"
+                                  className="hidden"
+                                  onChange={handleLogoUpload}
+                                />
+                                <label
+                                  htmlFor="logo-upload"
+                                  className="inline-flex h-9 cursor-pointer items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+                                >
+                                  <Upload className="mr-2 h-4 w-4" />
+                                  Enviar logo
+                                </label>
+                                {imagePreview && (
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      setImagePreview(null);
+                                      form.setValue("image", "");
+                                    }}
+                                  >
+                                    Remover
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                              Envie uma imagem de até 1MB. Formatos
+                              recomendados: PNG, JPG, SVG.
+                            </p>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {services.length === 0 ? null : (
+                    <FormField
+                      control={form.control}
+                      name="serviceIds"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            Adicione os serviços realizado por esse funcionário
+                          </FormLabel>
+                          <FormControl>
+                            <MultiSelect
+                              options={services.map((service) => ({
+                                label: service.name,
+                                value: service.id,
+                              }))}
+                              // @ts-ignore
+                              selected={field.value}
+                              onChange={field.onChange}
+                              placeholder="Selecione as categorias"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+
+                  <Button
+                    type="submit"
+                    className="ml-auto w-fit"
+                    disabled={createMutation.isPending}
+                  >
+                    {createMutation.isPending && (
+                      <Loader2
+                        className="mr-2 size-4 animate-spin"
+                        aria-hidden="true"
                       />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            <Button
-              type="submit"
-              className="ml-auto w-fit"
-              disabled={createMutation.isPending}
-            >
-              {createMutation.isPending && (
-                <Loader2
-                  className="mr-2 size-4 animate-spin"
-                  aria-hidden="true"
-                />
-              )}
-              Criar
-              <span className="sr-only">Criar</span>
-            </Button>
-          </form>
-        </Form>
+                    )}
+                    Criar
+                    <span className="sr-only">Criar</span>
+                  </Button>
+                </form>
+              </Form>
+            </div>
+          </DialogHeader>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
