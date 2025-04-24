@@ -34,6 +34,7 @@ export function EmployeeServiceManager({
   services,
   employeeServices,
 }: EmployeeServiceManagerProps) {
+  // State management
   const [selectedService, setSelectedService] = useState<string>("");
   const [newCommission, setNewCommission] = useState("");
   const [editCommission, setEditCommission] = useState("");
@@ -41,8 +42,10 @@ export function EmployeeServiceManager({
   const [modalVisible, setModalVisible] = useState(false);
   const [serviceMenuVisible, setServiceMenuVisible] = useState(false);
 
+  // API utilities
   const apiUtils = api.useUtils();
 
+  // Mutations
   const deleteMutation = api.employee.deleteEmployeeService.useMutation({
     onSuccess: () => {
       void apiUtils.employee.getEmployeeById.invalidate();
@@ -80,6 +83,7 @@ export function EmployeeServiceManager({
     },
   });
 
+  // Handlers
   const handleAddService = () => {
     if (!selectedService) return;
     createMutation.mutate({
@@ -91,7 +95,6 @@ export function EmployeeServiceManager({
 
   const handleUpdateCommission = () => {
     if (!editingService || !editCommission) return;
-
     updateMutation.mutate({
       employeeId,
       serviceId: editingService,
@@ -107,11 +110,22 @@ export function EmployeeServiceManager({
   };
 
   return (
-    <ScrollView className="flex-1 p-4">
-      <Text className="mb-5 text-xl font-semibold">Novo Serviço</Text>
+    <ScrollView style={{ flex: 1, padding: 16 }}>
+      {/* New Service Section */}
+      <Text style={{ fontSize: 20, fontWeight: "600", marginBottom: 20 }}>
+        Novo Serviço
+      </Text>
 
+      {/* Service Selection */}
       <TouchableOpacity
-        className="mt-1 rounded-lg border border-gray-300 bg-gray-50 p-4"
+        style={{
+          marginTop: 4,
+          borderRadius: 8,
+          borderWidth: 1,
+          borderColor: "#d1d5db",
+          backgroundColor: "#f9fafb",
+          padding: 16,
+        }}
         onPress={() => setServiceMenuVisible(!serviceMenuVisible)}
       >
         <Text>
@@ -122,7 +136,16 @@ export function EmployeeServiceManager({
       </TouchableOpacity>
 
       {serviceMenuVisible && (
-        <View className="mt-2 rounded-lg border border-gray-300 bg-gray-100 p-2">
+        <View
+          style={{
+            marginTop: 8,
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: "#d1d5db",
+            backgroundColor: "#f3f4f6",
+            padding: 8,
+          }}
+        >
           {services.map((service) => (
             <TouchableOpacity
               key={service.id}
@@ -131,44 +154,74 @@ export function EmployeeServiceManager({
                 setServiceMenuVisible(false);
               }}
             >
-              <Text className="px-1 py-2">{service.name}</Text>
+              <Text style={{ paddingHorizontal: 4, paddingVertical: 8 }}>
+                {service.name}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
       )}
 
+      {/* Commission Input */}
       <TextInput
         placeholder="Comissão (%)"
         value={newCommission}
         onChangeText={setNewCommission}
         keyboardType="decimal-pad"
-        className="mt-2 rounded-lg border border-gray-300 bg-gray-50 p-4"
+        style={{
+          marginTop: 8,
+          borderRadius: 8,
+          borderWidth: 1,
+          borderColor: "#d1d5db",
+          backgroundColor: "#f9fafb",
+          padding: 16,
+        }}
       />
 
+      {/* Save Button */}
       <TouchableOpacity
-        className="mt-2 items-center justify-center rounded-lg bg-blue-600 p-4"
+        style={{
+          marginTop: 8,
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: 8,
+          backgroundColor: "#2563eb",
+          padding: 16,
+        }}
         onPress={handleAddService}
         disabled={!selectedService}
       >
         {updateMutation.isPending ? (
           <ActivityIndicator color="white" />
         ) : (
-          <Text className="font-semibold text-white">Salvar Alterações</Text>
+          <Text style={{ fontWeight: "600", color: "white" }}>
+            Salvar Alterações
+          </Text>
         )}
       </TouchableOpacity>
 
-      <Text className="mt-6 text-xl font-semibold">Serviços Atribuídos</Text>
+      {/* Assigned Services Section */}
+      <Text style={{ marginTop: 24, fontSize: 20, fontWeight: "600" }}>
+        Serviços Atribuídos
+      </Text>
 
       {employeeServices.length === 0 ? (
-        <Text className="mt-3 text-center text-gray-500">
+        <Text style={{ marginTop: 12, textAlign: "center", color: "#6b7280" }}>
           Nenhum serviço atribuído
         </Text>
       ) : (
         employeeServices.map((service) => (
-          <View key={service.id} className="border-b border-gray-200 py-3">
-            <Text className="font-bold">{service.name}</Text>
+          <View
+            key={service.id}
+            style={{
+              borderBottomWidth: 1,
+              borderColor: "#e5e7eb",
+              paddingVertical: 12,
+            }}
+          >
+            <Text style={{ fontWeight: "bold" }}>{service.name}</Text>
             <Text>{parseFloat(service.commission || "0").toFixed(2)}%</Text>
-            <View className="mt-2 flex-row gap-3">
+            <View style={{ marginTop: 8, flexDirection: "row", gap: 12 }}>
               <Button
                 title="Editar"
                 onPress={() => {
@@ -187,18 +240,49 @@ export function EmployeeServiceManager({
         ))
       )}
 
+      {/* Edit Commission Modal */}
       <Modal visible={modalVisible} animationType="slide" transparent>
-        <View className="flex-1 justify-center bg-black/50 p-4">
-          <View className="rounded-xl bg-white p-6">
-            <Text className="mb-3 text-lg font-bold">Editar Comissão</Text>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            backgroundColor: "rgba(0,0,0,0.5)",
+            padding: 16,
+          }}
+        >
+          <View
+            style={{
+              borderRadius: 12,
+              backgroundColor: "white",
+              padding: 24,
+            }}
+          >
+            <Text
+              style={{ marginBottom: 12, fontSize: 18, fontWeight: "bold" }}
+            >
+              Editar Comissão
+            </Text>
             <TextInput
               placeholder="Nova Comissão (%)"
               value={editCommission}
               onChangeText={setEditCommission}
               keyboardType="decimal-pad"
-              className="mt-2 rounded-lg border border-gray-300 bg-gray-50 p-4"
+              style={{
+                marginTop: 8,
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: "#d1d5db",
+                backgroundColor: "#f9fafb",
+                padding: 16,
+              }}
             />
-            <View className="mt-4 flex-row justify-between">
+            <View
+              style={{
+                marginTop: 16,
+                flexDirection: "row",
+                justifyContent: "space-between",
+              }}
+            >
               <Button
                 title="Cancelar"
                 onPress={() => {

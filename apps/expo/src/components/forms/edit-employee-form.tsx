@@ -1,5 +1,4 @@
 import type { z } from "better-auth";
-import React from "react";
 import {
   ActivityIndicator,
   Image,
@@ -9,8 +8,6 @@ import {
   View,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 
@@ -22,7 +19,6 @@ import { api } from "@/utils/api";
 type Inputs = z.infer<typeof updateEmployeeSchema>;
 
 export function EditEmployeeForm({ employee }: { employee: any }) {
-  console.log(employee);
   const form = useForm<UpdateEmployee>({
     resolver: zodResolver(updateEmployeeSchema),
     defaultValues: {
@@ -36,20 +32,14 @@ export function EditEmployeeForm({ employee }: { employee: any }) {
   });
 
   const utils = api.useUtils();
-
   const updateEmployee = api.employee.updateEmployee.useMutation({
     onSuccess: () => {
-      void utils.employee.getEmployeeById.invalidate({
-        id: employee.id,
-      });
+      void utils.employee.getEmployeeById.invalidate({ id: employee.id });
       void utils.establishment.getOnboardingCheck.invalidate();
     },
   });
 
-  // Handle form submission
   const onSubmit = async (data: UpdateEmployee) => {
-    console.log(data);
-
     try {
       await updateEmployee.mutateAsync({
         id: employee.id,
@@ -83,21 +73,33 @@ export function EditEmployeeForm({ employee }: { employee: any }) {
   };
 
   return (
-    <View className="flex-1 gap-y-4 pb-8">
-      <View className="gap-4">
+    <View style={{ flex: 1, gap: 16, paddingBottom: 32 }}>
+      {/* Form Fields */}
+      <View style={{ gap: 16 }}>
         <Controller
           control={form.control}
           name="name"
           render={({ field, fieldState }) => (
-            <View className="mb-4">
-              <Text className="text-sm font-medium text-gray-700">Nome</Text>
+            <View style={{ marginBottom: 16 }}>
+              <Text
+                style={{ fontSize: 14, fontWeight: "500", color: "#374151" }}
+              >
+                Nome
+              </Text>
               <TextInput
-                className="mt-1 rounded-lg border border-gray-300 bg-gray-50 p-4 focus:border-blue-500"
+                style={{
+                  marginTop: 4,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: "#d1d5db",
+                  backgroundColor: "#f9fafb",
+                  padding: 16,
+                }}
                 value={field.value}
                 onChangeText={field.onChange}
               />
               {fieldState.error && (
-                <Text className="text-xs text-red-500">
+                <Text style={{ fontSize: 12, color: "#ef4444" }}>
                   {fieldState.error.message}
                 </Text>
               )}
@@ -109,15 +111,26 @@ export function EditEmployeeForm({ employee }: { employee: any }) {
           control={form.control}
           name="email"
           render={({ field, fieldState }) => (
-            <View className="mb-4">
-              <Text className="text-sm font-medium text-gray-700">Email</Text>
+            <View style={{ marginBottom: 16 }}>
+              <Text
+                style={{ fontSize: 14, fontWeight: "500", color: "#374151" }}
+              >
+                Email
+              </Text>
               <TextInput
-                className="mt-1 rounded-lg border border-gray-300 bg-gray-50 p-4 focus:border-blue-500"
+                style={{
+                  marginTop: 4,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: "#d1d5db",
+                  backgroundColor: "#f9fafb",
+                  padding: 16,
+                }}
                 value={field.value}
                 onChangeText={field.onChange}
               />
               {fieldState.error && (
-                <Text className="text-xs text-red-500">
+                <Text style={{ fontSize: 12, color: "#ef4444" }}>
                   {fieldState.error.message}
                 </Text>
               )}
@@ -129,17 +142,26 @@ export function EditEmployeeForm({ employee }: { employee: any }) {
           control={form.control}
           name="phone"
           render={({ field, fieldState }) => (
-            <View className="mb-4">
-              <Text className="text-sm font-medium text-gray-700">
+            <View style={{ marginBottom: 16 }}>
+              <Text
+                style={{ fontSize: 14, fontWeight: "500", color: "#374151" }}
+              >
                 Telefone
               </Text>
               <TextInput
-                className="mt-1 rounded-lg border border-gray-300 bg-gray-50 p-4 focus:border-blue-500"
+                style={{
+                  marginTop: 4,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: "#d1d5db",
+                  backgroundColor: "#f9fafb",
+                  padding: 16,
+                }}
                 value={field.value}
                 onChangeText={field.onChange}
               />
               {fieldState.error && (
-                <Text className="text-xs text-red-500">
+                <Text style={{ fontSize: 12, color: "#ef4444" }}>
                   {fieldState.error.message}
                 </Text>
               )}
@@ -151,17 +173,26 @@ export function EditEmployeeForm({ employee }: { employee: any }) {
           control={form.control}
           name="address"
           render={({ field, fieldState }) => (
-            <View className="mb-4">
-              <Text className="text-sm font-medium text-gray-700">
+            <View style={{ marginBottom: 16 }}>
+              <Text
+                style={{ fontSize: 14, fontWeight: "500", color: "#374151" }}
+              >
                 Endereço
               </Text>
               <TextInput
-                className="mt-1 rounded-lg border border-gray-300 bg-gray-50 p-4 focus:border-blue-500"
+                style={{
+                  marginTop: 4,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: "#d1d5db",
+                  backgroundColor: "#f9fafb",
+                  padding: 16,
+                }}
                 value={field.value}
                 onChangeText={field.onChange}
               />
               {fieldState.error && (
-                <Text className="text-xs text-red-500">
+                <Text style={{ fontSize: 12, color: "#ef4444" }}>
                   {fieldState.error.message}
                 </Text>
               )}
@@ -169,14 +200,22 @@ export function EditEmployeeForm({ employee }: { employee: any }) {
           )}
         />
 
+        {/* Image Picker */}
         <TouchableOpacity
           onPress={pickImage}
-          className="rounded-lg border border-gray-300 bg-white p-4"
+          style={{
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: "#d1d5db",
+            backgroundColor: "white",
+            padding: 16,
+          }}
         >
-          <Text className="text-center text-blue-500">Selecionar imagem</Text>
+          <Text style={{ textAlign: "center", color: "#3b82f6" }}>
+            Selecionar imagem
+          </Text>
         </TouchableOpacity>
 
-        {/* Preview da imagem (se houver) */}
         {form.watch("image") !== "" && (
           <Image
             source={{ uri: form.watch("image") }}
@@ -194,12 +233,21 @@ export function EditEmployeeForm({ employee }: { employee: any }) {
       <TouchableOpacity
         onPress={form.handleSubmit(onSubmit)}
         disabled={updateEmployee.isPending}
-        className="flex flex-row items-center justify-center rounded-lg bg-blue-600 p-4"
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: 8,
+          backgroundColor: "#2563eb",
+          padding: 16,
+        }}
       >
         {updateEmployee.isPending ? (
           <ActivityIndicator color="white" />
         ) : (
-          <Text className="font-semibold text-white">Salvar Alterações</Text>
+          <Text style={{ fontWeight: "600", color: "white" }}>
+            Salvar Alterações
+          </Text>
         )}
       </TouchableOpacity>
     </View>
