@@ -76,7 +76,7 @@ export function TimeSlotPicker({
                 setDate(newDate);
               }
             }}
-            className="p-2 sm:pe-5"
+            className="p-2 capitalize sm:pe-5"
             disabled={[{ before: today }]}
             locale={ptBR}
           />
@@ -91,8 +91,8 @@ export function TimeSlotPicker({
                 <ScrollArea className="h-full sm:border-s">
                   <div className="space-y-3">
                     <div className="flex h-5 shrink-0 items-center px-5">
-                      <p className="text-sm font-medium">
-                        {format(date, "EEEE, d", { locale: ptBR })}
+                      <p className="mx-auto text-sm font-medium capitalize">
+                        {format(date, "EEEE", { locale: ptBR })}
                       </p>
                     </div>
 
