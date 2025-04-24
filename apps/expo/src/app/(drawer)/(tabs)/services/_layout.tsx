@@ -21,7 +21,7 @@ export default function Layout() {
         }}
       />
       <Stack.Screen name="new" options={{ title: "Adicionar serviço" }} />
-      <Stack.Screen name="[id]" options={{ title: "Edit serviço" }} />
+      <Stack.Screen name="[id]" options={{ title: "Editar serviço" }} />
     </Stack>
   );
 }

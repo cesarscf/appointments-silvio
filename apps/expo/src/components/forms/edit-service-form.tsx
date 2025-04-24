@@ -40,11 +40,7 @@ export function EditServiceForm({
   const router = useRouter();
   const utils = api.useUtils();
 
-  const {
-    data: categories,
-    isLoading,
-    refetch,
-  } = api.category.listCategories.useQuery();
+  const { data: categories } = api.category.listCategories.useQuery();
 
   const form = useForm<Inputs>({
     resolver: zodResolver(updateServiceSchema),
@@ -121,7 +117,6 @@ export function EditServiceForm({
           <Text className="text-center text-blue-500">Selecionar imagem</Text>
         </TouchableOpacity>
 
-        {/* Preview da imagem (se houver) */}
         {form.watch("image") !== "" && (
           <Image
             source={{ uri: form.watch("image") }}
@@ -151,7 +146,12 @@ export function EditServiceForm({
             return (
               <View style={{ marginBottom: 16 }}>
                 <Text
-                  style={{ marginBottom: 8, fontWeight: "bold", fontSize: 16 }}
+                  style={{
+                    marginBottom: 8,
+                    fontWeight: "bold",
+                    fontSize: 16,
+                    marginTop: 10,
+                  }}
                 >
                   Categorias
                 </Text>

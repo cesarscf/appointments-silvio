@@ -5,8 +5,15 @@ import { AddServiceForm } from "@/components/forms/add-service-form";
 export default function NewService() {
   return (
     <ScrollView>
-      <View className="flex-1 p-6">
-        <Text className="mb-4 text-xl font-bold text-gray-800">
+      <View style={{ flex: 1, padding: 24 }}>
+        <Text
+          style={{
+            marginBottom: 16,
+            fontSize: 20,
+            fontWeight: "bold",
+            color: "#1f2937",
+          }}
+        >
           Adicionar serviço
         </Text>
         <AddServiceForm />

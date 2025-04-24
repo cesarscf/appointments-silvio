@@ -1,8 +1,12 @@
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 import { useLocalSearchParams } from "expo-router";
 
-import { AddClientForm } from "@/components/forms/add-customer-form";
-import { EditCustomerForm } from "@/components/forms/edit-customer-form";
 import { EditServiceForm } from "@/components/forms/edit-service-form";
 import { api } from "@/utils/api";
 
@@ -17,8 +21,8 @@ export default function EditCustomer() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator className="size-4" />
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator style={{ width: 16, height: 16 }} />
       </View>
     );
   }
@@ -27,8 +31,15 @@ export default function EditCustomer() {
 
   return (
     <ScrollView>
-      <View className="flex-1 p-6">
-        <Text className="mb-4 text-xl font-bold text-gray-800">
+      <View style={{ flex: 1, padding: 24 }}>
+        <Text
+          style={{
+            marginBottom: 16,
+            fontSize: 20,
+            fontWeight: "bold",
+            color: "#1f2937",
+          }}
+        >
           Editar cliente
         </Text>
         <EditServiceForm service={data} />

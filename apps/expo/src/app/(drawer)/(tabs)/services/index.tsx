@@ -45,44 +45,64 @@ export default function Services() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator className="size-4" />
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator style={{ width: 16, height: 16 }} />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-gray-100 p-4 pt-8">
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: "#f3f4f6",
+        padding: 16,
+        paddingTop: 32,
+      }}
+    >
       <FlashList
         data={data}
         estimatedItemSize={80}
-        ItemSeparatorComponent={() => <View className="h-8" />}
+        ItemSeparatorComponent={() => <View style={{ height: 32 }} />}
         renderItem={({ item }) => (
-          <View className="flex-row items-center justify-between rounded-2xl bg-white p-4">
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              borderRadius: 16,
+              backgroundColor: "white",
+              padding: 16,
+            }}
+          >
             <Image
               src={item.image ?? ""}
               style={{ width: 50, height: 50, borderRadius: 25 }}
             />
 
-            <View className="ml-4 flex-1">
-              <Text className="text-xl font-semibold">{item.name}</Text>
+            <View style={{ marginLeft: 16, flex: 1 }}>
+              <Text style={{ fontSize: 20, fontWeight: "600" }}>
+                {item.name}
+              </Text>
 
-              <Text className="text-gray-400">
+              <Text style={{ color: "#9ca3af" }}>
                 Temp. estimado: {item.duration} min
               </Text>
 
-              <Text className="text-gray-500">{formatPrice(item.price)}</Text>
+              <Text style={{ color: "#6b7280" }}>
+                {formatPrice(item.price)}
+              </Text>
             </View>
 
             <TouchableOpacity
-              className="ml-4 rounded-xl p-2"
+              style={{ marginLeft: 16, borderRadius: 12, padding: 8 }}
               onPress={() => handleEdit(item.id)}
             >
               <Feather name="edit" size={20} color="#3B82F6" />
             </TouchableOpacity>
 
             <TouchableOpacity
-              className="ml-4 rounded-xl p-2"
+              style={{ marginLeft: 16, borderRadius: 12, padding: 8 }}
               onPress={() => handleDelete(item.id)}
             >
               <Feather name="trash" size={20} color="#EF4444" />
