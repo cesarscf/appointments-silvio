@@ -16,6 +16,7 @@ import {
   appointments,
   customers,
   openingHours,
+  paymentTypeEnum,
   services,
   unavailabilities,
 } from "@acme/db/schema";
@@ -23,8 +24,6 @@ import { clearNumber } from "@acme/utils";
 import { publicCreateAppointmentSchema } from "@acme/validators";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
-
-const brazilOffset = -3;
 
 export const appointmentRouter = {
   listAppointments: protectedProcedure.query(async ({ ctx }) => {
@@ -143,26 +142,49 @@ export const appointmentRouter = {
 
       return appointment;
     }),
-
   checkInAppointment: protectedProcedure
     .input(
       z.object({
         appointmentId: z.string().uuid(),
+        paymentType: z.enum(paymentTypeEnum.enumValues),
+        paymentAmount: z.string().optional(),
+        paymentNote: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const [appointment] = await db
+      const { appointmentId, paymentType, paymentAmount, paymentNote } = input;
+
+      const appointment = await ctx.db.query.appointments.findFirst({
+        where: and(
+          eq(appointments.id, appointmentId),
+          eq(appointments.establishmentId, ctx.establishmentId),
+          eq(appointments.status, "scheduled"),
+        ),
+      });
+
+      if (!appointment) {
+        throw new Error("Agendamento não encontrado ou já concluído");
+      }
+
+      const [updatedAppointment] = await ctx.db
         .update(appointments)
-        .set({ checkin: true })
+        .set({
+          status: "completed",
+          checkin: true,
+          checkinAt: new Date(),
+          paymentType,
+          paymentAmount: paymentAmount?.replace(",", "."),
+          paymentNote,
+        })
         .where(
           and(
-            eq(appointments.id, input.appointmentId),
+            eq(appointments.id, appointmentId),
             eq(appointments.establishmentId, ctx.establishmentId),
           ),
         )
         .returning();
 
-      return appointment;
+      return updatedAppointment;
     }),
 
   listAppointmentsByPeriod: protectedProcedure

@@ -1,9 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
-import { CheckCircle, Loader2, PlusCircle } from "lucide-react";
-import { toast } from "sonner";
+import React from "react";
+import { CheckCircle, Loader2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -12,7 +10,6 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -26,18 +23,10 @@ import {
 } from "@/components/ui/table";
 import { formatDateWithHour } from "@/lib/utils";
 import { api } from "@/trpc/react";
+import { CheckinButton } from "./checkin-button";
 
 export default function Calendar() {
-  const [clickedId, setClickedId] = React.useState("");
-  const [appointments, { refetch }] =
-    api.appointment.listAppointments.useSuspenseQuery();
-
-  const checkInMutation = api.appointment.checkInAppointment.useMutation({
-    onSuccess: () => {
-      toast.success("Checkin realizado.");
-      refetch();
-    },
-  });
+  const [appointments] = api.appointment.listAppointments.useSuspenseQuery();
 
   const getStatusBadgeColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -122,25 +111,7 @@ export default function Calendar() {
                               <CheckCircle className="mr-1 h-3 w-3" /> Realizado
                             </Badge>
                           ) : (
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              disabled={checkInMutation.isPending}
-                              className="h-8 w-20"
-                              onClick={() => {
-                                setClickedId(appointment.id);
-                                checkInMutation.mutate({
-                                  appointmentId: appointment.id,
-                                });
-                              }}
-                            >
-                              {checkInMutation.isPending &&
-                              clickedId === appointment.id ? (
-                                <Loader2 className="ml-2 size-4 animate-spin" />
-                              ) : (
-                                "Checkin"
-                              )}
-                            </Button>
+                            <CheckinButton appointmentId={appointment.id} />
                           )}
                         </TableCell>
                         <TableCell>{appointment.service.name || "-"}</TableCell>

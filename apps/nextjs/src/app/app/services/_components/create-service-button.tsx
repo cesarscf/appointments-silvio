@@ -46,6 +46,7 @@ export function CreateServiceButton({
       name: "",
       duration: 30,
       price: "",
+      image: "",
       categoryIds: [],
     },
   });
@@ -68,10 +69,10 @@ export function CreateServiceButton({
   });
 
   async function onSubmit(inputs: CreateService) {
+    console.log({ inputs });
     await createMutation.mutateAsync(inputs);
   }
 
-  // Function to convert image to base64
   const convertToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();

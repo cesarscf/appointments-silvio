@@ -1,4 +1,4 @@
-import { boolean, z } from "zod";
+import { z } from "zod";
 
 export const createServiceSchema = z.object({
   name: z.string(),

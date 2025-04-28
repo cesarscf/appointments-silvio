@@ -115,7 +115,7 @@ export const serviceRouter = {
     .input(createServiceSchema)
     .mutation(async ({ input, ctx }) => {
       const { name, duration, price, categoryIds, image } = input;
-      console.log(price);
+
       const [newService] = await ctx.db
         .insert(services)
         .values({
@@ -123,7 +123,7 @@ export const serviceRouter = {
           duration,
           price: price.replace(",", "."),
           establishmentId: ctx.establishmentId,
-          image,
+          image: image ?? "",
         })
         .returning();
 

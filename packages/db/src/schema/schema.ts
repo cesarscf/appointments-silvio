@@ -13,7 +13,22 @@ import {
 
 import { users } from "./auth-schema";
 
-// Tabelas
+export const appointmentStatusEnum = pgEnum("appointment_status", [
+  "scheduled",
+  "completed",
+  "canceled",
+]);
+
+export const paymentTypeEnum = pgEnum("payment_type", [
+  "pix",
+  "credit_card",
+  "debit_card",
+  "cash",
+  "package",
+  "loyalty",
+  "other",
+]);
+
 export const establishments = pgTable("establishments", {
   id: uuid("id").notNull().primaryKey().defaultRandom(),
   userId: text("user_id")
@@ -24,6 +39,7 @@ export const establishments = pgTable("establishments", {
   about: text("about"),
   slug: text("slug").notNull(),
   logo: text("logo"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const openingHours = pgTable("opening_hours", {
@@ -56,6 +72,7 @@ export const employees = pgTable("employees", {
   phone: text("phone"),
   address: text("address"),
   image: text("image"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const unavailabilities = pgTable("unavailabilities", {
@@ -66,6 +83,8 @@ export const unavailabilities = pgTable("unavailabilities", {
   dayOfWeek: integer("day_of_week"),
   startTime: time("start_time"),
   endTime: time("end_time"),
+  date: timestamp("date"),
+  reason: text("reason"),
 });
 
 export const categories = pgTable("categories", {
@@ -86,6 +105,8 @@ export const services = pgTable("services", {
   establishmentId: uuid("establishment_id")
     .notNull()
     .references(() => establishments.id, { onDelete: "cascade" }),
+  description: text("description"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
 export const serviceCategories = pgTable("service_categories", {
@@ -110,10 +131,20 @@ export const employeeServices = pgTable("employee_services", {
   commission: decimal("commission", { precision: 5, scale: 2 }).notNull(),
 });
 
-export const appointmentStatusEnum = pgEnum("appointment_status", [
-  "scheduled",
-  "completed",
-]);
+export const customers = pgTable("customers", {
+  id: uuid("id").notNull().primaryKey().defaultRandom(),
+  establishmentId: uuid("establishment_id")
+    .notNull()
+    .references(() => establishments.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  birthDate: timestamp("birth_date", { mode: "date" }),
+  phoneNumber: text("phone_number").notNull(),
+  cpf: text("cpf"),
+  email: text("email"),
+  address: text("address"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
 
 export const appointments = pgTable("appointments", {
   id: uuid("id").notNull().primaryKey().defaultRandom(),
@@ -133,27 +164,120 @@ export const appointments = pgTable("appointments", {
   endTime: timestamp("end_time").notNull(),
   status: appointmentStatusEnum("status").notNull().default("scheduled"),
   checkin: boolean("checkin").notNull().default(false),
+  checkinAt: timestamp("checkin_at"),
+  paymentType: paymentTypeEnum("payment_type"),
+  paymentAmount: decimal("payment_amount", { precision: 10, scale: 2 }),
+  paymentNote: text("payment_note"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const customers = pgTable("customers", {
+// Tabelas para Pacotes de Serviços
+export const servicePackages = pgTable("service_packages", {
   id: uuid("id").notNull().primaryKey().defaultRandom(),
   establishmentId: uuid("establishment_id")
     .notNull()
     .references(() => establishments.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
-  birthDate: timestamp("birth_date", { mode: "date" }).notNull(),
-  phoneNumber: text("phone_number").notNull(),
-  cpf: text("cpf"),
-  email: text("email"),
-  address: text("address"),
+  serviceId: uuid("service_id")
+    .notNull()
+    .references(() => services.id, { onDelete: "cascade" }),
+  quantity: integer("quantity").notNull(),
+  commission: decimal("commission", { precision: 5, scale: 2 }).notNull(),
+  packagePrice: decimal("package_price", { precision: 10, scale: 2 }).notNull(),
+  active: boolean("active").default(true).notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const customerPackages = pgTable("customer_packages", {
+  id: uuid("id").notNull().primaryKey().defaultRandom(),
+  packageId: uuid("package_id")
+    .notNull()
+    .references(() => servicePackages.id, { onDelete: "cascade" }),
+  customerId: uuid("customer_id")
+    .notNull()
+    .references(() => customers.id, { onDelete: "cascade" }),
+  employeeId: uuid("employee_id").references(() => employees.id, {
+    onDelete: "set null",
+  }),
+  remainingSessions: integer("remaining_sessions").notNull(),
+  totalSessions: integer("total_sessions").notNull(),
+  purchasedAt: timestamp("purchased_at").notNull().defaultNow(),
+  paid: boolean("paid").notNull().default(false),
+  expiresAt: timestamp("expires_at"),
+});
+
+export const packageAppointments = pgTable("package_appointments", {
+  id: uuid("id").notNull().primaryKey().defaultRandom(),
+  packageId: uuid("package_id")
+    .notNull()
+    .references(() => customerPackages.id, { onDelete: "cascade" }),
+  appointmentId: uuid("appointment_id")
+    .notNull()
+    .references(() => appointments.id, { onDelete: "cascade" }),
+  usedAt: timestamp("used_at").notNull().defaultNow(),
+});
+
+// Tabelas para Programa de Fidelidade
+export const loyaltyPrograms = pgTable("loyalty_programs", {
+  id: uuid("id").notNull().primaryKey().defaultRandom(),
+  establishmentId: uuid("establishment_id")
+    .notNull()
+    .references(() => establishments.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  serviceId: uuid("service_id")
+    .notNull()
+    .references(() => services.id, { onDelete: "cascade" }),
+  pointsPerService: integer("points_per_service").notNull(),
+  requiredPoints: integer("required_points").notNull(),
+  bonusServiceId: uuid("bonus_service_id")
+    .notNull()
+    .references(() => services.id, { onDelete: "cascade" }),
+  bonusQuantity: integer("bonus_quantity").notNull().default(1),
+  active: boolean("active").default(true).notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const customerLoyalty = pgTable("customer_loyalty", {
+  id: uuid("id").notNull().primaryKey().defaultRandom(),
+  programId: uuid("program_id")
+    .notNull()
+    .references(() => loyaltyPrograms.id, { onDelete: "cascade" }),
+  customerId: uuid("customer_id")
+    .notNull()
+    .references(() => customers.id, { onDelete: "cascade" }),
+  accumulatedPoints: integer("accumulated_points").notNull().default(0),
+  lastUpdated: timestamp("last_updated").notNull().defaultNow(),
+});
+
+export const loyaltyBonuses = pgTable("loyalty_bonuses", {
+  id: uuid("id").notNull().primaryKey().defaultRandom(),
+  loyaltyId: uuid("loyalty_id")
+    .notNull()
+    .references(() => customerLoyalty.id, { onDelete: "cascade" }),
+  bonusServiceId: uuid("bonus_service_id")
+    .notNull()
+    .references(() => services.id, { onDelete: "cascade" }),
+  quantity: integer("quantity").notNull(),
+  earnedAt: timestamp("earned_at").notNull().defaultNow(),
+  used: boolean("used").notNull().default(false),
+  usedAt: timestamp("used_at"),
 });
 
 // Relações
-export const customersRelations = relations(customers, ({ one }) => ({
+export const customersRelations = relations(customers, ({ one, many }) => ({
   establishment: one(establishments, {
     fields: [customers.establishmentId],
     references: [establishments.id],
     relationName: "establishmentCustomers",
+  }),
+  appointments: many(appointments, { relationName: "customerAppointments" }),
+  customerPackages: many(customerPackages, {
+    relationName: "customerCustomerPackages",
+  }),
+  customerLoyalty: many(customerLoyalty, {
+    relationName: "customerCustomerLoyalty",
   }),
 }));
 
@@ -171,6 +295,9 @@ export const employeesRelations = relations(employees, ({ one, many }) => ({
   }),
   appointments: many(appointments, {
     relationName: "employeeAppointments",
+  }),
+  customerPackages: many(customerPackages, {
+    relationName: "employeeCustomerPackages",
   }),
 }));
 
@@ -199,6 +326,13 @@ export const establishmentsRelations = relations(
     }),
     categories: many(categories, { relationName: "establishmentCategories" }),
     services: many(services, { relationName: "establishmentServices" }),
+    customers: many(customers, { relationName: "establishmentCustomers" }),
+    servicePackages: many(servicePackages, {
+      relationName: "establishmentServicePackages",
+    }),
+    loyaltyPrograms: many(loyaltyPrograms, {
+      relationName: "establishmentLoyaltyPrograms",
+    }),
   }),
 );
 
@@ -221,6 +355,18 @@ export const servicesRelations = relations(services, ({ one, many }) => ({
     relationName: "serviceEmployeeServices",
   }),
   categories: many(serviceCategories, { relationName: "serviceCategories" }),
+  servicePackages: many(servicePackages, {
+    relationName: "serviceServicePackages",
+  }),
+  loyaltyProgramsAsService: many(loyaltyPrograms, {
+    relationName: "serviceLoyaltyPrograms",
+  }),
+  loyaltyProgramsAsBonus: many(loyaltyPrograms, {
+    relationName: "bonusServiceLoyaltyPrograms",
+  }),
+  loyaltyBonuses: many(loyaltyBonuses, {
+    relationName: "bonusServiceLoyaltyBonuses",
+  }),
 }));
 
 export const serviceCategoriesRelations = relations(
@@ -255,6 +401,11 @@ export const appointmentsRelations = relations(appointments, ({ one }) => ({
     references: [customers.id],
     relationName: "customerAppointments",
   }),
+  packageAppointment: one(packageAppointments, {
+    fields: [appointments.id],
+    references: [packageAppointments.appointmentId],
+    relationName: "appointmentPackageAppointment",
+  }),
 }));
 
 export const openingHoursRelations = relations(
@@ -287,6 +438,121 @@ export const unavailabilitiesRelations = relations(
     }),
   }),
 );
+
+export const servicePackagesRelations = relations(
+  servicePackages,
+  ({ one, many }) => ({
+    establishment: one(establishments, {
+      fields: [servicePackages.establishmentId],
+      references: [establishments.id],
+      relationName: "establishmentServicePackages",
+    }),
+    service: one(services, {
+      fields: [servicePackages.serviceId],
+      references: [services.id],
+      relationName: "serviceServicePackages",
+    }),
+    customerPackages: many(customerPackages, {
+      relationName: "servicePackageCustomerPackages",
+    }),
+  }),
+);
+
+export const customerPackagesRelations = relations(
+  customerPackages,
+  ({ one, many }) => ({
+    package: one(servicePackages, {
+      fields: [customerPackages.packageId],
+      references: [servicePackages.id],
+      relationName: "servicePackageCustomerPackages",
+    }),
+    customer: one(customers, {
+      fields: [customerPackages.customerId],
+      references: [customers.id],
+      relationName: "customerCustomerPackages",
+    }),
+    employee: one(employees, {
+      fields: [customerPackages.employeeId],
+      references: [employees.id],
+      relationName: "employeeCustomerPackages",
+    }),
+    packageAppointments: many(packageAppointments, {
+      relationName: "customerPackagePackageAppointments",
+    }),
+  }),
+);
+
+export const packageAppointmentsRelations = relations(
+  packageAppointments,
+  ({ one }) => ({
+    package: one(customerPackages, {
+      fields: [packageAppointments.packageId],
+      references: [customerPackages.id],
+      relationName: "customerPackagePackageAppointments",
+    }),
+    appointment: one(appointments, {
+      fields: [packageAppointments.appointmentId],
+      references: [appointments.id],
+      relationName: "appointmentPackageAppointment",
+    }),
+  }),
+);
+
+export const loyaltyProgramsRelations = relations(
+  loyaltyPrograms,
+  ({ one, many }) => ({
+    establishment: one(establishments, {
+      fields: [loyaltyPrograms.establishmentId],
+      references: [establishments.id],
+      relationName: "establishmentLoyaltyPrograms",
+    }),
+    service: one(services, {
+      fields: [loyaltyPrograms.serviceId],
+      references: [services.id],
+      relationName: "serviceLoyaltyPrograms",
+    }),
+    bonusService: one(services, {
+      fields: [loyaltyPrograms.bonusServiceId],
+      references: [services.id],
+      relationName: "bonusServiceLoyaltyPrograms",
+    }),
+    customerLoyalty: many(customerLoyalty, {
+      relationName: "loyaltyProgramCustomerLoyalty",
+    }),
+  }),
+);
+
+export const customerLoyaltyRelations = relations(
+  customerLoyalty,
+  ({ one, many }) => ({
+    program: one(loyaltyPrograms, {
+      fields: [customerLoyalty.programId],
+      references: [loyaltyPrograms.id],
+      relationName: "loyaltyProgramCustomerLoyalty",
+    }),
+    customer: one(customers, {
+      fields: [customerLoyalty.customerId],
+      references: [customers.id],
+      relationName: "customerCustomerLoyalty",
+    }),
+    bonuses: many(loyaltyBonuses, {
+      relationName: "customerLoyaltyLoyaltyBonuses",
+    }),
+  }),
+);
+
+export const loyaltyBonusesRelations = relations(loyaltyBonuses, ({ one }) => ({
+  loyalty: one(customerLoyalty, {
+    fields: [loyaltyBonuses.loyaltyId],
+    references: [customerLoyalty.id],
+    relationName: "customerLoyaltyLoyaltyBonuses",
+  }),
+  bonusService: one(services, {
+    fields: [loyaltyBonuses.bonusServiceId],
+    references: [services.id],
+    relationName: "bonusServiceLoyaltyBonuses",
+  }),
+}));
 
 // Tipos
 export type Establishment = typeof establishments.$inferSelect;
@@ -321,3 +587,21 @@ export type NewAppointment = typeof appointments.$inferInsert;
 
 export type Customer = typeof customers.$inferSelect;
 export type NewCustomer = typeof customers.$inferInsert;
+
+export type ServicePackage = typeof servicePackages.$inferSelect;
+export type NewServicePackage = typeof servicePackages.$inferInsert;
+
+export type CustomerPackage = typeof customerPackages.$inferSelect;
+export type NewCustomerPackage = typeof customerPackages.$inferInsert;
+
+export type PackageAppointment = typeof packageAppointments.$inferSelect;
+export type NewPackageAppointment = typeof packageAppointments.$inferInsert;
+
+export type LoyaltyProgram = typeof loyaltyPrograms.$inferSelect;
+export type NewLoyaltyProgram = typeof loyaltyPrograms.$inferInsert;
+
+export type CustomerLoyalty = typeof customerLoyalty.$inferSelect;
+export type NewCustomerLoyalty = typeof customerLoyalty.$inferInsert;
+
+export type LoyaltyBonus = typeof loyaltyBonuses.$inferSelect;
+export type NewLoyaltyBonus = typeof loyaltyBonuses.$inferInsert;

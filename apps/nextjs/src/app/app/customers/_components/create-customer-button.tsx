@@ -121,7 +121,7 @@ export function CreateCustomerButton() {
                         type="text"
                         placeholder="(00) 00000-0000"
                         {...field}
-                        onChange={(e) => {
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                           field.onChange(applyPhoneMask(e.target.value));
                         }}
                       />
