@@ -14,7 +14,10 @@ import { and, eq, gt, gte, isNull, lt, lte, or } from "@acme/db";
 import { db } from "@acme/db/client";
 import {
   appointments,
+  customerLoyalty,
   customers,
+  loyaltyBonuses,
+  loyaltyPrograms,
   openingHours,
   paymentTypeEnum,
   services,
@@ -119,51 +122,6 @@ export const appointmentRouter = {
         .returning();
 
       return appointment;
-    }),
-
-  checkInAppointment: protectedProcedure
-    .input(
-      z.object({
-        appointmentId: z.string().uuid(),
-        paymentType: z.enum(paymentTypeEnum.enumValues),
-        paymentAmount: z.string().optional(),
-        paymentNote: z.string().optional(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { appointmentId, paymentType, paymentAmount, paymentNote } = input;
-
-      const appointment = await ctx.db.query.appointments.findFirst({
-        where: and(
-          eq(appointments.id, appointmentId),
-          eq(appointments.establishmentId, ctx.establishmentId),
-          eq(appointments.status, "scheduled"),
-        ),
-      });
-
-      if (!appointment) {
-        throw new Error("Agendamento não encontrado ou já concluído");
-      }
-
-      const [updatedAppointment] = await ctx.db
-        .update(appointments)
-        .set({
-          status: "completed",
-          checkin: true,
-          checkinAt: new Date(),
-          paymentType,
-          paymentAmount: paymentAmount?.replace(",", "."),
-          paymentNote,
-        })
-        .where(
-          and(
-            eq(appointments.id, appointmentId),
-            eq(appointments.establishmentId, ctx.establishmentId),
-          ),
-        )
-        .returning();
-
-      return updatedAppointment;
     }),
 
   listAppointmentsByPeriod: protectedProcedure
@@ -472,4 +430,196 @@ export const appointmentRouter = {
         availableSlots: filteredSlots,
       };
     }),
+
+  checkInAppointment: protectedProcedure
+    .input(
+      z.object({
+        appointmentId: z.string().uuid(),
+        paymentType: z.enum(paymentTypeEnum.enumValues),
+        paymentAmount: z.string().optional(),
+        paymentNote: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { appointmentId, paymentType, paymentAmount, paymentNote } = input;
+
+      const appointment = await ctx.db.query.appointments.findFirst({
+        where: and(
+          eq(appointments.id, appointmentId),
+          eq(appointments.establishmentId, ctx.establishmentId),
+          eq(appointments.status, "scheduled"),
+        ),
+        with: {
+          customer: true,
+          employee: true,
+          service: true,
+        },
+      });
+
+      if (!appointment) {
+        throw new Error("Agendamento não encontrado ou já concluído");
+      }
+
+      const [updatedAppointment] = await ctx.db
+        .update(appointments)
+        .set({
+          status: "completed",
+          checkin: true,
+          checkinAt: new Date(),
+          paymentType,
+          paymentAmount: paymentAmount?.replace(",", "."),
+          paymentNote,
+        })
+        .where(
+          and(
+            eq(appointments.id, appointmentId),
+            eq(appointments.establishmentId, ctx.establishmentId),
+          ),
+        )
+        .returning();
+
+      const customer = appointment.customer;
+
+      await processLoyalty({
+        customerId: customer.id,
+        customerName: customer.name,
+        phoneNumber: customer.phoneNumber,
+        establishmentId: ctx.establishmentId,
+        serviceId: appointment.serviceId,
+      });
+
+      return updatedAppointment;
+    }),
 };
+
+type ProcessLoyaltyParams = {
+  customerId: string;
+  phoneNumber: string;
+  customerName: string;
+  serviceId: string;
+  establishmentId: string;
+};
+
+export async function processLoyalty({
+  customerId,
+  phoneNumber,
+  customerName,
+  serviceId,
+  establishmentId,
+}: ProcessLoyaltyParams) {
+  // 1. Buscar programas de fidelidade ativos para este serviço
+  const activePrograms = await db.query.loyaltyPrograms.findMany({
+    where: and(
+      eq(loyaltyPrograms.serviceId, serviceId),
+      eq(loyaltyPrograms.establishmentId, establishmentId),
+      eq(loyaltyPrograms.active, true),
+    ),
+  });
+
+  for (const program of activePrograms) {
+    // 2. Buscar ou criar registro de fidelidade do cliente
+    let loyalty = await db.query.customerLoyalty.findFirst({
+      where: and(
+        eq(customerLoyalty.programId, program.id),
+        eq(customerLoyalty.customerId, customerId),
+      ),
+    });
+
+    if (!loyalty) {
+      [loyalty] = await db
+        .insert(customerLoyalty)
+        .values({
+          programId: program.id,
+          customerId,
+          accumulatedPoints: 0,
+          lastUpdated: new Date(),
+        })
+        .returning();
+    }
+
+    // 3. Verificar se cliente tem bônus não utilizado para este serviço
+    const unusedBonus = await db.query.loyaltyBonuses.findFirst({
+      where: and(
+        eq(loyaltyBonuses.loyaltyId, loyalty!.id),
+        eq(loyaltyBonuses.bonusServiceId, serviceId),
+        eq(loyaltyBonuses.used, false),
+      ),
+    });
+
+    if (unusedBonus) {
+      // 4. Se tiver bônus, marcar como usado e não acumular pontos
+      await db
+        .update(loyaltyBonuses)
+        .set({
+          used: true,
+          usedAt: new Date(),
+        })
+        .where(eq(loyaltyBonuses.id, unusedBonus.id));
+
+      await sendWhatsappMessage(
+        phoneNumber,
+        `🎁 Bônus utilizado! Seu serviço ${program.name} foi pago com pontos de fidelidade.`,
+      );
+      continue;
+    }
+
+    // 5. Adicionar pontos ao cliente
+    const newPoints = loyalty!.accumulatedPoints + program.pointsPerService;
+    const pointsNeeded =
+      program.requiredPoints - (newPoints % program.requiredPoints);
+    const earnedBonus = Math.floor(newPoints / program.requiredPoints);
+
+    // 6. Atualizar pontos do cliente
+    await db
+      .update(customerLoyalty)
+      .set({
+        accumulatedPoints: newPoints % program.requiredPoints,
+        lastUpdated: new Date(),
+      })
+      .where(eq(customerLoyalty.id, loyalty!.id));
+
+    // 7. Enviar notificação de pontos acumulados
+    await sendWhatsappMessage(
+      phoneNumber,
+      `📊 Pontos de fidelidade: +${program.pointsPerService} pontos!
+        Total: ${newPoints} pontos
+        Faltam ${pointsNeeded} pontos para ganhar seu próximo bônus!`,
+    );
+
+    // 8. Se ganhou bônus, criar registro e notificar
+    if (earnedBonus > 0) {
+      const [bonusService] = await db
+        .select()
+        .from(services)
+        .where(eq(services.id, program.bonusServiceId));
+
+      await db.insert(loyaltyBonuses).values({
+        loyaltyId: loyalty!.id,
+        bonusServiceId: program.bonusServiceId,
+        quantity: earnedBonus * program.bonusQuantity,
+        earnedAt: new Date(),
+        used: false,
+      });
+
+      await sendWhatsappMessage(
+        phoneNumber,
+        `🎉 PARABÉNS ${customerName.toUpperCase()}! Você ganhou ${earnedBonus} bônus de ${bonusService?.name}.
+Agende este serviço gratuitamente usando seus pontos!`,
+      );
+    }
+  }
+}
+
+export async function sendWhatsappMessage(
+  phoneNumber: string,
+  message: string,
+) {
+  try {
+    // Implementação real com Twilio ou outro serviço
+    console.log(`[WhatsApp] To: ${phoneNumber}\nMessage: ${message}`);
+    return true;
+  } catch (error) {
+    console.error("WhatsApp error:", error);
+    return false;
+  }
+}

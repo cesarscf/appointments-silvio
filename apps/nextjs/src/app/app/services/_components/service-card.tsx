@@ -32,12 +32,17 @@ export function ServiceCard({
   deleteIsPending,
 }: ServiceCardProps) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = React.useState(false);
+
+  const image =
+    service.image === ""
+      ? "/placeholder.svg"
+      : (service.image ?? "/placeholder.svg");
   return (
     <>
       <Card className="w-full overflow-hidden">
         <CardHeader className="relative h-48 p-0">
           <Image
-            src={service.image ?? "/placeholder.svg"}
+            src={image}
             alt={`${service.name} Logo`}
             fill
             className="object-cover"
