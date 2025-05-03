@@ -8,6 +8,7 @@ import {
   Command,
   ContactRound,
   HammerIcon,
+  Handshake,
   LayoutDashboard,
   Store,
   Users,
@@ -110,6 +111,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               url: "/app/customers",
               icon: Users,
               isActive: segments.includes("customers"),
+            },
+            {
+              title: "Fidelidade",
+              url: "/app/loyalties",
+              icon: Handshake,
+              isActive: segments.includes("loyalties"),
             },
             {
               title: "Loja",
