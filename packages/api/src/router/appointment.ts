@@ -121,27 +121,6 @@ export const appointmentRouter = {
       return appointment;
     }),
 
-  updateAppointmentStatus: protectedProcedure
-    .input(
-      z.object({
-        appointmentId: z.string().uuid(),
-        status: z.enum(["scheduled", "completed"]),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const [appointment] = await db
-        .update(appointments)
-        .set({ status: input.status })
-        .where(
-          and(
-            eq(appointments.id, input.appointmentId),
-            eq(appointments.establishmentId, ctx.establishmentId),
-          ),
-        )
-        .returning();
-
-      return appointment;
-    }),
   checkInAppointment: protectedProcedure
     .input(
       z.object({
