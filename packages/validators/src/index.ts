@@ -4,6 +4,7 @@ export * from "./service";
 export * from "./employee";
 export * from "./employee";
 export * from "./appointment";
+export * from "./loyalty";
 // ...
 export * from "./establishment";
 export * from "./opening-hours";
