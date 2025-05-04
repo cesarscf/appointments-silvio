@@ -26,6 +26,12 @@ export const establishmentRouter = {
           services: {
             where: (service, { eq }) => eq(service.active, true),
           },
+          servicePackages: {
+            where: (table, { eq }) => eq(table.active, true),
+            with: {
+              service: true,
+            },
+          },
         },
       });
 

@@ -15,12 +15,6 @@ export function MapSection() {
       </p>
       <div className="space-y-4">
         <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
-          {/* <Image
-            src="/placeholder.svg"
-            alt="Mapa de localização"
-            fill
-            className="object-cover"
-          /> */}
           <div className="absolute inset-0 flex items-center justify-center">
             <Button asChild>
               <Link

@@ -14,6 +14,7 @@ import { AboutSection } from "./about-section";
 import { EmployeesList } from "./employees-list";
 import { Footer } from "./footer-sections";
 import { MapSection } from "./map-section";
+import { PackagesList } from "./service-package-list";
 import { ServicesList } from "./services-list";
 
 export function StorePage() {
@@ -200,6 +201,26 @@ export function StorePage() {
           </div>
 
           <ServicesList services={filteredServices} slug={data.slug} />
+        </section>
+
+        <section id="services" className="mb-16 scroll-mt-32">
+          <div className="mb-6 flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-center">
+            <div>
+              <h2 className="text-2xl font-bold">Nossos pacotes</h2>
+              <p className="text-muted-foreground">
+                Selecione um serviço para agendar seu horário
+              </p>
+              <Input
+                type="text"
+                placeholder="Filtrar por nome"
+                value={searchTermServices}
+                onChange={(e) => setSearchTermServices(e.target.value)}
+                className="mt-2 w-[300px]"
+              />
+            </div>
+          </div>
+
+          <PackagesList packages={data.servicePackages} slug={data.slug} />
         </section>
 
         <section id="professionals" className="mb-16 scroll-mt-32">

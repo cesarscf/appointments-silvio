@@ -11,7 +11,10 @@ export default async function Page({
   searchParams: SearchParams;
 }) {
   const { slug } = await params;
-  const { serviceId: id } = searchParams as { serviceId: string };
+  const { serviceId: id, servicePackageId } = searchParams as {
+    serviceId: string;
+    servicePackageId: string | null;
+  };
 
   void api.establishment.getEstablishmentBySlug.prefetch({
     slug,
@@ -19,6 +22,9 @@ export default async function Page({
 
   void api.service.getServiceById.prefetch({ id });
   void api.service.getEmployeesByService.prefetch({ serviceId: id });
+  if (servicePackageId) {
+    void api.package.getById.prefetch({ id: servicePackageId });
+  }
 
   return (
     <HydrateClient>

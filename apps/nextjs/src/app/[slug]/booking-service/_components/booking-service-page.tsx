@@ -14,6 +14,7 @@ import { useQueryState } from "nuqs";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { AppRouter } from "@acme/api";
 import { Employee } from "@acme/db/schema";
 
 import { TimeSlotPicker } from "@/components/time-slot-picker";
@@ -34,6 +35,10 @@ import { CustomerForm } from "./customer-form";
 import { EmployeeSelection } from "./employee-selection";
 import { ServiceInfoCard } from "./service-info-card";
 
+export type PackageResult = Awaited<
+  ReturnType<AppRouter["package"]["getById"]>
+> | null;
+
 const schema = z.object({
   name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
   birthDate: z.coerce.date({
@@ -51,6 +56,8 @@ export function BookingServicePage() {
   const search = useSearchParams();
   const router = useRouter();
   const serviceId = search.get("serviceId") ?? notFound();
+  const servicePackageId = search.get("servicePackageId");
+
   const [step, setStep] = useQueryState("step", { defaultValue: "employee" });
 
   const [selectedEmployee, setSelectedEmployee] =
@@ -75,6 +82,17 @@ export function BookingServicePage() {
   const [data] = api.establishment.getEstablishmentBySlug.useSuspenseQuery({
     slug,
   });
+
+  let servicePackage: PackageResult;
+
+  if (servicePackageId) {
+    [servicePackage] = api.package.getById.useSuspenseQuery({
+      id: servicePackageId,
+    });
+  } else {
+    servicePackage = null;
+  }
+
   const [service] = api.service.getServiceById.useSuspenseQuery({
     id: serviceId,
   });
@@ -117,6 +135,7 @@ export function BookingServicePage() {
         email: client.email,
         address: client.address,
       },
+      servicePackageId: servicePackageId ?? "",
     });
   }
 
@@ -189,6 +208,7 @@ export function BookingServicePage() {
           ) : (
             <>
               <ServiceInfoCard
+                servicePackage={servicePackage}
                 name={service.name}
                 duration={service.duration}
                 price={formatPrice(service.price)}

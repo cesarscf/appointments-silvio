@@ -111,7 +111,13 @@ export default function Calendar() {
                               <CheckCircle className="mr-1 h-3 w-3" /> Realizado
                             </Badge>
                           ) : (
-                            <CheckinButton appointmentId={appointment.id} />
+                            <CheckinButton
+                              appointmentId={appointment.id}
+                              packageAppoint={
+                                appointment.packageAppointment?.package
+                              }
+                              servicePrice={appointment.service.price}
+                            />
                           )}
                         </TableCell>
                         <TableCell>{appointment.service.name || "-"}</TableCell>

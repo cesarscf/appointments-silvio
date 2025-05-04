@@ -43,9 +43,37 @@ const createCheckinSchema = z.object({
 
 interface CheckinButtonProps {
   appointmentId: string;
+  packageAppoint: {
+    id: string;
+    expiresAt: Date | null;
+    employeeId: string | null;
+    customerId: string;
+    packageId: string;
+    remainingSessions: number;
+    totalSessions: number;
+    purchasedAt: Date;
+    paid: boolean;
+    package: {
+      description: string | null;
+      id: string;
+      createdAt: Date;
+      name: string;
+      establishmentId: string;
+      active: boolean;
+      serviceId: string;
+      commission: string;
+      quantity: number;
+      packagePrice: string;
+    };
+  } | null;
+  servicePrice: string;
 }
 
-export function CheckinButton({ appointmentId }: CheckinButtonProps) {
+export function CheckinButton({
+  appointmentId,
+  packageAppoint,
+  servicePrice,
+}: CheckinButtonProps) {
   const [open, setOpen] = React.useState(false);
   const apiUtils = api.useUtils();
 
@@ -57,15 +85,39 @@ export function CheckinButton({ appointmentId }: CheckinButtonProps) {
     },
   });
 
+  const isPackage = !!packageAppoint;
+  const isFirstPaymentFromPackage = isPackage && !packageAppoint.paid;
+
+  // Calcula o preço padrão
+  const price = String(
+    !isPackage
+      ? servicePrice // Não é pacote - preço normal do serviço
+      : isFirstPaymentFromPackage
+        ? packageAppoint.package.packagePrice // Primeiro pagamento do pacote
+        : "0", // Pagamentos subsequentes do pacote
+  );
+
   const form = useForm<z.infer<typeof createCheckinSchema>>({
     resolver: zodResolver(createCheckinSchema),
     defaultValues: {
       appointmentId,
-      paymentAmount: "",
+      paymentAmount: price,
       paymentNote: "",
-      paymentType: "pix",
+      paymentType: isPackage ? "package" : "pix", // Default para pacote ou pix
     },
   });
+
+  // Atualiza os valores quando o diálogo abre
+  React.useEffect(() => {
+    if (open) {
+      form.reset({
+        appointmentId,
+        paymentAmount: price,
+        paymentNote: "",
+        paymentType: isPackage ? "package" : "pix",
+      });
+    }
+  }, [open, form, appointmentId, price, isPackage]);
 
   async function onSubmit(inputs: z.infer<typeof createCheckinSchema>) {
     checkInMutation.mutateAsync({
@@ -104,20 +156,22 @@ export function CheckinButton({ appointmentId }: CheckinButtonProps) {
                   <FormLabel>Tipo do pagamento</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value}
+                    disabled={isPackage} // Desabilita se for pacote
                   >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select a verified email to display" />
+                        <SelectValue placeholder="Selecione o tipo de pagamento" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
                       {paymentOptions.map((it) => (
-                        <SelectItem value={it.value}>{it.label}</SelectItem>
+                        <SelectItem key={it.value} value={it.value}>
+                          {it.label}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-
                   <FormMessage />
                 </FormItem>
               )}
@@ -132,10 +186,11 @@ export function CheckinButton({ appointmentId }: CheckinButtonProps) {
                   <FormControl>
                     <div className="relative">
                       <Input
-                        {...field}
                         className="-me-px rounded-e-none ps-8 shadow-none"
                         placeholder="0.00"
                         type="text"
+                        {...field}
+                        disabled={isPackage} // Desabilita se for pacote
                       />
                       <span className="pointer-events-none absolute inset-y-0 start-0 flex items-center justify-center ps-3 text-sm text-muted-foreground peer-disabled:opacity-50">
                         R$

@@ -1,4 +1,5 @@
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 
 import { and, eq } from "@acme/db";
 import {
@@ -9,7 +10,7 @@ import {
 import { servicePackageSchema } from "@acme/validators";
 
 import type { TRPCRouterRecord } from "@trpc/server";
-import { protectedProcedure } from "../trpc";
+import { protectedProcedure, publicProcedure } from "../trpc";
 
 export const packageRouter = {
   create: protectedProcedure
@@ -57,4 +58,21 @@ export const packageRouter = {
 
     return result;
   }),
+
+  getById: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const result = await ctx.db.query.servicePackages.findFirst({
+        where: eq(servicePackages.id, input.id),
+        with: {
+          service: true,
+        },
+      });
+
+      if (!result) {
+        throw new Error("Pacote não encontrado.");
+      }
+
+      return result;
+    }),
 } satisfies TRPCRouterRecord;
