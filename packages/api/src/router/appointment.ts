@@ -547,19 +547,36 @@ export async function processLoyalty({
     });
 
     if (unusedBonus) {
-      // 4. Se tiver bônus, marcar como usado e não acumular pontos
-      await db
-        .update(loyaltyBonuses)
-        .set({
-          used: true,
-          usedAt: new Date(),
-        })
-        .where(eq(loyaltyBonuses.id, unusedBonus.id));
+      // 4. Se tiver bônus, verificar a quantidade e atualizar
+      if (unusedBonus.quantity > 1) {
+        // Diminuir a quantidade em 1 em vez de marcar como usado
+        await db
+          .update(loyaltyBonuses)
+          .set({
+            quantity: unusedBonus.quantity - 1,
+          })
+          .where(eq(loyaltyBonuses.id, unusedBonus.id));
 
-      await sendWhatsappMessage(
-        phoneNumber,
-        `🎁 Bônus utilizado! Seu serviço ${program.name} foi pago com pontos de fidelidade.`,
-      );
+        const remainingBonuses = unusedBonus.quantity - 1;
+        await sendWhatsappMessage(
+          phoneNumber,
+          `🎁 Bônus utilizado! Você ainda tem ${remainingBonuses} bônus disponíveis para o serviço ${program.name}.`,
+        );
+      } else {
+        // Se só tiver 1, marcar como usado
+        await db
+          .update(loyaltyBonuses)
+          .set({
+            used: true,
+            usedAt: new Date(),
+          })
+          .where(eq(loyaltyBonuses.id, unusedBonus.id));
+
+        await sendWhatsappMessage(
+          phoneNumber,
+          `🎁 Bônus utilizado! Seu serviço ${program.name} foi pago com pontos de fidelidade.`,
+        );
+      }
       continue;
     }
 
@@ -603,7 +620,7 @@ export async function processLoyalty({
 
       await sendWhatsappMessage(
         phoneNumber,
-        `🎉 PARABÉNS ${customerName.toUpperCase()}! Você ganhou ${earnedBonus} bônus de ${bonusService?.name}.
+        `🎉 PARABÉNS ${customerName.toUpperCase()}! Você ganhou ${earnedBonus * program.bonusQuantity} bônus de ${bonusService?.name}.
 Agende este serviço gratuitamente usando seus pontos!`,
       );
     }
