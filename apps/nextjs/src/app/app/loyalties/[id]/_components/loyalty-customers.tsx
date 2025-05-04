@@ -1,20 +1,26 @@
 "use client";
 
+import { useParams, useRouter } from "next/navigation";
+
 import {
   Breadcrumb,
   BreadcrumbItem,
+  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
+  BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { api } from "@/trpc/react";
-import { LoyaltyCard } from "./loyalty-card";
-import { LoyaltyProgramModal } from "./loyalty-program-modal";
+import LoyaltyTable from "./loyalty-table";
 
-export function LoyaltiesPage() {
-  const [loyalties] = api.loyalty.getAll.useSuspenseQuery();
-  const [services] = api.service.listServices.useSuspenseQuery();
+export function LoyaltyCustomers() {
+  const { id } = useParams();
+
+  const [data] = api.loyalty.listCustomersInProgram.useSuspenseQuery({
+    programId: id as string,
+  });
 
   return (
     <>
@@ -24,25 +30,21 @@ export function LoyaltiesPage() {
           <Separator orientation="vertical" className="mr-2 h-4" />
           <Breadcrumb>
             <BreadcrumbList>
+              <BreadcrumbItem className="hidden md:block">
+                <BreadcrumbLink href="/app/loyalties">
+                  Fidelidade
+                </BreadcrumbLink>
+              </BreadcrumbItem>
+
+              <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Fidelidades</BreadcrumbPage>
+                <BreadcrumbPage>{data[0]?.program.name}</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-        <LoyaltyProgramModal services={services} />
       </header>
-
-      {loyalties.length < 1 && <div>Empty</div>}
-
-      <div className="space-y-6 px-6">
-        <h2 className="text-2xl font-bold">Planos de Fidelidade</h2>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {loyalties.map((loyalty) => (
-            <LoyaltyCard key={loyalty.id} loyalty={loyalty} />
-          ))}
-        </div>
-      </div>
+      <LoyaltyTable data={data} />
     </>
   );
 }

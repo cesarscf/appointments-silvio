@@ -1,8 +1,15 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
-import { establishments, loyaltyPrograms, services } from "@acme/db/schema";
+import {
+  customerLoyalty,
+  customers,
+  establishments,
+  loyaltyBonuses,
+  loyaltyPrograms,
+  services,
+} from "@acme/db/schema";
 import { loyaltyProgramSchema } from "@acme/validators";
 
 import { protectedProcedure } from "../trpc";
@@ -102,7 +109,7 @@ export const loyaltyRouter = {
     }),
 
   getAll: protectedProcedure.query(async ({ ctx, input }) => {
-    return await ctx.db.query.loyaltyPrograms.findMany({
+    const result = await ctx.db.query.loyaltyPrograms.findMany({
       where: and(eq(loyaltyPrograms.establishmentId, ctx.establishmentId)),
       with: {
         service: true,
@@ -110,7 +117,30 @@ export const loyaltyRouter = {
       },
       orderBy: (programs, { desc }) => [desc(programs.createdAt)],
     });
+
+    return result;
   }),
+
+  listCustomersInProgram: protectedProcedure
+    .input(
+      z.object({
+        programId: z.string(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { programId } = input;
+
+      const result = await ctx.db.query.customerLoyalty.findMany({
+        where: (table, { eq }) => eq(table.programId, programId),
+        with: {
+          customer: true,
+          program: true,
+          bonuses: true,
+        },
+      });
+
+      return result;
+    }),
 
   getById: protectedProcedure
     .input(z.object({ id: z.string().uuid() }))
