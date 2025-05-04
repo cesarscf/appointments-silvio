@@ -28,46 +28,51 @@ export default function ServicePackageCard({
 }: ServicePackageCardProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {servicePackages.map((pkg) => (
-        <Card key={pkg.id} className="overflow-hidden">
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-bold">{pkg.name}</CardTitle>
-              <Badge variant={pkg.active ? "default" : "secondary"}>
-                {pkg.active ? "Ativo" : "Inativo"}
-              </Badge>
-            </div>
-            <p className="text-sm text-muted-foreground">{pkg.service.name}</p>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-2">
+      {servicePackages.map((pkg) => {
+        const unitPrice = Number(pkg.packagePrice) / pkg.quantity;
+        return (
+          <Card key={pkg.id} className="overflow-hidden">
+            <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Preço do pacote:</span>
-                <span className="text-lg font-bold">
-                  {formatPrice(Number.parseFloat(pkg.packagePrice))}
-                </span>
+                <CardTitle className="text-lg font-bold">{pkg.name}</CardTitle>
+                {/* <Badge variant={pkg.active ? "default" : "secondary"}>
+                  {pkg.active ? "Ativo" : "Inativo"}
+                </Badge> */}
               </div>
+              <p className="text-sm text-muted-foreground">
+                {pkg.service.name}
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Preço do pacote:</span>
+                  <span className="text-lg font-bold">
+                    {formatPrice(Number.parseFloat(pkg.packagePrice))}
+                  </span>
+                </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Quantidade:</span>
-                <span>
-                  {pkg.quantity} {pkg.quantity > 1 ? "serviços" : "serviço"}
-                </span>
-              </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Quantidade:</span>
+                  <span>
+                    {pkg.quantity} {pkg.quantity > 1 ? "serviços" : "serviço"}
+                  </span>
+                </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Comissão:</span>
-                <span>{pkg.commission}%</span>
-              </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Comissão:</span>
+                  <span>{pkg.commission}%</span>
+                </div>
 
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span>Preço unitário:</span>
-                <span>{formatPrice(Number.parseFloat(pkg.service.price))}</span>
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <span>Preço unitário:</span>
+                  <span>{formatPrice(unitPrice)}</span>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }

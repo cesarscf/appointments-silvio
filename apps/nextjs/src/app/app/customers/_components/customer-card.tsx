@@ -11,6 +11,7 @@ import {
   History,
   MailIcon,
   MapPinIcon as MapPinHouse,
+  Package,
   PhoneIcon,
   Trash2,
 } from "lucide-react";
@@ -49,10 +50,20 @@ export function CustomerCard({
             size="sm"
             asChild
             variant="secondary"
+            className="absolute right-3 top-14"
+          >
+            <Link href={`/app/customers/${customer.id}/packages`}>
+              <Package className="size-3" />
+            </Link>
+          </Button>
+          <Button
+            size="sm"
+            asChild
+            variant="secondary"
             className="absolute right-3 top-3"
           >
             <Link href={`/app/customers/${customer.id}`}>
-              <History className="size-3" /> Histórico
+              <History className="size-3" />
             </Link>
           </Button>
           <div className="flex-1 space-y-1">

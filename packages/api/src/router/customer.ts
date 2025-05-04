@@ -154,4 +154,19 @@ export const customerRouter = {
         where: (table, { eq }) => eq(table.phoneNumber, phone),
       });
     }),
+
+  getCustomerPackages: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const result = await ctx.db.query.customerPackages.findMany({
+        where: (table, { eq }) => eq(table.customerId, input.id),
+        with: {
+          employee: true,
+          customer: true,
+          package: true,
+        },
+      });
+
+      return result;
+    }),
 };

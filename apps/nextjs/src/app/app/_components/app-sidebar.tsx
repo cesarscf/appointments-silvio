@@ -120,7 +120,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               isActive: segments.includes("loyalties"),
             },
             {
-              title: "Packages",
+              title: "Pacotes",
               url: "/app/packages",
               icon: Package,
               isActive: segments.includes("packages"),
