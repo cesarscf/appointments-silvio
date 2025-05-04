@@ -18,20 +18,6 @@ export const loyaltyRouter = {
   create: protectedProcedure
     .input(loyaltyProgramSchema.omit({ id: true, establishmentId: true }))
     .mutation(async ({ ctx, input }) => {
-      const establishment = await ctx.db.query.establishments.findFirst({
-        where: and(
-          eq(establishments.id, ctx.establishmentId),
-          eq(establishments.userId, ctx.session.user.id),
-        ),
-      });
-
-      if (!establishment) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Você não tem permissão neste estabelecimento",
-        });
-      }
-
       const mainService = await ctx.db.query.services.findFirst({
         where: and(
           eq(services.id, input.serviceId),

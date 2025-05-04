@@ -10,6 +10,7 @@ import {
   HammerIcon,
   Handshake,
   LayoutDashboard,
+  Package,
   Store,
   Users,
 } from "lucide-react";
@@ -117,6 +118,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               url: "/app/loyalties",
               icon: Handshake,
               isActive: segments.includes("loyalties"),
+            },
+            {
+              title: "Packages",
+              url: "/app/packages",
+              icon: Package,
+              isActive: segments.includes("packages"),
             },
             {
               title: "Loja",
