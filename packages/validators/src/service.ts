@@ -2,7 +2,9 @@ import { z } from "zod";
 
 export const createServiceSchema = z.object({
   name: z.string(),
-  duration: z.number(),
+  duration: z.string().regex(/^\d+$/, {
+    message: "A entrada deve conter apenas números",
+  }),
   price: z.string(),
   image: z.string().optional(),
   categoryIds: z.array(z.string().uuid()).optional(),
@@ -10,7 +12,9 @@ export const createServiceSchema = z.object({
 
 export const updateServiceSchema = z.object({
   name: z.string(),
-  duration: z.number(),
+  duration: z.string().regex(/^\d+$/, {
+    message: "A entrada deve conter apenas números",
+  }),
   active: z.boolean(),
   price: z.string(),
   image: z.string().optional(),

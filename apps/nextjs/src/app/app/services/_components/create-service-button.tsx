@@ -44,7 +44,7 @@ export function CreateServiceButton({
     resolver: zodResolver(createServiceSchema),
     defaultValues: {
       name: "",
-      duration: 30,
+      duration: "0",
       price: "",
       image: "",
       categoryIds: [],
@@ -69,7 +69,6 @@ export function CreateServiceButton({
   });
 
   async function onSubmit(inputs: CreateService) {
-    console.log({ inputs });
     await createMutation.mutateAsync(inputs);
   }
 
@@ -232,10 +231,9 @@ export function CreateServiceButton({
                         <FormLabel>Duração (minutos)</FormLabel>
                         <FormControl>
                           <Input
-                            type="number"
                             {...field}
                             onChange={(e) => {
-                              field.onChange(Number(e.target.value));
+                              field.onChange(e.target.value);
                             }}
                             value={field.value}
                           />

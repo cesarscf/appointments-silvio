@@ -87,7 +87,7 @@ export const serviceRouter = {
         .update(services)
         .set({
           name,
-          duration,
+          duration: Number(duration),
           price: price.replace(",", "."),
           active: input.active,
           image,
@@ -120,7 +120,7 @@ export const serviceRouter = {
         .insert(services)
         .values({
           name,
-          duration,
+          duration: Number(duration),
           price: price.replace(",", "."),
           establishmentId: ctx.establishmentId,
           image: image ?? "",
