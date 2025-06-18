@@ -33,14 +33,22 @@ export function LoyaltiesPage() {
         <LoyaltyProgramModal services={services} />
       </header>
 
-      {loyalties.length < 1 && <div>Empty</div>}
-
       <div className="space-y-6 px-6">
         <h2 className="text-2xl font-bold">Planos de Fidelidade</h2>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {loyalties.map((loyalty) => (
-            <LoyaltyCard key={loyalty.id} loyalty={loyalty} />
+            <LoyaltyCard
+              key={loyalty.id}
+              loyalty={loyalty}
+              services={services}
+            />
           ))}
+
+          {loyalties.length < 1 && (
+            <div className="text-sm text-muted-foreground">
+              Nenhum plano foi criado ainda...
+            </div>
+          )}
         </div>
       </div>
     </>

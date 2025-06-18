@@ -16,7 +16,7 @@ import { protectedProcedure } from "../trpc";
 
 export const loyaltyRouter = {
   create: protectedProcedure
-    .input(loyaltyProgramSchema.omit({ id: true, establishmentId: true }))
+    .input(loyaltyProgramSchema.omit({ id: true }))
     .mutation(async ({ ctx, input }) => {
       const mainService = await ctx.db.query.services.findFirst({
         where: and(
@@ -66,7 +66,7 @@ export const loyaltyRouter = {
       const existingProgram = await ctx.db.query.loyaltyPrograms.findFirst({
         where: and(
           eq(loyaltyPrograms.id, input.id!),
-          eq(loyaltyPrograms.establishmentId, input.establishmentId),
+          eq(loyaltyPrograms.establishmentId, ctx.establishmentId),
         ),
         with: {
           establishment: true,

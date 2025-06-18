@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { Dispatch, SetStateAction, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -36,40 +36,44 @@ import {
 } from "@/components/ui/select";
 import { api } from "@/trpc/react";
 
+import { ReturnedLoyalty } from "./loyalty-card";
+
 const schema = loyaltyProgramSchema.omit({ id: true });
 
 type LoyaltyProgramFormValues = z.infer<typeof schema>;
 
-interface LoyaltyProgramModalProps {
+interface UpdateLoyaltyProgramModalProps {
   services: { id: string; name: string }[];
   onSuccess?: () => void;
+  loyalty: ReturnedLoyalty;
 }
 
-export function LoyaltyProgramModal({
+export function UpdateLoyaltyProgramModal({
   services,
   onSuccess,
-}: LoyaltyProgramModalProps) {
-  const [open, setOpen] = useState(false);
+  loyalty,
+}: UpdateLoyaltyProgramModalProps) {
+  const [open, setOpen] = React.useState(false);
 
   const form = useForm<LoyaltyProgramFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      pointsPerService: 1,
-      requiredPoints: 10,
-      bonusQuantity: 1,
-      serviceId: "",
-      bonusServiceId: "",
-      name: "",
-      active: true,
+      pointsPerService: loyalty.pointsPerService,
+      requiredPoints: loyalty.requiredPoints,
+      bonusQuantity: loyalty.bonusQuantity,
+      serviceId: loyalty.serviceId,
+      bonusServiceId: loyalty.bonusServiceId,
+      name: loyalty.name,
+      active: loyalty.active,
     },
   });
 
   const apiUtils = api.useUtils();
 
-  const createLoyaltyProgram = api.loyalty.create.useMutation({
+  const updateLoyaltyProgram = api.loyalty.update.useMutation({
     onSuccess: () => {
-      toast.success("Programa de fidelidade criado");
       form.reset();
+      toast.success("Programa de fidelidade criado");
       apiUtils.loyalty.getAll.invalidate();
       setOpen(false);
       onSuccess?.();
@@ -80,21 +84,24 @@ export function LoyaltyProgramModal({
   });
 
   function onSubmit(data: LoyaltyProgramFormValues) {
-    createLoyaltyProgram.mutate({ ...data });
+    updateLoyaltyProgram.mutate({
+      ...data,
+      id: loyalty.id,
+    });
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size={"sm"} variant="default" className="ml-auto mr-4">
-          Criar Programa de Fidelidade
+        <Button size={"sm"} variant="outline" className="ml-auto mr-4">
+          Editar
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Novo Programa de Fidelidade</DialogTitle>
           <DialogDescription>
-            Crie um programa de fidelidade para seus clientes.
+            Editar um programa de fidelidade para seus clientes.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -235,8 +242,8 @@ export function LoyaltyProgramModal({
             />
 
             <DialogFooter>
-              <Button type="submit" disabled={createLoyaltyProgram.isPending}>
-                {createLoyaltyProgram.isPending ? "Criando..." : "Criar"}
+              <Button type="submit" disabled={updateLoyaltyProgram.isPending}>
+                {updateLoyaltyProgram.isPending ? "Salvando..." : "Salvar"}
               </Button>
             </DialogFooter>
           </form>
