@@ -1,3 +1,5 @@
+"use client";
+
 import { useRouter } from "next/navigation";
 import { Gift, Star } from "lucide-react";
 
@@ -11,9 +13,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
-import React from "react";
+import { useState } from "react";
 import { UpdateLoyaltyProgramModal } from "./update-loyalty-program-modal";
+import { api } from "@/trpc/react";
+import { toast } from "sonner";
 
 export type ReturnedLoyalty = {
   description: string | null;
@@ -58,6 +64,36 @@ export interface LoyaltyCardProps {
 
 export function LoyaltyCard({ loyalty, services }: LoyaltyCardProps) {
   const router = useRouter();
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const apiUtils = api.useUtils();
+
+  const updateLoyaltyProgram = api.loyalty.update.useMutation({
+    onSuccess: () => {
+      toast.success("Status do programa de fidelidade atualizado");
+      apiUtils.loyalty.getAll.invalidate();
+      setIsUpdating(false);
+    },
+    onError: (error) => {
+      toast.error(error.message);
+      setIsUpdating(false);
+    },
+  });
+
+  const handleStatusChange = async (checked: boolean) => {
+    setIsUpdating(true);
+
+    updateLoyaltyProgram.mutate({
+      id: loyalty.id,
+      active: checked,
+      name: loyalty.name,
+      serviceId: loyalty.serviceId,
+      pointsPerService: loyalty.pointsPerService,
+      requiredPoints: loyalty.requiredPoints,
+      bonusServiceId: loyalty.bonusServiceId,
+      bonusQuantity: loyalty.bonusQuantity,
+    });
+  };
 
   return (
     <>
@@ -65,18 +101,34 @@ export function LoyaltyCard({ loyalty, services }: LoyaltyCardProps) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-xl">{loyalty.name}</CardTitle>
-            {loyalty.active ? (
-              <Badge
-                variant="default"
-                className="bg-green-500 hover:bg-green-600"
-              >
-                Ativo
-              </Badge>
-            ) : (
-              <Badge variant="outline" className="text-gray-500">
-                Inativo
-              </Badge>
-            )}
+            <div className="flex flex-col items-center gap-3">
+              {loyalty.active ? (
+                <Badge
+                  variant="default"
+                  className="bg-green-500 hover:bg-green-600"
+                >
+                  Ativo
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="text-gray-500">
+                  Inativo
+                </Badge>
+              )}
+              <div className="flex items-center space-x-2">
+                <Switch
+                  id={`loyalty-status-${loyalty.id}`}
+                  checked={loyalty.active}
+                  onCheckedChange={handleStatusChange}
+                  disabled={isUpdating}
+                />
+                <Label
+                  htmlFor={`loyalty-status-${loyalty.id}`}
+                  className="text-sm font-medium cursor-pointer"
+                >
+                  {loyalty.active ? "Ativo" : "Inativo"}
+                </Label>
+              </div>
+            </div>
           </div>
           <CardDescription>
             {loyalty.description || "Sem descrição disponível"}
