@@ -1,6 +1,4 @@
 "use client";
-
-import React from "react";
 import { CheckCircle, Loader2 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -24,9 +22,17 @@ import {
 import { formatDateWithHour } from "@/lib/utils";
 import { api } from "@/trpc/react";
 import { CheckinButton } from "./checkin-button";
+import { PeriodFilter } from "./period-filter";
+import { usePeriodFilter } from "./use-period-filter";
 
 export default function Calendar() {
-  const [appointments] = api.appointment.listAppointments.useSuspenseQuery();
+  const { startDate, endDate } = usePeriodFilter();
+
+  const { data: appointments, isLoading } =
+    api.appointment.listAppointmentsByPeriod.useQuery({
+      startDate,
+      endDate,
+    });
 
   const getStatusBadgeColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -59,7 +65,10 @@ export default function Calendar() {
       <div className="flex flex-1 flex-col gap-4 p-4 md:p-6">
         <Card className="shadow-sm">
           <CardHeader className="pb-3">
-            <CardTitle>Agendamentos</CardTitle>
+            <div className="flex flex-col gap-4">
+              <CardTitle>Agendamentos</CardTitle>
+              <PeriodFilter />
+            </div>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
@@ -75,14 +84,24 @@ export default function Calendar() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {appointments.length === 0 ? (
+                  {isLoading ? (
                     <TableRow>
                       <TableCell colSpan={6} className="h-24 text-center">
-                        Nenhum agendamento encontrado.
+                        <div className="flex items-center justify-center">
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          Carregando agendamentos...
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : appointments?.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="h-24 text-center">
+                        Nenhum agendamento encontrado para o período
+                        selecionado.
                       </TableCell>
                     </TableRow>
                   ) : (
-                    appointments.map((appointment) => (
+                    appointments?.map((appointment) => (
                       <TableRow
                         key={appointment.id}
                         className="hover:bg-muted/50"
