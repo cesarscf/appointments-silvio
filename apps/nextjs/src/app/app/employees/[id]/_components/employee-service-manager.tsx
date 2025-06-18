@@ -68,6 +68,23 @@ export function EmployeeServiceManager({
 
   const apiUtils = api.useUtils();
 
+  const handleCommissionChange = (
+    value: string,
+    setter: (value: string) => void,
+  ) => {
+    // Remove todos os caracteres que não são números ou ponto decimal
+    const numericValue = value.replace(/[^0-9.]/g, "");
+
+    // Garante que só há um ponto decimal
+    const parts = numericValue.split(".");
+    if (parts.length > 2) {
+      const formattedValue = parts[0] + "." + parts.slice(1).join("");
+      setter(formattedValue);
+    } else {
+      setter(numericValue);
+    }
+  };
+
   // Mutations
   const deleteMutation = api.employee.deleteEmployeeService.useMutation({
     onSuccess: () => {
@@ -152,7 +169,9 @@ export function EmployeeServiceManager({
             <Input
               placeholder="Opcional"
               value={newCommission}
-              onChange={(e) => setNewCommission(e.target.value)}
+              onChange={(e) =>
+                handleCommissionChange(e.target.value, setNewCommission)
+              }
               disabled={createMutation.isPending}
             />
           </div>
@@ -287,7 +306,9 @@ export function EmployeeServiceManager({
           <div className="py-4">
             <Input
               value={editCommission}
-              onChange={(e) => setEditCommission(e.target.value)}
+              onChange={(e) =>
+                handleCommissionChange(e.target.value, setEditCommission)
+              }
               placeholder="Ex: 25.50"
             />
           </div>
