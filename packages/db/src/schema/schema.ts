@@ -186,6 +186,7 @@ export const servicePackages = pgTable("service_packages", {
   packagePrice: decimal("package_price", { precision: 10, scale: 2 }).notNull(),
   active: boolean("active").default(true).notNull(),
   description: text("description"),
+  image: text("image"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

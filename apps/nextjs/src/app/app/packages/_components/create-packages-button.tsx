@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { ImageIcon, Loader2, Upload } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -51,6 +51,7 @@ export function CreateServicePackageButton({
   onSuccess,
 }: ServicePackageModalProps) {
   const [open, setOpen] = useState(false);
+  const [imagePreview, setImagePreview] = React.useState<string | null>(null);
 
   const form = useForm<ServicePackageFormValues>({
     resolver: zodResolver(servicePackageSchema),
@@ -63,8 +64,35 @@ export function CreateServicePackageButton({
       packagePrice: 0,
       active: true,
       description: "",
+      image: "",
     },
   });
+  const convertToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      if (file.size > 1024 * 1024) {
+        toast.error("A imagem deve ter menos de 1MB");
+        return;
+      }
+
+      const base64 = await convertToBase64(file);
+      setImagePreview(base64);
+      form.setValue("image", base64);
+    } catch (error) {
+      toast.error("Erro ao processar a imagem");
+    }
+  };
 
   // Calculate package price when quantity or service price changes
   useEffect(() => {
@@ -104,8 +132,8 @@ export function CreateServicePackageButton({
   const createMutation = api.package.create.useMutation({
     onSuccess: () => {
       toast.success("Pacote de serviço criado com sucesso");
-      void apiUtils.package.getAll.invalidate();
       form.reset();
+      void apiUtils.package.getAll.invalidate();
       setOpen(false);
       onSuccess?.();
     },
@@ -143,6 +171,67 @@ export function CreateServicePackageButton({
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="image"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Imagem</FormLabel>
+                  <FormControl>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4">
+                        <div className="relative flex h-24 w-24 items-center justify-center rounded-md border border-dashed">
+                          {imagePreview ? (
+                            <img
+                              src={imagePreview || "/placeholder.svg"}
+                              alt="Imagem preview"
+                              className="h-full w-full rounded-md object-contain p-2"
+                            />
+                          ) : (
+                            <ImageIcon className="h-10 w-10 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            id="image-upload"
+                            className="hidden"
+                            onChange={handleLogoUpload}
+                          />
+                          <label
+                            htmlFor="image-upload"
+                            className="inline-flex h-9 cursor-pointer items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+                          >
+                            <Upload className="mr-2 h-4 w-4" />
+                            Enviar imagem
+                          </label>
+                          {imagePreview && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setImagePreview(null);
+                                form.setValue("image", "");
+                              }}
+                            >
+                              Remover
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Envie uma imagem de até 1MB. Formatos recomendados: PNG,
+                        JPG, SVG.
+                      </p>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             <FormField
               control={form.control}
               name="name"

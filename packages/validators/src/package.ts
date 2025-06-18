@@ -17,6 +17,7 @@ export const servicePackageSchema = z.object({
       },
       { message: "Valor deve ser um número positivo" },
     ),
+
   commission: z
     .number({ invalid_type_error: "Comissão deve ser um número" })
     .min(0, "Comissão não pode ser negativa")
@@ -26,4 +27,5 @@ export const servicePackageSchema = z.object({
     .min(0, "Preço não pode ser negativo"),
   active: z.boolean().default(true),
   description: z.string().optional(),
+  image: z.string().optional(),
 });

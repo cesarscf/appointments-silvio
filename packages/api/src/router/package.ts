@@ -13,6 +13,15 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { protectedProcedure, publicProcedure } from "../trpc";
 
 export const packageRouter = {
+  updateActive: protectedProcedure
+    .input(z.object({ id: z.string(), checked: z.boolean() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db
+        .update(servicePackages)
+        .set({ active: input.checked })
+        .where(eq(servicePackages.id, input.id));
+    }),
+
   create: protectedProcedure
     .input(servicePackageSchema)
     .mutation(async ({ ctx, input }) => {
@@ -41,6 +50,7 @@ export const packageRouter = {
           quantity: input.quantity,
           serviceId: input.serviceId,
           description: input.description,
+          image: input.image,
         })
         .returning();
 
