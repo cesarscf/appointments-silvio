@@ -1,9 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BadgePercent, Clock, Package } from "lucide-react";
-
-import type { ServicePackage } from "@acme/db/schema";
+import { BadgePercent, Package } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,6 +27,7 @@ export function PackagesList({
     commission: string;
     quantity: number;
     packagePrice: string;
+    image: string | null;
     service: {
       description: string | null;
       id: string;
@@ -55,25 +54,34 @@ export function PackagesList({
         const savings = regularPrice - packagePrice;
         const savingsPercentage = Math.round((savings / regularPrice) * 100);
 
+        // Prioriza a imagem do pacote, depois a do serviço, ou usa placeholder
+        const imageUrl =
+          servicePackage.image ||
+          servicePackage.service.image ||
+          "/placeholder.svg?height=192&width=384";
+        const imageAlt = servicePackage.image
+          ? servicePackage.name
+          : servicePackage.service.name;
+
         return (
           <Card
             key={servicePackage.id}
             className="group overflow-hidden transition-all duration-300 hover:shadow-lg"
           >
-            {servicePackage.service.image && (
-              <div className="relative h-48 w-full overflow-hidden">
-                <img
-                  src={servicePackage.service.image || "/placeholder.svg"}
-                  alt={servicePackage.service.name}
-                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-                {savingsPercentage > 0 && (
-                  <Badge className="absolute right-2 top-2 bg-green-600 text-white">
-                    Economize {savingsPercentage}%
-                  </Badge>
-                )}
-              </div>
-            )}
+            <div className="relative h-48 w-full overflow-hidden bg-muted">
+              <img
+                src={imageUrl || "/placeholder.svg"}
+                alt={imageAlt}
+                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+              />
+              {savingsPercentage > 0 && (
+                <Badge className="absolute right-2 top-2 bg-green-600 text-white">
+                  Economize {savingsPercentage}%
+                </Badge>
+              )}
+              {/* Overlay gradient para melhor legibilidade do badge */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+            </div>
 
             <CardHeader className="pb-2">
               <h3 className="text-xl font-bold">{servicePackage.name}</h3>
