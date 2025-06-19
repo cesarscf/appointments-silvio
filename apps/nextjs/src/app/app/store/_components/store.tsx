@@ -34,6 +34,10 @@ export function Store() {
       id: "appareance",
       title: "Aparência",
     },
+    {
+      id: "maps",
+      title: "Google Maps",
+    },
   ];
 
   const [store] = api.establishment.getEstablishmentById.useSuspenseQuery();
@@ -82,6 +86,11 @@ export function Store() {
         </TabsContent>
 
         <TabsContent value="appareance">
+          <div className="mt-8 max-w-2xl">
+            <UpdateStoreAppaerance currentTheme={store.theme} />
+          </div>
+        </TabsContent>
+        <TabsContent value="maps">
           <div className="mt-8 max-w-2xl">
             <UpdateStoreAppaerance currentTheme={store.theme} />
           </div>

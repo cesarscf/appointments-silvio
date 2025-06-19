@@ -44,6 +44,8 @@ export const establishments = pgTable("establishments", {
   servicesPerformed: text("services_performed"),
   activeCustomers: text("active_customers"),
   experienceTime: text("experience_time"),
+  googleMapsLink: text("google_maps_link"),
+  address: text("address"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

@@ -36,12 +36,14 @@ import { api } from "@/trpc/react";
 // Extended schema to include logo
 const extendedSchema = updateEstablishmentSchema.extend({
   logo: z.string().optional(),
+  googleMapsLink: z.string().optional(),
 });
 
 // Extended type
 type ExtendedUpdateEstablishment = UpdateEstablishment & {
   logo?: string;
   banner?: string;
+  googleMapsLink?: string;
 };
 
 export function UpdateStoreForm({ store }: { store: Establishment }) {
@@ -65,6 +67,8 @@ export function UpdateStoreForm({ store }: { store: Establishment }) {
       activeCustomers: store.activeCustomers ?? "",
       experienceTime: store.experienceTime ?? "",
       servicesPerformed: store.servicesPerformed ?? "",
+      googleMapsLink: store.googleMapsLink ?? "",
+      address: store.googleMapsLink ?? "",
     },
   });
 
@@ -206,6 +210,42 @@ export function UpdateStoreForm({ store }: { store: Establishment }) {
                       />
                     </FormControl>
                   </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="googleMapsLink"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Link do Google Maps</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="url"
+                      placeholder="Cole aqui o link do Google Maps da sua loja"
+                      {...field}
+                    />
+                  </FormControl>
+                  <p className="text-xs text-muted-foreground">
+                    Vá no Google Maps, procure sua loja, clique em
+                    "Compartilhar" e cole o link aqui
+                  </p>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Endereço</FormLabel>
+                  <FormControl>
+                    <Textarea {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

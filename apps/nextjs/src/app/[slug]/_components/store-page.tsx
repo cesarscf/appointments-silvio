@@ -184,7 +184,10 @@ export function StorePage() {
               />
             </div>
             <div className="flex flex-col">
-              <MapSection />
+              <MapSection
+                googleMapsLink={data.googleMapsLink}
+                address={data.address}
+              />
             </div>
           </div>
         </section>

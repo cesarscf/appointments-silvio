@@ -11,6 +11,8 @@ export const updateEstablishmentSchema = z.object({
   servicesPerformed: z.string().optional(),
   activeCustomers: z.string().optional(),
   experienceTime: z.string().optional(),
+  googleMapsLink: z.string().optional(),
+  address: z.string().optional(),
 });
 
 export type UpdateEstablishment = z.infer<typeof updateEstablishmentSchema>;

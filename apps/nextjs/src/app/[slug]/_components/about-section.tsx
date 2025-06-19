@@ -7,9 +7,9 @@ export function AboutSection({
   servicesPerformed,
 }: {
   about: string | null;
-  activeCustomers: number | null;
-  experienceTime: number | null;
-  servicesPerformed: number | null;
+  activeCustomers: string | null;
+  experienceTime: string | null;
+  servicesPerformed: string | null;
 }) {
   const hasMetrics = activeCustomers || experienceTime || servicesPerformed;
   return (
