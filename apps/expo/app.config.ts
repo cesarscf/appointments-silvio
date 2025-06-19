@@ -16,7 +16,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   splash: {
     image: "./assets/icon.png",
     resizeMode: "contain",
-    backgroundColor: "#1F104A",
+    backgroundColor: "#001240",
   },
   updates: {
     fallbackToCacheTimeout: 0,
@@ -30,7 +30,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     package: appBundleIdentifier,
     adaptiveIcon: {
       foregroundImage: "./assets/icon.png",
-      backgroundColor: "#1F104A",
+      backgroundColor: "#001240",
     },
   },
   extra: {
@@ -50,6 +50,14 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
       {
         photosPermission:
           "The app accesses your photos to let you share them with your friends.",
+      },
+    ],
+    [
+      "expo-splash-screen",
+      {
+        backgroundColor: "#001240",
+        image: "./assets/icon.png",
+        imageWidth: 200,
       },
     ],
   ],

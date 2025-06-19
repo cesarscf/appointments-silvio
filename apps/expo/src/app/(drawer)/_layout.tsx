@@ -1,6 +1,6 @@
 import { Text } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { Redirect, router } from "expo-router";
+import { Redirect, router, SplashScreen } from "expo-router";
 import { Drawer } from "expo-router/drawer";
 import { DrawerItem } from "@react-navigation/drawer";
 
@@ -10,10 +10,10 @@ export default function AppLayout() {
   const { data: session, isPending } = authClient.useSession();
 
   if (isPending) {
-    return <Text>Loading...</Text>;
+    return null;
   }
 
-  console.log({ session });
+  SplashScreen.hide();
 
   if (session) {
     return (

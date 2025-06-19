@@ -1,6 +1,6 @@
 import "@bacons/text-decoder/install";
 
-import { Stack } from "expo-router";
+import { SplashScreen, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useColorScheme } from "nativewind";
 import ToastManager from "toastify-react-native";
@@ -10,6 +10,8 @@ import { TRPCProvider } from "@/utils/api";
 import "../styles.css";
 
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+
+SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const { colorScheme } = useColorScheme();
