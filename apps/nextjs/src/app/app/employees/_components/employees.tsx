@@ -33,7 +33,7 @@ export function Employees() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbPage>Funcionários</BreadcrumbPage>
+                <BreadcrumbPage>Profissionais</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>

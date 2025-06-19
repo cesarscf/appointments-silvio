@@ -404,10 +404,10 @@ export function DashboardMetrics() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500"></div>
-              Top 3 Funcionários
+              Top 3 Profissionais
             </CardTitle>
             <CardDescription>
-              Funcionários com maior faturamento
+              Profissionais com maior faturamento
             </CardDescription>
           </CardHeader>
           <CardContent>

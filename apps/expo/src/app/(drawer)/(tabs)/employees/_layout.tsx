@@ -7,7 +7,7 @@ export default function Layout() {
       <Stack.Screen
         name="index"
         options={{
-          title: "Funcionários",
+          title: "Profissionais",
           headerLeft: () => <DrawerToggleButton />,
         }}
       />

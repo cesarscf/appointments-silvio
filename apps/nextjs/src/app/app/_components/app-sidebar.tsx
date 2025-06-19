@@ -102,7 +102,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               isActive: segments.includes("services"),
             },
             {
-              title: "Funcionários",
+              title: "Profissionais",
               url: "/app/employees",
               icon: ContactRound,
               isActive: segments.includes("employees"),

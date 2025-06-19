@@ -50,7 +50,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="employees"
         options={{
-          tabBarLabel: "Funcionários",
+          tabBarLabel: "Profissionais",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person" color={color} size={size} />
           ),

@@ -102,10 +102,8 @@ export async function seed() {
     .returning();
 
   if (!employee1 || !employee2) {
-    throw new Error("Falha ao criar os funcionários.");
+    throw new Error("Falha ao criar os profissionais.");
   }
-
-  console.log("Funcionários criados com sucesso:", employee1, employee2);
 
   const today = new Date();
 
@@ -215,7 +213,7 @@ export async function seed() {
     },
   ]);
 
-  console.log("Serviços associados aos funcionários com sucesso.");
+  console.log("Serviços associados aos profissionais com sucesso.");
 
   // Cria alguns clientes
   const [customer1, customer2] = await db

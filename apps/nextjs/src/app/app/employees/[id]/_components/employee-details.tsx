@@ -174,7 +174,7 @@ export function EmployeeDetails() {
             <BreadcrumbList>
               <BreadcrumbItem className="hidden md:block">
                 <BreadcrumbLink href="/app/employees">
-                  Funcionários
+                  Profissionais
                 </BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbSeparator />

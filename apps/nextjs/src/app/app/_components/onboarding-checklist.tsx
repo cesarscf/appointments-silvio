@@ -112,7 +112,7 @@ export function OnboardingChecklist({
                       ) : (
                         <CircleAlert className="h-4 w-4 text-amber-500" />
                       )}
-                      <span>Adicionar funcionários</span>
+                      <span>Adicionar Profissionais</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
