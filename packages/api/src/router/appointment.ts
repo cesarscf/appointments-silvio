@@ -1,4 +1,3 @@
-import { TRPCError } from "@trpc/server";
 import {
   addMinutes,
   endOfDay,
@@ -32,7 +31,6 @@ import { clearNumber } from "@acme/utils";
 import { publicCreateAppointmentSchema } from "@acme/validators";
 
 import { protectedProcedure, publicProcedure } from "../trpc";
-import { whatsappTemplates } from "./whatsapp-templates";
 
 export const appointmentRouter = {
   listAppointments: protectedProcedure.query(async ({ ctx }) => {
@@ -56,6 +54,33 @@ export const appointmentRouter = {
 
     return result;
   }),
+
+  byId: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ input, ctx }) => {
+      const result = await ctx.db.query.appointments.findFirst({
+        where: and(
+          eq(appointments.establishmentId, ctx.establishmentId),
+          eq(appointments.id, input.id),
+        ),
+        with: {
+          employee: true,
+          service: true,
+          customer: true,
+          packageAppointment: {
+            with: {
+              package: {
+                with: {
+                  package: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      return result;
+    }),
 
   listAppointmentsByPeriod: protectedProcedure
     .input(
