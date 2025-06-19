@@ -4,6 +4,10 @@ import type { AppRouter } from "./root";
 import { appRouter } from "./root";
 import { createCallerFactory, createTRPCContext } from "./trpc";
 
+import { Resend } from "resend";
+
+export const resend = new Resend("re_jnKyrLnz_5GGs316fdAEJ4Z1CUbEUHmCb");
+
 /**
  * Create a server-side caller for the tRPC API
  * @example
