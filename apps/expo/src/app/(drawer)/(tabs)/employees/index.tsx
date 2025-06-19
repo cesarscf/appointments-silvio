@@ -2,6 +2,7 @@ import { ActivityIndicator, Image, Text, View } from "react-native";
 import { Link } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
+import { primaryColor } from "@/lib/colors"; // Import primary color
 
 import { LoadingScreen } from "@/components/loading-screen";
 import { api } from "@/utils/api";
@@ -28,8 +29,8 @@ export default function Index() {
               paddingTop: 40,
             }}
           >
-            <Feather name="users" size={64} color="#9CA3AF" />
-            <Text style={{ marginTop: 16, fontSize: 18, color: "#9CA3AF" }}>
+            <Feather name="users" size={64} color={primaryColor} />
+            <Text style={{ marginTop: 16, fontSize: 18, color: primaryColor }}>
               Nenhum funcionário cadastrado
             </Text>
           </View>
@@ -64,12 +65,14 @@ export default function Index() {
                   justifyContent: "center",
                 }}
               >
-                <Feather name="user" size={24} color="#9CA3AF" />
+                <Feather name="user" size={24} color={primaryColor} />
               </View>
             )}
 
             <View>
-              <Text style={{ fontSize: 20, fontWeight: "600", color: "black" }}>
+              <Text
+                style={{ fontSize: 20, fontWeight: "600", color: primaryColor }}
+              >
                 {item.name}
               </Text>
             </View>
@@ -79,7 +82,7 @@ export default function Index() {
                 marginLeft: "auto",
                 fontSize: 16,
                 fontWeight: "600",
-                color: "#3b82f6",
+                color: primaryColor,
               }}
               href={`/(drawer)/(tabs)/employees/${item.id}`}
             >

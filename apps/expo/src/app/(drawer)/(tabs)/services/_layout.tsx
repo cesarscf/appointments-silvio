@@ -2,6 +2,7 @@ import { Pressable } from "react-native";
 import { Link, Stack } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { DrawerToggleButton } from "@react-navigation/drawer";
+import { primaryColor } from "@/lib/colors";
 
 export default function Layout() {
   return (
@@ -10,18 +11,24 @@ export default function Layout() {
         name="index"
         options={{
           title: "Serviços",
-          headerLeft: () => <DrawerToggleButton />,
+          headerLeft: () => <DrawerToggleButton tintColor="#001240" />,
           headerRight: () => (
             <Link href="/(drawer)/(tabs)/services/new" asChild>
               <Pressable>
-                <Feather name="plus" size={24} color="blue" />
+                <Feather name="plus" size={24} color="#001240" />
               </Pressable>
             </Link>
           ),
         }}
       />
-      <Stack.Screen name="new" options={{ title: "Adicionar serviço" }} />
-      <Stack.Screen name="[id]" options={{ title: "Editar serviço" }} />
+      <Stack.Screen
+        name="new"
+        options={{ title: "Adicionar serviço", headerTintColor: primaryColor }}
+      />
+      <Stack.Screen
+        name="[id]"
+        options={{ title: "Editar serviço", headerTintColor: primaryColor }}
+      />
     </Stack>
   );
 }

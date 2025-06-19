@@ -197,7 +197,7 @@ export function AddClientForm() {
       <TouchableOpacity
         onPress={form.handleSubmit(onSubmit)}
         disabled={createMutation.isPending}
-        className="mt-4 flex flex-row items-center justify-center rounded-lg bg-blue-600 p-4"
+        className="mt-4 flex flex-row items-center justify-center rounded-lg bg-[#001240] p-4"
       >
         {createMutation.isPending ? (
           <ActivityIndicator color="white" />

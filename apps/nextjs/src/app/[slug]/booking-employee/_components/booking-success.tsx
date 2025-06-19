@@ -71,7 +71,7 @@ export function BookingSuccess({
 
       <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
         <h3 className="mb-2 font-medium text-blue-800">Importante</h3>
-        <p className="text-sm text-blue-600">
+        <p className="text-sm text-[#001240]">
           Chegue com 15 minutos de antecedência. Em caso de cancelamento, avise
           com pelo menos 24 horas de antecedência.
         </p>

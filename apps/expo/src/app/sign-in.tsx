@@ -50,7 +50,7 @@ export default function Login() {
       <View className="h-full justify-center p-6">
         <View className="w-full max-w-md mx-auto">
           <View className="mb-8 items-center">
-            <Text className="text-3xl font-bold text-blue-600">Bem-vindo</Text>
+            <Text className="text-3xl font-bold text-[#001240]">Bem-vindo</Text>
             <Text className="text-gray-500">Faça login para continuar</Text>
           </View>
 
@@ -110,7 +110,7 @@ export default function Login() {
           </View>
 
           <TouchableOpacity
-            className={`w-full rounded-lg bg-blue-600 p-4 ${isSubmitting ? "opacity-70" : ""}`}
+            className={`w-full rounded-lg bg-[#001240] p-4 ${isSubmitting ? "opacity-70" : ""}`}
             onPress={handleSubmit(onSubmit)}
             disabled={isSubmitting}
           >
@@ -126,10 +126,10 @@ export default function Login() {
           </View>
 
           <TouchableOpacity
-            className="w-full rounded-lg border border-blue-600 bg-white p-4"
+            className="w-full rounded-lg border border-[#001240] bg-white p-4"
             onPress={handleCreateAccount}
           >
-            <Text className="text-center font-bold text-blue-600">
+            <Text className="text-center font-bold text-[#001240]">
               Criar conta
             </Text>
           </TouchableOpacity>

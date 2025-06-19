@@ -76,7 +76,7 @@ export default function AppointmentsScreen() {
           onPress={() => setPeriod("today")}
         >
           <Text
-            className={`text-center font-medium ${period === "today" ? "text-blue-600" : "text-gray-600"}`}
+            className={`text-center font-medium ${period === "today" ? "text-[#001240]" : "text-gray-600"}`}
           >
             Hoje
           </Text>
@@ -87,7 +87,7 @@ export default function AppointmentsScreen() {
           onPress={() => setPeriod("week")}
         >
           <Text
-            className={`text-center font-medium ${period === "week" ? "text-blue-600" : "text-gray-600"}`}
+            className={`text-center font-medium ${period === "week" ? "text-[#001240]" : "text-gray-600"}`}
           >
             Esta Semana
           </Text>

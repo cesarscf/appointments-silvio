@@ -9,6 +9,7 @@ import {
 import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
+import { primaryColor } from "@/lib/colors";
 
 import { LoadingScreen } from "@/components/loading-screen";
 import { formatPrice } from "@/utils";
@@ -56,8 +57,8 @@ export default function Services() {
         ItemSeparatorComponent={() => <View className="h-8" />}
         ListEmptyComponent={
           <View className="flex-1 items-center justify-center pt-10">
-            <Feather name="scissors" size={64} color="#9CA3AF" />
-            <Text className="mt-4 text-lg text-gray-500">
+            <Feather name="scissors" size={64} color={primaryColor} />
+            <Text className="mt-4 text-lg" style={{ color: primaryColor }}>
               Nenhum serviço cadastrado
             </Text>
           </View>
@@ -71,12 +72,17 @@ export default function Services() {
               />
             ) : (
               <View className="h-12 w-12 items-center justify-center rounded-full bg-gray-100">
-                <Feather name="scissors" size={24} color="#9CA3AF" />
+                <Feather name="scissors" size={24} color={primaryColor} />
               </View>
             )}
 
             <View className="ml-4 flex-1">
-              <Text className="text-xl font-semibold">{item.name}</Text>
+              <Text
+                className="text-xl font-semibold"
+                style={{ color: primaryColor }}
+              >
+                {item.name}
+              </Text>
               <Text className="text-gray-400">
                 Temp. estimado: {item.duration} min
               </Text>
@@ -87,7 +93,7 @@ export default function Services() {
               className="ml-4 rounded-xl p-2"
               onPress={() => handleEdit(item.id)}
             >
-              <Feather name="edit" size={20} color="#3B82F6" />
+              <Feather name="edit" size={20} color={primaryColor} />
             </TouchableOpacity>
 
             <TouchableOpacity

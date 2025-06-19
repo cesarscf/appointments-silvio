@@ -1,5 +1,6 @@
 import { ActivityIndicator, Text, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
+import { primaryColor } from "@/lib/colors"; // Importe a cor primária
 
 import { AddClientForm } from "@/components/forms/add-customer-form";
 import { EditCustomerForm } from "@/components/forms/edit-customer-form";
@@ -15,7 +16,8 @@ export default function EditCustomer() {
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center">
-        <ActivityIndicator className="size-4" />
+        <ActivityIndicator color={primaryColor} size="small" />{" "}
+        {/* Cor ajustada aqui */}
       </View>
     );
   }
@@ -24,7 +26,9 @@ export default function EditCustomer() {
 
   return (
     <View className="flex-1 p-6">
-      <Text className="mb-4 text-xl font-bold text-gray-800">
+      <Text className="mb-4 text-xl font-bold" style={{ color: primaryColor }}>
+        {" "}
+        {/* Cor ajustada aqui */}
         Editar cliente
       </Text>
       <EditCustomerForm customer={data} />

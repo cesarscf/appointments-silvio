@@ -9,6 +9,7 @@ import { useRouter } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 import { format } from "date-fns";
+import { primaryColor } from "@/lib/colors"; // Importe a cor primária
 
 import { api } from "@/utils/api";
 
@@ -45,7 +46,7 @@ export default function Customers() {
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center">
-        <ActivityIndicator className="size-4" />
+        <ActivityIndicator color={primaryColor} size="small" />
       </View>
     );
   }
@@ -59,7 +60,12 @@ export default function Customers() {
         renderItem={({ item }) => (
           <View className="flex-row items-center justify-between p-6">
             <View className="flex-1">
-              <Text className="text-base font-medium">{item.name}</Text>
+              <Text
+                className="text-base font-medium"
+                style={{ color: primaryColor }}
+              >
+                {item.name}
+              </Text>
               {item.phoneNumber && (
                 <Text className="text-sm text-gray-500">
                   📞 {item.phoneNumber}
@@ -85,7 +91,7 @@ export default function Customers() {
 
             <View className="ml-2 flex-col items-center gap-4">
               <TouchableOpacity onPress={() => handleEdit(item.id)}>
-                <Feather name="edit" size={20} color="#3B82F6" />
+                <Feather name="edit" size={20} color={primaryColor} />
               </TouchableOpacity>
               <TouchableOpacity onPress={() => handleDelete(item.id)}>
                 <Feather name="trash" size={20} color="#EF4444" />

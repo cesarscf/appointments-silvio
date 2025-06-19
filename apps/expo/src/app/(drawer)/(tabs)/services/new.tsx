@@ -1,4 +1,5 @@
 import { ScrollView, Text, View } from "react-native";
+import { primaryColor } from "@/lib/colors"; // Import the primary color
 
 import { AddServiceForm } from "@/components/forms/add-service-form";
 
@@ -11,7 +12,7 @@ export default function NewService() {
             marginBottom: 16,
             fontSize: 20,
             fontWeight: "bold",
-            color: "#1f2937",
+            color: primaryColor,
           }}
         >
           Adicionar serviço

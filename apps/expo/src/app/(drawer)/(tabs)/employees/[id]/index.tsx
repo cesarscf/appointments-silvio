@@ -7,12 +7,17 @@ import {
   View,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
+import { primaryColor } from "@/lib/colors"; // Import primary color
 
 import { EditEmployeeForm } from "@/components/forms/edit-employee-form";
 import { EmployeeServiceManager } from "@/components/forms/manager-employee-form";
 import { api } from "@/utils/api";
 
-const TABS = ["Geral", "Serviços", "Indisponibilidades"];
+const TABS = [
+  "Geral",
+  "Serviços",
+  // "Indisponibilidades"
+];
 
 export default function EmployeeDetailsPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -29,7 +34,7 @@ export default function EmployeeDetailsPage() {
   if (isPending) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-        <ActivityIndicator style={{ width: 16, height: 16 }} />
+        <ActivityIndicator color={primaryColor} size="small" />
       </View>
     );
   }
@@ -48,18 +53,25 @@ export default function EmployeeDetailsPage() {
             employeeServices={employee.services}
           />
         );
-      case "Indisponibilidades":
-        return (
-          <View style={{ padding: 16 }}>
-            <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 8 }}>
-              Indisponibilidades
-            </Text>
-            <Text>
-              {employee?.unavailabilities?.join(", ") ||
-                "Nenhuma indisponibilidade registrada"}
-            </Text>
-          </View>
-        );
+      // case "Indisponibilidades":
+      //   return (
+      //     <View style={{ padding: 16 }}>
+      //       <Text
+      //         style={{
+      //           fontSize: 18,
+      //           fontWeight: "600",
+      //           marginBottom: 8,
+      //           color: primaryColor,
+      //         }}
+      //       >
+      //         Indisponibilidades
+      //       </Text>
+      //       <Text style={{ color: primaryColor }}>
+      //         {employee?.unavailabilities?.join(", ") ||
+      //           "Nenhuma indisponibilidade registrada"}
+      //       </Text>
+      //     </View>
+      //   );
       default:
         return null;
     }
@@ -67,7 +79,7 @@ export default function EmployeeDetailsPage() {
 
   return (
     <View style={{ flex: 1 }}>
-      {/* Barra de abas */}
+      {/* Tab bar */}
       <View
         style={{
           flexDirection: "row",
@@ -85,14 +97,14 @@ export default function EmployeeDetailsPage() {
               alignItems: "center",
               paddingVertical: 16,
               borderBottomWidth: activeTab === tab ? 2 : 0,
-              borderColor: activeTab === tab ? "#3b82f6" : "transparent",
+              borderColor: activeTab === tab ? primaryColor : "transparent",
             }}
           >
             <Text
               style={{
                 fontSize: 16,
                 fontWeight: activeTab === tab ? "bold" : "normal",
-                color: activeTab === tab ? "#3b82f6" : "#6b7280",
+                color: activeTab === tab ? primaryColor : "#6b7280",
               }}
             >
               {tab}
@@ -101,7 +113,7 @@ export default function EmployeeDetailsPage() {
         ))}
       </View>
 
-      {/* Conteúdo da aba selecionada */}
+      {/* Tab content */}
       <ScrollView style={{ flex: 1, padding: 16 }}>
         {renderTabContent()}
       </ScrollView>

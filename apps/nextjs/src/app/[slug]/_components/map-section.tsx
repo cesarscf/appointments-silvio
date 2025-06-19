@@ -34,7 +34,7 @@ export function MapSection({ googleMapsLink, address }: MapSectionProps) {
                 href={googleMapsLink || "https://maps.google.com"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition-all duration-200 transform hover:scale-105"
+                className="inline-flex items-center gap-2 bg-[#001240] hover:bg-blue-700 text-white font-medium px-6 py-3 rounded-lg transition-all duration-200 transform hover:scale-105"
               >
                 <Navigation className="h-5 w-5" />
                 <span>Ver no Google Maps</span>

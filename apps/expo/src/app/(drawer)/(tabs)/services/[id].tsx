@@ -6,6 +6,7 @@ import {
   View,
 } from "react-native";
 import { useLocalSearchParams } from "expo-router";
+import { primaryColor } from "@/lib/colors";
 
 import { EditServiceForm } from "@/components/forms/edit-service-form";
 import { LoadingScreen } from "@/components/loading-screen";
@@ -34,7 +35,7 @@ export default function EditCustomer() {
             marginBottom: 16,
             fontSize: 20,
             fontWeight: "bold",
-            color: "#1f2937",
+            color: primaryColor,
           }}
         >
           Editar cliente

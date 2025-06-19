@@ -84,7 +84,7 @@ export default function MetricsScreen() {
           <Text className="text-lg font-semibold mb-2">
             Faturamento deste Mês
           </Text>
-          <Text className="text-2xl text-blue-600">
+          <Text className="text-2xl text-[#001240]">
             {formatPrice(monthlyRevenue.data || 0)}
           </Text>
         </View>

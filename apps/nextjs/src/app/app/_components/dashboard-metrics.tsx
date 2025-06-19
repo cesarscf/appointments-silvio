@@ -381,7 +381,7 @@ export function DashboardMetrics() {
                                 <span className="text-sm font-medium">
                                   {data?.fullName}
                                 </span>
-                                <span className="font-bold text-blue-600">
+                                <span className="font-bold text-[#001240]">
                                   {formatCurrency(payload[0]?.value as number)}
                                 </span>
                               </div>
