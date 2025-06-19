@@ -16,7 +16,7 @@ export default function EditCustomer() {
   if (isLoading) {
     return (
       <View className="flex-1 items-center justify-center">
-        <ActivityIndicator color={primaryColor} size="small" />{" "}
+        <ActivityIndicator color={primaryColor} size="small" />
         {/* Cor ajustada aqui */}
       </View>
     );
@@ -27,7 +27,6 @@ export default function EditCustomer() {
   return (
     <View className="flex-1 p-6">
       <Text className="mb-4 text-xl font-bold" style={{ color: primaryColor }}>
-        {" "}
         {/* Cor ajustada aqui */}
         Editar cliente
       </Text>

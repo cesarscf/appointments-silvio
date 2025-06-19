@@ -52,7 +52,7 @@ export default function AppointmentDetails() {
       </View>
 
       {/* Card de informações */}
-      <View className="bg-white rounded-lg shadow-sm p-5 mb-4">
+      <View className="bg-white rounded-lg shadow-sm p-6 mb-4">
         {/* Horário */}
         <View className="mb-5">
           <Text className="text-gray-600 font-medium mb-1">Horário</Text>
