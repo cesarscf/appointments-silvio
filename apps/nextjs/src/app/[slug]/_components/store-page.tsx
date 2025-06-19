@@ -108,7 +108,7 @@ export function StorePage() {
 
       <div className="relative mb-8 h-[40vh] overflow-hidden md:h-[50vh]">
         <Image
-          src={"/placeholder.svg"}
+          src={data.banner ?? "/placeholder.svg"}
           alt={`${data.name} - Capa`}
           fill
           className="object-cover"
@@ -117,7 +117,7 @@ export function StorePage() {
         <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
         <div className="absolute bottom-0 left-0 w-full p-4 md:p-6">
           <div className="container mx-auto">
-            <div className="flex flex-wrap gap-4 text-sm text-white md:gap-6">
+            <div className="flex flex-wrap gap-4 text-sm  md:gap-6">
               <div className="flex items-center gap-1">
                 <MapPin className="h-4 w-4" />
                 <span>{"Av. Principal, 123 - Centro"}</span>

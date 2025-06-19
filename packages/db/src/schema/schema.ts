@@ -39,6 +39,7 @@ export const establishments = pgTable("establishments", {
   about: text("about"),
   slug: text("slug").notNull(),
   logo: text("logo"),
+  banner: text("banner"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

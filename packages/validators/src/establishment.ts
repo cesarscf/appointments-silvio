@@ -6,6 +6,7 @@ export const updateEstablishmentSchema = z.object({
   theme: z.string().optional(),
   slug: z.string().optional(),
   about: z.string().optional(),
+  banner: z.string().optional(),
 });
 
 export type UpdateEstablishment = z.infer<typeof updateEstablishmentSchema>;

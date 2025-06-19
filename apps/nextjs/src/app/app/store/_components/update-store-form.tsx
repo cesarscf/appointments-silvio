@@ -41,11 +41,15 @@ const extendedSchema = updateEstablishmentSchema.extend({
 // Extended type
 type ExtendedUpdateEstablishment = UpdateEstablishment & {
   logo?: string;
+  banner?: string;
 };
 
 export function UpdateStoreForm({ store }: { store: Establishment }) {
   const [logoPreview, setLogoPreview] = React.useState<string | null>(
     store.logo || null,
+  );
+  const [bannerPreview, setBannerPreview] = React.useState<string | null>(
+    store.banner || null,
   );
 
   // react-hook-form
@@ -56,6 +60,7 @@ export function UpdateStoreForm({ store }: { store: Establishment }) {
       slug: store.slug,
       about: store.about ?? "",
       logo: store.logo ?? "",
+      banner: store.banner ?? "",
     },
   });
 
@@ -101,6 +106,25 @@ export function UpdateStoreForm({ store }: { store: Establishment }) {
       const base64 = await convertToBase64(file);
       setLogoPreview(base64);
       form.setValue("logo", base64);
+    } catch (error) {
+      console.error("Erro ao converter imagem:", error);
+      toast.error("Erro ao processar a imagem");
+    }
+  };
+
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      if (file.size > 1024 * 1024) {
+        toast.error("A imagem deve ter menos de 1MB");
+        return;
+      }
+
+      const base64 = await convertToBase64(file);
+      setBannerPreview(base64);
+      form.setValue("banner", base64);
     } catch (error) {
       console.error("Erro ao converter imagem:", error);
       toast.error("Erro ao processar a imagem");
@@ -199,6 +223,67 @@ export function UpdateStoreForm({ store }: { store: Establishment }) {
                               onClick={() => {
                                 setLogoPreview(null);
                                 form.setValue("logo", "");
+                              }}
+                            >
+                              Remover
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Envie uma imagem de até 1MB. Formatos recomendados: PNG,
+                        JPG, SVG.
+                      </p>
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="banner"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Banner da loja</FormLabel>
+                  <FormControl>
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-4">
+                        <div className="relative flex h-24 w-24 items-center justify-center rounded-md border border-dashed">
+                          {bannerPreview ? (
+                            <img
+                              src={bannerPreview || "/placeholder.svg"}
+                              alt="Banner preview"
+                              className="h-full w-full rounded-md object-contain p-2"
+                            />
+                          ) : (
+                            <ImageIcon className="h-10 w-10 text-muted-foreground" />
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-2">
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            id="banner-upload"
+                            className="hidden"
+                            onChange={handleBannerUpload}
+                          />
+                          <label
+                            htmlFor="banner-upload"
+                            className="inline-flex h-9 cursor-pointer items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50"
+                          >
+                            <Upload className="mr-2 h-4 w-4" />
+                            Enviar banner
+                          </label>
+                          {bannerPreview && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setBannerPreview(null);
+                                form.setValue("banner", "");
                               }}
                             >
                               Remover
