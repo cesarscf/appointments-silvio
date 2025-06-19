@@ -30,8 +30,12 @@ import {
 } from "@/components/ui/sidebar";
 import { api } from "@/trpc/react";
 import { OnboardingChecklist } from "./onboarding-checklist";
+import { authClient } from "@acme/auth/client";
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({
+  isAdmin,
+  ...props
+}: React.ComponentProps<typeof Sidebar> & { isAdmin: boolean }) {
   const segments = useSelectedLayoutSegments();
 
   const [store] = api.establishment.getEstablishmentById.useSuspenseQuery();
@@ -133,6 +137,28 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             },
           ]}
         />
+
+        {isAdmin && (
+          <NavMain
+            label={"Admin"}
+            items={[
+              {
+                title: "Dashboard",
+                url: "/app/admin/dashboard",
+                icon: LayoutDashboard,
+                isActive:
+                  segments.includes("admin") && segments.includes("dashboard"),
+              },
+              {
+                title: "Clientes",
+                url: "/app/admin/customers",
+                icon: Users,
+                isActive:
+                  segments.includes("admin") && segments.includes("customers"),
+              },
+            ]}
+          />
+        )}
       </SidebarContent>
       <SidebarFooter>
         <NavUser />

@@ -5,6 +5,8 @@ import type { LucideIcon } from "lucide-react";
 import {
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -12,7 +14,9 @@ import {
 
 export function NavMain({
   items,
+  label,
 }: {
+  label?: string;
   items: {
     title: string;
     url: string;
@@ -22,6 +26,8 @@ export function NavMain({
 }) {
   return (
     <SidebarGroup>
+      {label && <SidebarGroupLabel>{label}</SidebarGroupLabel>}
+
       <SidebarGroupContent>
         <SidebarMenu>
           {items.map((item) => (

@@ -13,13 +13,16 @@ export default async function Layout({ children }: React.PropsWithChildren) {
     return redirect("/login");
   }
 
+  const allowedDomain = "agendar.tec.br";
+  const isAdminUser = session?.user.email?.endsWith(`@${allowedDomain}`);
+
   void api.establishment.getEstablishmentById.prefetch();
   void api.establishment.getOnboardingCheck.prefetch();
 
   return (
     <SidebarProvider>
       <HydrateClient>
-        <AppSidebar />
+        <AppSidebar isAdmin={isAdminUser} />
       </HydrateClient>
       <SidebarInset>{children}</SidebarInset>
     </SidebarProvider>
