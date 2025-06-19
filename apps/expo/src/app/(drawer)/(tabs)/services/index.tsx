@@ -24,8 +24,8 @@ export default function Services() {
 
   const handleDelete = (id: string) => {
     Alert.alert(
-      "Excluir Cliente",
-      "Tem certeza que deseja excluir este cliente?",
+      "Excluir Serviço",
+      "Tem certeza que deseja excluir este serviço?",
       [
         { text: "Cancelar", style: "cancel" },
         {
@@ -49,57 +49,49 @@ export default function Services() {
   }
 
   return (
-    <View
-      style={{
-        flex: 1,
-        backgroundColor: "#f3f4f6",
-        padding: 16,
-        paddingTop: 32,
-      }}
-    >
+    <View className="flex-1 bg-gray-100 p-4 pt-8">
       <FlashList
         data={data}
         estimatedItemSize={80}
-        ItemSeparatorComponent={() => <View style={{ height: 32 }} />}
+        ItemSeparatorComponent={() => <View className="h-8" />}
+        ListEmptyComponent={
+          <View className="flex-1 items-center justify-center pt-10">
+            <Feather name="scissors" size={64} color="#9CA3AF" />
+            <Text className="mt-4 text-lg text-gray-500">
+              Nenhum serviço cadastrado
+            </Text>
+          </View>
+        }
         renderItem={({ item }) => (
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              borderRadius: 16,
-              backgroundColor: "white",
-              padding: 16,
-            }}
-          >
-            <Image
-              src={item.image ?? ""}
-              style={{ width: 50, height: 50, borderRadius: 25 }}
-            />
+          <View className="flex-row items-center justify-between rounded-2xl bg-white p-4 shadow-sm">
+            {item.image ? (
+              <Image
+                source={{ uri: item.image }}
+                className="h-12 w-12 rounded-full"
+              />
+            ) : (
+              <View className="h-12 w-12 items-center justify-center rounded-full bg-gray-100">
+                <Feather name="scissors" size={24} color="#9CA3AF" />
+              </View>
+            )}
 
-            <View style={{ marginLeft: 16, flex: 1 }}>
-              <Text style={{ fontSize: 20, fontWeight: "600" }}>
-                {item.name}
-              </Text>
-
-              <Text style={{ color: "#9ca3af" }}>
+            <View className="ml-4 flex-1">
+              <Text className="text-xl font-semibold">{item.name}</Text>
+              <Text className="text-gray-400">
                 Temp. estimado: {item.duration} min
               </Text>
-
-              <Text style={{ color: "#6b7280" }}>
-                {formatPrice(item.price)}
-              </Text>
+              <Text className="text-gray-500">{formatPrice(item.price)}</Text>
             </View>
 
             <TouchableOpacity
-              style={{ marginLeft: 16, borderRadius: 12, padding: 8 }}
+              className="ml-4 rounded-xl p-2"
               onPress={() => handleEdit(item.id)}
             >
               <Feather name="edit" size={20} color="#3B82F6" />
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={{ marginLeft: 16, borderRadius: 12, padding: 8 }}
+              className="ml-2 rounded-xl p-2"
               onPress={() => handleDelete(item.id)}
             >
               <Feather name="trash" size={20} color="#EF4444" />

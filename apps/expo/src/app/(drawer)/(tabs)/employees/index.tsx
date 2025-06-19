@@ -1,5 +1,6 @@
 import { ActivityIndicator, Image, Text, View } from "react-native";
 import { Link } from "expo-router";
+import { Feather } from "@expo/vector-icons";
 import { FlashList } from "@shopify/flash-list";
 
 import { LoadingScreen } from "@/components/loading-screen";
@@ -18,6 +19,21 @@ export default function Index() {
         data={data}
         estimatedItemSize={80}
         ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+        ListEmptyComponent={
+          <View
+            style={{
+              flex: 1,
+              alignItems: "center",
+              justifyContent: "center",
+              paddingTop: 40,
+            }}
+          >
+            <Feather name="users" size={64} color="#9CA3AF" />
+            <Text style={{ marginTop: 16, fontSize: 18, color: "#9CA3AF" }}>
+              Nenhum funcionário cadastrado
+            </Text>
+          </View>
+        }
         renderItem={({ item }) => (
           <View
             style={{
@@ -32,10 +48,25 @@ export default function Index() {
               padding: 16,
             }}
           >
-            <Image
-              src={item.image ?? ""}
-              style={{ width: 50, height: 50, borderRadius: 25 }}
-            />
+            {item.image ? (
+              <Image
+                source={{ uri: item.image }}
+                style={{ width: 50, height: 50, borderRadius: 25 }}
+              />
+            ) : (
+              <View
+                style={{
+                  width: 50,
+                  height: 50,
+                  borderRadius: 25,
+                  backgroundColor: "#f3f4f6",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Feather name="user" size={24} color="#9CA3AF" />
+              </View>
+            )}
 
             <View>
               <Text style={{ fontSize: 20, fontWeight: "600", color: "black" }}>
