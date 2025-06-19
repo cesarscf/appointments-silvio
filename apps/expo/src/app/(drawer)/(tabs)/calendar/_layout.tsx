@@ -10,8 +10,12 @@ export default function Layout() {
         name="index"
         options={{
           title: "Agenda",
-          headerLeft: () => <DrawerToggleButton />,
+          headerShown: false,
         }}
+      />
+      <Stack.Screen
+        name="[appointmentId]"
+        options={{ title: "Editar cliente" }}
       />
     </Stack>
   );
