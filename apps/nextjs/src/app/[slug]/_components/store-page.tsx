@@ -176,7 +176,12 @@ export function StorePage() {
           </div>
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
             <div className="flex flex-col">
-              <AboutSection about={data.about} />
+              <AboutSection
+                about={data.about}
+                activeCustomers={data.activeCustomers}
+                experienceTime={data.experienceTime}
+                servicesPerformed={data.experienceTime}
+              />
             </div>
             <div className="flex flex-col">
               <MapSection />

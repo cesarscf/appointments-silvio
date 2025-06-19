@@ -8,6 +8,9 @@ export const updateEstablishmentSchema = z.object({
   about: z.string().optional(),
   banner: z.string().optional(),
   phone: z.string().optional(),
+  servicesPerformed: z.string().optional(),
+  activeCustomers: z.string().optional(),
+  experienceTime: z.string().optional(),
 });
 
 export type UpdateEstablishment = z.infer<typeof updateEstablishmentSchema>;

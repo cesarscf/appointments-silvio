@@ -62,6 +62,9 @@ export function UpdateStoreForm({ store }: { store: Establishment }) {
       logo: store.logo ?? "",
       banner: store.banner ?? "",
       phone: store.phone ?? "",
+      activeCustomers: store.activeCustomers ?? "",
+      experienceTime: store.experienceTime ?? "",
+      servicesPerformed: store.servicesPerformed ?? "",
     },
   });
 
@@ -207,6 +210,58 @@ export function UpdateStoreForm({ store }: { store: Establishment }) {
                 </FormItem>
               )}
             />
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="servicesPerformed"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Serviços feitos</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        placeholder="Ex: 150 serviços"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="activeCustomers"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Usuários ativos</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        placeholder="Ex: 80 clientes"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="experienceTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tempo de experiência</FormLabel>
+                    <FormControl>
+                      <Input type="text" placeholder="Ex: 5 anos" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <FormField
               control={form.control}
