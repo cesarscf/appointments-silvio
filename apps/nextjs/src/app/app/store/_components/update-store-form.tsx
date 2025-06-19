@@ -9,7 +9,7 @@ import { z } from "zod";
 
 import type { Establishment } from "@acme/db/schema";
 import type { UpdateEstablishment } from "@acme/validators";
-import { slugify } from "@acme/utils";
+import { applyPhoneMask, slugify } from "@acme/utils";
 import { updateEstablishmentSchema } from "@acme/validators";
 
 import { Button } from "@/components/ui/button";
@@ -61,6 +61,7 @@ export function UpdateStoreForm({ store }: { store: Establishment }) {
       about: store.about ?? "",
       logo: store.logo ?? "",
       banner: store.banner ?? "",
+      phone: store.phone ?? "",
     },
   });
 
@@ -131,6 +132,12 @@ export function UpdateStoreForm({ store }: { store: Establishment }) {
     }
   };
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const phone = e.target.value.replace(/\D/g, "");
+    const formattedPhone = applyPhoneMask(phone);
+    form.setValue("phone", formattedPhone);
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -175,6 +182,27 @@ export function UpdateStoreForm({ store }: { store: Establishment }) {
                       />
                     </div>
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem className="w-full">
+                  <FormLabel>Telefone *</FormLabel>
+                  <div className="relative">
+                    <FormControl>
+                      <Input
+                        type="text"
+                        placeholder="(00) 00000-0000"
+                        {...field}
+                        onChange={handlePhoneChange}
+                      />
+                    </FormControl>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}

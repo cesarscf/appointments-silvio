@@ -91,6 +91,7 @@ export const establishmentRouter = {
         .update(establishments)
         .set({
           ...input,
+          phone: input.phone ? input.phone.replace(/\D/g, "") : undefined,
         })
         .where(eq(establishments.id, ctx.establishmentId));
     }),

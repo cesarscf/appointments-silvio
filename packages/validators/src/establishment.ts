@@ -7,6 +7,7 @@ export const updateEstablishmentSchema = z.object({
   slug: z.string().optional(),
   about: z.string().optional(),
   banner: z.string().optional(),
+  phone: z.string().optional(),
 });
 
 export type UpdateEstablishment = z.infer<typeof updateEstablishmentSchema>;
