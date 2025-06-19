@@ -32,7 +32,8 @@ export default function RootLayout() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Stack screenOptions={SCREEN_OPTIONS}>
           <Stack.Screen name="(drawer)" options={DRAWER_OPTIONS} />
-          <Stack.Screen name="sign-in" />
+          <Stack.Screen name="sign-in" options={{ headerShown: false }} />
+          <Stack.Screen name="sign-up" options={{ headerShown: false }} />
         </Stack>
         <ToastManager />
       </GestureHandlerRootView>
